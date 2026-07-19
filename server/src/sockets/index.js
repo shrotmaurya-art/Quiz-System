@@ -105,7 +105,8 @@ function redactGameState(state, question, round) {
     judgements: state.phase === 'JUDGING' || state.resultsRevealed ? state.judgements : {},
     winnerCandidateId: state.resultsRevealed ? state.winnerCandidateId : null,
     resultsRevealed: Boolean(state.resultsRevealed),
-    question: redactedQuestion
+    question: redactedQuestion,
+    answerMode: round?.answerMode || null
   };
 }
 

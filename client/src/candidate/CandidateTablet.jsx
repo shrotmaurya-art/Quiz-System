@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { createSocket } from '../shared/socket';
 import InvalidLinkScreen from './InvalidLinkScreen';
 import { CandidateGameProvider, useCandidateGame } from './CandidateGameContext';
+import McqQuestionView from './McqQuestionView';
 
 /**
  * Candidate tablet entry point — route /play/:candidateId?token=...
@@ -118,6 +119,11 @@ function CandidateContent() {
         </div>
       </div>
     );
+  }
+
+  // If MCQ, render MCQ question screen during active phases (including TIME_UP and GAP)
+  if (gameState?.answerMode === 'MCQ' && (phase === 'QUESTION_SHOWN' || phase === 'TIME_UP' || phase === 'GAP')) {
+    return <McqQuestionView />;
   }
 
   // GAP phase — suspense screen
