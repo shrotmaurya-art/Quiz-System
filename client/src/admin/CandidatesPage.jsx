@@ -243,7 +243,7 @@ export default function CandidatesPage() {
     if (!confirm('Remove this candidate?')) return;
     const res = await apiFetch(`/api/candidates/${id}`, { method: 'DELETE' });
     if (res.ok) {
-      setCandidates((prev) => prev.map((c) => c.id === id ? { ...c, isActive: false } : c));
+      setCandidates((prev) => prev.filter((c) => c.id !== id));
     }
   }
 
@@ -286,14 +286,14 @@ export default function CandidatesPage() {
         />
       )}
 
-      {candidates.length === 0 ? (
+      {candidates.filter((c) => c.isActive).length === 0 ? (
         <div className="glass-panel rounded-xl p-12 text-center">
           <span className="material-symbols-outlined text-[64px] text-outline-variant mb-4 block">groups</span>
           <p className="text-on-surface-variant font-body-lg">No candidates yet. Click "Add Candidate" to get started.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-gutter">
-          {candidates.map((c) => (
+          {candidates.filter((c) => c.isActive).map((c) => (
             <CandidateCard
               key={c.id}
               candidate={c}
