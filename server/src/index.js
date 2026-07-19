@@ -24,7 +24,7 @@ app.use('/api/questions', questionsRouter);
 app.use('/api/candidates', candidatesRouter);
 
 app.get('/api/scoreboard', (req, res) => {
-  const candidates = all('SELECT * FROM candidates ORDER BY score DESC, name ASC');
+  const candidates = all('SELECT * FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
   return res.json(candidates.map(toPublicCandidate));
 });
 

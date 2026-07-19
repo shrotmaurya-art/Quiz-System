@@ -140,7 +140,7 @@ function broadcastCandidates(io) {
 
 function broadcastScoreboard(io) {
   try {
-    const candidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+    const candidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
     io.to('admin').to('display').emit('scoreboard:update', candidates.map(toPublicCandidate));
   } catch (err) {
     console.error('Error in broadcastScoreboard:', err);
@@ -370,7 +370,7 @@ function initSockets(server) {
       socket.emit('candidates:updated', candidates.map(toAdminCandidate));
 
       // Send initial scoreboard so the bottom-bar widget isn't empty
-      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
       socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
     } 
     else if (auth.role === 'candidate') {
@@ -389,7 +389,7 @@ function initSockets(server) {
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
 
       // Send initial scoreboard
-      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
       socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
     } 
     else if (auth.role === 'display') {
@@ -408,7 +408,7 @@ function initSockets(server) {
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
 
       // Send initial scoreboard
-      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
       socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
     }
 
@@ -466,7 +466,7 @@ function initSockets(server) {
       // Also push candidates and scoreboard for a complete state refresh
       const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
       socket.emit('candidates:updated', candidates.map(toAdminCandidate));
-      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
       socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
 
       if (typeof ack === 'function') ack({ success: true });
