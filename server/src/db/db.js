@@ -1,3 +1,4 @@
+// This is the single place other files import the database from; no other file should open its own quiz.sqlite connection.
 const Database = require('better-sqlite3');
 const fs = require('fs');
 const path = require('path');
@@ -20,4 +21,48 @@ if (!settings) {
   ).run();
 }
 
-module.exports = db;
+function run(sql, params = []) {
+  return db.prepare(sql).run(params);
+}
+
+function get(sql, params = []) {
+  return db.prepare(sql).get(params);
+}
+
+function all(sql, params = []) {
+  return db.prepare(sql).all(params);
+}
+
+function getGlobalSettings() {
+  return get('SELECT * FROM global_settings WHERE id = 1');
+}
+
+function updateGlobalSettings(patch) {
+  const allowedFields = [
+    'defaultTimeLimitSeconds',
+    'defaultGapEnabled',
+    'defaultGapSeconds',
+  ];
+  const fields = allowedFields.filter((field) => patch[field] !== undefined);
+
+  if (fields.length === 0) {
+    return getGlobalSettings();
+  }
+
+  const assignments = fields.map((field) => `${field} = ?`).join(', ');
+  run(
+    `UPDATE global_settings SET ${assignments} WHERE id = 1`,
+    fields.map((field) => patch[field])
+  );
+
+  return getGlobalSettings();
+}
+
+module.exports = {
+  db,
+  run,
+  get,
+  all,
+  getGlobalSettings,
+  updateGlobalSettings,
+};

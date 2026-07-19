@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Personal Results - Incorrect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#595c7b",
+                        "secondary": "#f0c03e",
+                        "primary-container": "#0a0e29",
+                        "on-primary-container": "#777a9b",
+                        "outline": "#919098",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#594400",
+                        "tertiary-fixed": "#e3dfff",
+                        "on-tertiary-fixed": "#130068",
+                        "outline-variant": "#46464d",
+                        "tertiary-fixed-dim": "#c4c0ff",
+                        "surface-dim": "#0e141a",
+                        "on-background": "#dde3eb",
+                        "surface-variant": "#2f353c",
+                        "surface-container": "#1a2026",
+                        "surface": "#0e141a",
+                        "surface-container-lowest": "#080f14",
+                        "secondary-container": "#ba9000",
+                        "background": "#0e141a",
+                        "primary-fixed": "#dfe0ff",
+                        "surface-bright": "#333a40",
+                        "on-surface-variant": "#c7c5ce",
+                        "primary": "#c1c4e8",
+                        "inverse-surface": "#dde3eb",
+                        "primary-fixed-dim": "#c1c4e8",
+                        "inverse-on-surface": "#2b3137",
+                        "on-secondary-fixed": "#251a00",
+                        "on-error": "#690005",
+                        "surface-container-high": "#242b31",
+                        "on-primary-fixed": "#151935",
+                        "error": "#ffb4ab",
+                        "on-secondary": "#3e2e00",
+                        "tertiary": "#c4c0ff",
+                        "secondary-fixed": "#ffdf95",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#161c22",
+                        "surface-container-highest": "#2f353c",
+                        "surface-tint": "#c1c4e8",
+                        "on-tertiary-container": "#7268f9",
+                        "on-secondary-container": "#3c2c00",
+                        "tertiary-container": "#0a0049",
+                        "on-tertiary-fixed-variant": "#3a28c0",
+                        "on-tertiary": "#2300a3",
+                        "on-primary": "#2b2e4b",
+                        "on-primary-fixed-variant": "#414562",
+                        "on-surface": "#dde3eb",
+                        "secondary-fixed-dim": "#f0c03e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "container-max": "1200px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "label-caps": ["Space Grotesk"],
+                        "headline-md": ["Playfair Display"],
+                        "body-lg": ["Work Sans"],
+                        "body-md": ["Work Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "900" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "900" }],
+                        "label-caps": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clip-diamond {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+        .clip-hex {
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+        }
+        
+        /* Particle Animation */
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 4s infinite linear;
+        }
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+        }
+
+        /* Ambient Glows */
+        .ambient-glow-error {
+            box-shadow: inset 0 0 40px rgba(147, 0, 10, 0.4), 0 0 30px rgba(147, 0, 10, 0.2);
+        }
+        .ambient-glow-correct {
+            box-shadow: inset 0 0 20px rgba(240, 192, 62, 0.2), 0 0 15px rgba(240, 192, 62, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md overflow-hidden antialiased">
+<!-- Cinematic Background -->
+<div class="fixed inset-0 z-0">
+<!-- Midnight Indigo Radial Gradient -->
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-colors-primary-container)_0%,_var(--tw-colors-surface-container-lowest)_100%)] opacity-80"></div>
+<!-- Central Spotlight -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-full bg-[radial-gradient(ellipse_at_top,_rgba(240,192,62,0.1)_0%,_transparent_70%)]"></div>
+<!-- Particles Container -->
+<div class="absolute inset-0 overflow-hidden" id="particles-container"></div>
+</div>
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 w-full bg-surface-dim/80 backdrop-blur-xl border-b border-secondary/30 shadow-[0_4px_30px_rgba(0,0,0,0.5)] z-50">
+<div class="flex justify-between items-center px-margin-desktop h-20 w-full">
+<button class="text-on-surface-variant hover:bg-secondary/10 hover:text-secondary-fixed transition-all duration-300 active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-secondary drop-shadow-[0_0_10px_rgba(240,192,62,0.5)] uppercase tracking-widest">QUIZ SHOW LIVE</h1>
+<button class="text-on-surface-variant hover:bg-secondary/10 hover:text-secondary-fixed transition-all duration-300 active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="relative z-10 flex flex-col items-center justify-center min-h-screen pt-24 pb-24 px-margin-mobile md:px-margin-desktop">
+<div class="w-full max-w-container-max flex flex-col items-center space-y-stack-lg">
+<!-- Result Header -->
+<div class="text-center space-y-stack-sm animate-[fadeIn_0.5s_ease-out]">
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-error-container drop-shadow-[0_0_15px_rgba(147,0,10,0.5)]">INCORRECT</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Better luck next round. The correct answer was...</p>
+</div>
+<!-- Central Diamond Presentation -->
+<div class="relative w-full max-w-md aspect-square flex items-center justify-center animate-[scaleIn_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_0.2s_both]">
+<!-- Outer Glow Ring -->
+<div class="absolute inset-4 bg-error-container/10 rounded-full blur-2xl"></div>
+<!-- Diamond Panel -->
+<div class="clip-diamond w-full h-full bg-surface-container-high/80 backdrop-blur-2xl border border-secondary/20 flex flex-col items-center justify-center p-12 ambient-glow-correct transition-all duration-700">
+<div class="text-center space-y-4 transform -rotate-45 rotate-45"> <!-- Counter-rotate content if diamond was rotated via CSS transform, but clip-path doesn't rotate content. Kept for logical grouping -->
+<span class="material-symbols-outlined text-secondary text-5xl mb-2 drop-shadow-[0_0_8px_rgba(240,192,62,0.6)]">check_circle</span>
+<div class="font-label-caps text-label-caps text-secondary/80 tracking-widest mb-1">CORRECT ANSWER</div>
+<div class="font-headline-md text-headline-md text-on-surface drop-shadow-md">
+                            Mount Kilimanjaro
+                        </div>
+</div>
+</div>
+</div>
+<!-- User's Choice (Muted) -->
+<div class="w-full max-w-2xl animate-[fadeIn_0.5s_ease-out_0.5s_both]">
+<div class="font-label-caps text-label-caps text-on-surface-variant/50 text-center mb-stack-sm">YOUR ANSWER</div>
+<div class="clip-hex w-full bg-surface-variant/40 border border-outline-variant/30 py-4 px-8 text-center ambient-glow-error opacity-60 grayscale-[50%]">
+<span class="font-body-lg text-body-lg text-on-surface-variant strike-through">Mount Everest</span>
+</div>
+</div>
+<!-- Action Area -->
+<div class="pt-stack-lg animate-[fadeIn_0.5s_ease-out_0.8s_both]">
+<button class="clip-hex bg-surface-dim/90 backdrop-blur-2xl border border-outline/50 px-12 py-4 font-label-caps text-label-caps text-on-surface hover:border-secondary hover:text-secondary hover:bg-secondary/10 transition-all duration-300 shadow-[inset_0_0_10px_rgba(255,255,255,0.05)] active:scale-95">
+                    CONTINUE WATCHING
+                </button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Shell (Mobile/Desktop consistent for tablet focus) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-desktop py-4 bg-surface-dim/90 backdrop-blur-2xl border-t border-secondary/20 shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1">bolt</span>
+<span class="font-label-caps text-label-caps text-[10px] md:text-label-caps">LIFELINES</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1">groups</span>
+<span class="font-label-caps text-label-caps text-[10px] md:text-label-caps">AUDIENCE</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary/20 text-secondary rounded-xl px-6 py-2 ring-1 ring-secondary/50 shadow-[0_0_15px_rgba(240,192,62,0.3)] active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="font-label-caps text-label-caps text-[10px] md:text-label-caps">STATS</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1">logout</span>
+<span class="font-label-caps text-label-caps text-[10px] md:text-label-caps">LEAVE</span>
+</button>
+</nav>
+<script>
+        // Simple Particle System for Ambient Background
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('particles-container');
+            const particleCount = 30; // Fewer particles for a subtle effect
+
+            for (let i = 0; i < particleCount; i++) {
+                createParticle();
+            }
+
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Randomize properties
+                const size = Math.random() * 4 + 1 + 'px';
+                const left = Math.random() * 100 + 'vw';
+                const top = Math.random() * 100 + 'vh';
+                const animationDuration = Math.random() * 5 + 3 + 's';
+                const animationDelay = Math.random() * 5 + 's';
+
+                particle.style.width = size;
+                particle.style.height = size;
+                particle.style.left = left;
+                particle.style.top = top;
+                particle.style.animationDuration = animationDuration;
+                particle.style.animationDelay = animationDelay;
+
+                // Muted red/gold colors for particles based on theme
+                const colors = ['rgba(147, 0, 10, 0.4)', 'rgba(240, 192, 62, 0.3)', 'rgba(255, 255, 255, 0.2)'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                container.appendChild(particle);
+
+                // Recreate particle after animation ends to keep them flowing
+                setTimeout(() => {
+                    particle.remove();
+                    createParticle();
+                }, (parseFloat(animationDuration) + parseFloat(animationDelay)) * 1000);
+            }
+        });
+    </script>
+</body></html>

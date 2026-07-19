@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>St. Jude's Academy Annual Quiz - Opening Screen</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Space+Grotesk:wght@300..700&amp;family=Work+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#ffdf95",
+                        "secondary-container": "#ba9000",
+                        "on-background": "#dde3eb",
+                        "on-error-container": "#ffdad6",
+                        "on-primary": "#2b2e4b",
+                        "on-tertiary": "#2300a3",
+                        "tertiary": "#c4c0ff",
+                        "tertiary-fixed-dim": "#c4c0ff",
+                        "tertiary-fixed": "#e3dfff",
+                        "outline": "#919098",
+                        "on-surface": "#dde3eb",
+                        "on-primary-fixed": "#151935",
+                        "error-container": "#93000a",
+                        "secondary": "#f0c03e",
+                        "on-primary-container": "#777a9b",
+                        "surface-bright": "#333a40",
+                        "on-tertiary-container": "#7268f9",
+                        "on-secondary-container": "#3c2c00",
+                        "primary-fixed-dim": "#c1c4e8",
+                        "on-error": "#690005",
+                        "surface-variant": "#2f353c",
+                        "primary-container": "#0a0e29",
+                        "inverse-primary": "#595c7b",
+                        "surface": "#0e141a",
+                        "primary-fixed": "#dfe0ff",
+                        "primary": "#c1c4e8",
+                        "surface-container": "#1a2026",
+                        "surface-container-highest": "#2f353c",
+                        "on-secondary-fixed": "#251a00",
+                        "tertiary-container": "#0a0049",
+                        "background": "#0e141a",
+                        "on-secondary": "#3e2e00",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#414562",
+                        "on-tertiary-fixed-variant": "#3a28c0",
+                        "inverse-surface": "#dde3eb",
+                        "on-secondary-fixed-variant": "#594400",
+                        "surface-tint": "#c1c4e8",
+                        "surface-dim": "#0e141a",
+                        "surface-container-low": "#161c22",
+                        "outline-variant": "#46464d",
+                        "on-tertiary-fixed": "#130068",
+                        "surface-container-lowest": "#080f14",
+                        "surface-container-high": "#242b31",
+                        "on-surface-variant": "#c7c5ce",
+                        "inverse-on-surface": "#2b3137",
+                        "secondary-fixed-dim": "#f0c03e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "stack-md": "16px",
+                        "stack-lg": "32px",
+                        "gutter": "24px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-md": ["Work Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "label-caps": ["Space Grotesk"],
+                        "body-lg": ["Work Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "900" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["64px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "900" }],
+                        "label-caps": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom slower pulse for the cinematic feel */
+        @keyframes slow-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .animate-slow-pulse {
+            animation: slow-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background w-screen h-screen overflow-hidden relative flex items-center justify-center m-0 p-0 selection:bg-secondary/30 selection:text-secondary-fixed">
+<!-- Cinematic Full-Bleed Shader Background -->
+<!-- STITCH_SHADER_START:ANIMATION_12 class="absolute inset-0 w-full h-full z-0 object-cover" -->
+<div class="absolute inset-0 w-full h-full z-0 object-cover" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_12" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_12');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+float random (vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+}
+
+void main() {
+    vec2 uv = v_texCoord;
+    vec2 center = vec2(0.5, 0.5);
+    
+    // Deep indigo base
+    vec3 color_dark = vec3(0.039, 0.055, 0.161); // #0A0E29
+    vec3 color_mid = vec3(0.102, 0.071, 0.271);  // #1A1245
+    
+    // Radial gradient background
+    float d = distance(uv, center);
+    vec3 color = mix(color_mid, color_dark, smoothstep(0.1, 0.9, d));
+    
+    // Golden spotlight glow
+    float spotlight = 1.0 - smoothstep(0.0, 0.7, d);
+    color += vec3(0.96, 0.77, 0.26) * spotlight * 0.2;
+    
+    // Sweeping light beams radiating from center
+    vec2 rel = uv - center;
+    float angle = atan(rel.y, rel.x);
+    
+    // Beam 1: Slow sweeping
+    float beam1 = sin(angle * 6.0 + u_time * 0.4) * 0.5 + 0.5;
+    beam1 *= pow(1.0 - d, 1.5);
+    color += vec3(0.36, 0.31, 0.88) * beam1 * 0.15; // Purple-blue
+    
+    // Beam 2: Faster, thinner beams
+    float beam2 = sin(angle * 12.0 - u_time * 0.6) * 0.5 + 0.5;
+    beam2 *= pow(1.0 - d, 2.0);
+    color += vec3(0.96, 0.77, 0.26) * beam2 * 0.1; // Gold
+    
+    // Drifting sparkles (upward motion)
+    vec2 st = uv * 40.0;
+    st.y -= u_time * 1.5; // Drift upward
+    vec2 ipos = floor(st);
+    if (random(ipos) > 0.97) {
+        float spark = sin(u_time * 3.0 + random(ipos) * 6.28) * 0.5 + 0.5;
+        color += vec3(0.96, 0.77, 0.26) * spark * 0.5;
+    }
+    
+    gl_FragColor = vec4(color, 1.0);
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_12 -->
+<!-- Overlay Gradient for better text legibility against complex shaders -->
+<div class="absolute inset-0 z-0 bg-radial-gradient from-transparent via-surface/40 to-surface/90 mix-blend-multiply"></div>
+<!-- Main Content Canvas (No UI Chrome, purely presentation) -->
+<main class="relative z-10 flex flex-col items-center justify-center space-y-stack-lg max-w-container-max mx-auto px-margin-desktop text-center">
+<!-- School / Event Title -->
+<h1 class="font-display-lg text-display-lg text-secondary drop-shadow-[0_0_30px_rgba(240,192,62,0.8)] tracking-tight">
+            ST. JUDE'S ACADEMY ANNUAL QUIZ
+        </h1>
+<!-- Subtitle / Tension Builder -->
+<p class="font-headline-md text-headline-md text-on-surface-variant animate-slow-pulse tracking-[0.2em] uppercase">
+            Get Ready.
+        </p>
+</main>
+</body></html>

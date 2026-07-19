@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Personal Results - Correct</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Space+Grotesk:wght@300..700&amp;family=Work+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#595c7b",
+                        "secondary": "#f0c03e",
+                        "primary-container": "#0a0e29",
+                        "on-primary-container": "#777a9b",
+                        "outline": "#919098",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#594400",
+                        "tertiary-fixed": "#e3dfff",
+                        "on-tertiary-fixed": "#130068",
+                        "outline-variant": "#46464d",
+                        "tertiary-fixed-dim": "#c4c0ff",
+                        "surface-dim": "#0e141a",
+                        "on-background": "#dde3eb",
+                        "surface-variant": "#2f353c",
+                        "surface-container": "#1a2026",
+                        "surface": "#0e141a",
+                        "surface-container-lowest": "#080f14",
+                        "secondary-container": "#ba9000",
+                        "background": "#0e141a",
+                        "primary-fixed": "#dfe0ff",
+                        "surface-bright": "#333a40",
+                        "on-surface-variant": "#c7c5ce",
+                        "primary": "#c1c4e8",
+                        "inverse-surface": "#dde3eb",
+                        "primary-fixed-dim": "#c1c4e8",
+                        "inverse-on-surface": "#2b3137",
+                        "on-secondary-fixed": "#251a00",
+                        "on-error": "#690005",
+                        "surface-container-high": "#242b31",
+                        "on-primary-fixed": "#151935",
+                        "error": "#ffb4ab",
+                        "on-secondary": "#3e2e00",
+                        "tertiary": "#c4c0ff",
+                        "secondary-fixed": "#ffdf95",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#161c22",
+                        "surface-container-highest": "#2f353c",
+                        "surface-tint": "#c1c4e8",
+                        "on-tertiary-container": "#7268f9",
+                        "on-secondary-container": "#3c2c00",
+                        "tertiary-container": "#0a0049",
+                        "on-tertiary-fixed-variant": "#3a28c0",
+                        "on-tertiary": "#2300a3",
+                        "on-primary": "#2b2e4b",
+                        "on-primary-fixed-variant": "#414562",
+                        "on-surface": "#dde3eb",
+                        "secondary-fixed-dim": "#f0c03e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "container-max": "1200px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "label-caps": ["Space Grotesk"],
+                        "headline-md": ["Playfair Display"],
+                        "body-lg": ["Work Sans"],
+                        "body-md": ["Work Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "900" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "900" }],
+                        "label-caps": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .radial-bg {
+            background: radial-gradient(circle at 50% 40%, rgba(10, 14, 41, 1) 0%, rgba(8, 15, 20, 1) 70%, rgba(0, 0, 0, 1) 100%);
+        }
+        .glow-border {
+            box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.3), 0 0 30px rgba(240, 192, 62, 0.1);
+        }
+        .correct-pulse {
+            animation: pulse-correct 2s infinite ease-in-out;
+        }
+        @keyframes pulse-correct {
+            0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(74, 222, 128, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+        }
+        .diamond-clip {
+            clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+        }
+        /* Particles */
+        .particles-container { position: absolute; inset: 0; pointer-events: none; z-index: 10; overflow: hidden; }
+        .particle {
+            position: absolute;
+            background: rgba(240, 192, 62, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 0 4px rgba(240, 192, 62, 0.8);
+            animation: float-up 10s infinite linear;
+        }
+        @keyframes float-up {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            20% { opacity: 1; transform: translateY(80vh) scale(1); }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(0.5); opacity: 0; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen radial-bg flex flex-col items-center justify-center relative overflow-hidden font-body-md selection:bg-secondary/30 selection:text-secondary-fixed">
+<!-- Cinematic Particles -->
+<div class="particles-container" id="particles"></div>
+<!-- Spotlight Effect -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+<!-- Main Content Container -->
+<main class="relative z-20 w-full max-w-container-max px-margin-mobile md:px-margin-desktop flex flex-col items-center justify-center min-h-screen">
+<!-- Status Card (The Diamond) -->
+<div class="relative bg-surface-dim/80 backdrop-blur-2xl border border-secondary/30 rounded-3xl p-8 md:p-16 flex flex-col items-center justify-center glow-border w-full max-w-3xl transform transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+<!-- Corner Accents -->
+<div class="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-secondary/50 rounded-tl-3xl"></div>
+<div class="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-secondary/50 rounded-tr-3xl"></div>
+<div class="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-secondary/50 rounded-bl-3xl"></div>
+<div class="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-secondary/50 rounded-br-3xl"></div>
+<!-- Icon -->
+<div class="w-24 h-24 md:w-32 md:h-32 rounded-full bg-surface-container-lowest border-2 border-[#4ade80] flex items-center justify-center mb-stack-lg correct-pulse shadow-[inset_0_0_20px_rgba(74,222,128,0.2)]">
+<span class="material-symbols-outlined text-[64px] md:text-[80px] text-[#4ade80]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Typography -->
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-secondary uppercase tracking-widest text-center mb-stack-sm drop-shadow-[0_0_15px_rgba(240,192,62,0.6)]">
+                Correct!
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant text-center max-w-lg mb-stack-lg">
+                Your answer matched the master database. You are advancing to the next tier.
+            </p>
+<!-- Metrics -->
+<div class="flex flex-col md:flex-row gap-gutter w-full justify-center items-center mt-stack-md">
+<div class="bg-surface-container-lowest/50 border border-outline-variant/30 rounded-xl py-4 px-8 flex flex-col items-center min-w-[200px]">
+<span class="font-label-caps text-label-caps text-on-surface-variant/70 uppercase tracking-widest mb-1">Response Time</span>
+<span class="font-headline-md text-headline-md text-primary-fixed">2.45s</span>
+</div>
+<div class="bg-surface-container-lowest/50 border border-outline-variant/30 rounded-xl py-4 px-8 flex flex-col items-center min-w-[200px]">
+<span class="font-label-caps text-label-caps text-on-surface-variant/70 uppercase tracking-widest mb-1">Rank Impact</span>
+<span class="font-headline-md text-headline-md text-[#4ade80] flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">arrow_upward</span>
+                        +150
+                    </span>
+</div>
+</div>
+<!-- Standby Indicator -->
+<div class="mt-stack-lg flex items-center gap-3 text-secondary-fixed/60">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></div>
+<span class="font-label-caps text-label-caps text-[12px] uppercase tracking-widest">Awaiting host cue...</span>
+</div>
+</div>
+</main>
+<script>
+        // Generate theatrical particles
+        const container = document.getElementById('particles');
+        for (let i = 0; i < 40; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            
+            // Randomize properties
+            const size = Math.random() * 4 + 1;
+            const left = Math.random() * 100;
+            const delay = Math.random() * 10;
+            const duration = Math.random() * 5 + 8;
+            
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${left}%`;
+            particle.style.animationDelay = `${delay}s`;
+            particle.style.animationDuration = `${duration}s`;
+            
+            container.appendChild(particle);
+        }
+    </script>
+</body></html>

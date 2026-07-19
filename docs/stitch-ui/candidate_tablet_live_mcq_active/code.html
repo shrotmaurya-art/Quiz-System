@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Candidate Tablet - Active Question</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config from Brand Anchors -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#ba9000",
+                        "surface-dim": "#0e141a",
+                        "primary-fixed-dim": "#c1c4e8",
+                        "on-primary-fixed-variant": "#414562",
+                        "inverse-primary": "#595c7b",
+                        "surface-variant": "#2f353c",
+                        "on-tertiary": "#2300a3",
+                        "surface-tint": "#c1c4e8",
+                        "inverse-surface": "#dde3eb",
+                        "inverse-on-surface": "#2b3137",
+                        "secondary-fixed": "#ffdf95",
+                        "surface-container-high": "#242b31",
+                        "on-error": "#690005",
+                        "surface-container-lowest": "#080f14",
+                        "on-background": "#dde3eb",
+                        "outline": "#919098",
+                        "surface-container-low": "#161c22",
+                        "on-tertiary-fixed-variant": "#3a28c0",
+                        "on-surface-variant": "#c7c5ce",
+                        "primary-fixed": "#dfe0ff",
+                        "on-secondary-fixed": "#251a00",
+                        "background": "#0e141a",
+                        "on-secondary": "#3e2e00",
+                        "surface-container-highest": "#2f353c",
+                        "secondary": "#f0c03e",
+                        "outline-variant": "#46464d",
+                        "on-secondary-container": "#3c2c00",
+                        "tertiary-fixed-dim": "#c4c0ff",
+                        "on-tertiary-container": "#7268f9",
+                        "surface": "#0e141a",
+                        "secondary-fixed-dim": "#f0c03e",
+                        "on-primary-container": "#777a9b",
+                        "tertiary": "#c4c0ff",
+                        "on-primary": "#2b2e4b",
+                        "on-primary-fixed": "#151935",
+                        "tertiary-fixed": "#e3dfff",
+                        "primary": "#c1c4e8",
+                        "error-container": "#93000a",
+                        "primary-container": "#0a0e29",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed": "#130068",
+                        "on-secondary-fixed-variant": "#594400",
+                        "on-surface": "#dde3eb",
+                        "tertiary-container": "#0a0049",
+                        "surface-bright": "#333a40",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#1a2026"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "64px",
+                        "container-max": "1200px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Playfair Display", "serif"],
+                        "body-md": ["Work Sans", "sans-serif"],
+                        "label-caps": ["Space Grotesk", "sans-serif"],
+                        "display-lg-mobile": ["Playfair Display", "serif"],
+                        "display-lg": ["Playfair Display", "serif"],
+                        "body-lg": ["Work Sans", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-caps": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "900" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "900" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #080f14; /* surface-container-lowest */
+            color: #dde3eb; /* on-background */
+        }
+        
+        .bg-cinematic-radial {
+            background: radial-gradient(circle at 50% 30%, rgba(10, 0, 73, 0.8) 0%, rgba(8, 15, 20, 1) 70%);
+        }
+        
+        .spotlight {
+            background: radial-gradient(circle at 50% -20%, rgba(240, 192, 62, 0.2) 0%, transparent 60%);
+        }
+
+        .clip-diamond {
+            clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
+        }
+
+        .option-glow {
+            box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.3);
+        }
+        
+        .option-hover-bloom:hover {
+            box-shadow: 0 0 25px rgba(240, 192, 62, 0.25), inset 0 0 15px rgba(240, 192, 62, 0.5);
+        }
+        
+        .sparkle-bg {
+            background-image: 
+                radial-gradient(circle at 20% 40%, rgba(240, 192, 62, 0.4) 1px, transparent 1px),
+                radial-gradient(circle at 80% 30%, rgba(240, 192, 62, 0.6) 2px, transparent 2px),
+                radial-gradient(circle at 40% 70%, rgba(240, 192, 62, 0.3) 1px, transparent 1px),
+                radial-gradient(circle at 70% 80%, rgba(240, 192, 62, 0.5) 1.5px, transparent 1.5px);
+            background-size: 100px 100px;
+            animation: twinkle 4s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .timer-ring circle {
+            transition: stroke-dashoffset 0.5s linear;
+        }
+        
+        /* Particle effect for button active state */
+        .active-pulse {
+            animation: pulse-glow 1.5s infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.3); }
+            50% { box-shadow: inset 0 0 30px rgba(240, 192, 62, 0.6), 0 0 20px rgba(240, 192, 62, 0.4); }
+            100% { box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.3); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen relative overflow-hidden flex flex-col font-body-md text-body-md">
+<!-- Background Layers -->
+<div class="absolute inset-0 bg-cinematic-radial z-0"></div>
+<div class="absolute inset-0 spotlight z-0"></div>
+<div class="absolute inset-0 sparkle-bg z-0 opacity-40"></div>
+<!-- Top App Bar from JSON -->
+<header class="fixed top-0 w-full bg-surface-dim/80 backdrop-blur-xl border-b border-secondary/30 shadow-[0_4px_30px_rgba(0,0,0,0.5)] flex justify-between items-center px-margin-desktop h-20 w-full z-50">
+<button class="text-on-surface-variant hover:bg-secondary/10 hover:text-secondary-fixed transition-all duration-300 active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-secondary drop-shadow-[0_0_10px_rgba(240,192,62,0.5)] uppercase tracking-widest">
+            QUIZ SHOW LIVE
+        </h1>
+<button class="text-on-surface-variant hover:bg-secondary/10 hover:text-secondary-fixed transition-all duration-300 active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 relative z-10 flex flex-col items-center justify-center pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
+<!-- Timer & Meta -->
+<div class="flex flex-col items-center mb-stack-lg">
+<div class="relative w-24 h-24 mb-stack-sm flex items-center justify-center">
+<!-- SVG Timer Ring -->
+<svg class="absolute inset-0 w-full h-full transform -rotate-90 timer-ring" viewbox="0 0 100 100">
+<!-- Background circle -->
+<circle cx="50" cy="50" fill="none" r="45" stroke="rgba(240,192,62,0.1)" stroke-width="8"></circle>
+<!-- Progress circle (75% = 283 * 0.75 = 212 dasharray) -->
+<circle class="drop-shadow-[0_0_10px_rgba(240,192,62,0.8)]" cx="50" cy="50" fill="none" r="45" stroke="#f0c03e" stroke-dasharray="283" stroke-dashoffset="71" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<span class="font-display-lg-mobile text-display-lg-mobile text-secondary drop-shadow-[0_0_8px_rgba(240,192,62,0.6)]">45</span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary-fixed-dim tracking-[0.2em]">QUESTION 08</span>
+</div>
+<!-- Question Card -->
+<div class="w-full max-w-3xl border-t-2 border-b-2 border-secondary bg-surface-container/60 backdrop-blur-2xl rounded-xl p-stack-lg md:p-margin-desktop mb-stack-lg shadow-[inset_0_0_30px_rgba(240,192,62,0.1),0_10px_40px_rgba(0,0,0,0.6)] relative overflow-hidden">
+<!-- Light beam reflections -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50"></div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50"></div>
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-secondary text-center leading-tight drop-shadow-[0_0_15px_rgba(240,192,62,0.4)]">
+                What is the largest planet in our solar system?
+            </h2>
+</div>
+<!-- Options Grid (2x2) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter w-full max-w-4xl">
+<!-- Option A -->
+<button class="group relative w-full py-6 px-8 clip-diamond bg-tertiary-container/80 backdrop-blur-md border border-white/20 transition-all duration-300 hover:border-secondary hover:bg-tertiary-container option-hover-bloom active:scale-[0.98]">
+<div class="flex items-center">
+<span class="font-display-lg-mobile text-display-lg-mobile text-secondary mr-stack-md group-hover:drop-shadow-[0_0_10px_rgba(240,192,62,0.8)]">A:</span>
+<span class="font-headline-md text-headline-md text-on-surface group-hover:text-white transition-colors">Jupiter</span>
+</div>
+<!-- Inner glow container -->
+<div class="absolute inset-0 clip-diamond pointer-events-none group-hover:option-glow transition-all duration-300"></div>
+</button>
+<!-- Option B -->
+<button class="group relative w-full py-6 px-8 clip-diamond bg-tertiary-container/80 backdrop-blur-md border border-white/20 transition-all duration-300 hover:border-secondary hover:bg-tertiary-container option-hover-bloom active:scale-[0.98]">
+<div class="flex items-center">
+<span class="font-display-lg-mobile text-display-lg-mobile text-secondary mr-stack-md group-hover:drop-shadow-[0_0_10px_rgba(240,192,62,0.8)]">B:</span>
+<span class="font-headline-md text-headline-md text-on-surface group-hover:text-white transition-colors">Saturn</span>
+</div>
+<div class="absolute inset-0 clip-diamond pointer-events-none group-hover:option-glow transition-all duration-300"></div>
+</button>
+<!-- Option C -->
+<button class="group relative w-full py-6 px-8 clip-diamond bg-tertiary-container/80 backdrop-blur-md border border-white/20 transition-all duration-300 hover:border-secondary hover:bg-tertiary-container option-hover-bloom active:scale-[0.98]">
+<div class="flex items-center">
+<span class="font-display-lg-mobile text-display-lg-mobile text-secondary mr-stack-md group-hover:drop-shadow-[0_0_10px_rgba(240,192,62,0.8)]">C:</span>
+<span class="font-headline-md text-headline-md text-on-surface group-hover:text-white transition-colors">Earth</span>
+</div>
+<div class="absolute inset-0 clip-diamond pointer-events-none group-hover:option-glow transition-all duration-300"></div>
+</button>
+<!-- Option D -->
+<button class="group relative w-full py-6 px-8 clip-diamond bg-tertiary-container/80 backdrop-blur-md border border-white/20 transition-all duration-300 hover:border-secondary hover:bg-tertiary-container option-hover-bloom active:scale-[0.98]">
+<div class="flex items-center">
+<span class="font-display-lg-mobile text-display-lg-mobile text-secondary mr-stack-md group-hover:drop-shadow-[0_0_10px_rgba(240,192,62,0.8)]">D:</span>
+<span class="font-headline-md text-headline-md text-on-surface group-hover:text-white transition-colors">Mars</span>
+</div>
+<div class="absolute inset-0 clip-diamond pointer-events-none group-hover:option-glow transition-all duration-300"></div>
+</button>
+</div>
+</main>
+<!-- Bottom Nav Bar from JSON (Suppressed on large screens, shown on mobile per guidelines - active tab: none clearly match "playing game", assuming default context or hiding shell) -->
+<!-- Applying guideline: "Automatic Suppression: You MUST exclude the navigation shell if the page intent is: ... Task-Focused: Any sub-page featuring a 'Close' or 'Back' action that implies a temporary departure from the main navigation flow." 
+         A live quiz question is highly task-focused. However, the JSON explicitly includes "LIFELINES", "AUDIENCE", "STATS", "LEAVE" which are perfectly contextual for gameplay. We will render it as it's the game HUD.
+         Active state: LIFELINES by default as it's a core game action, though none is explicitly "active" in a pure nav sense. Let's make none active or assume 'LEAVE' is inactive. We'll leave them inactive until tapped. -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-desktop py-4 bg-surface-dim/90 backdrop-blur-2xl border-t border-secondary/20 shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">bolt</span>
+<span class="font-label-caps text-label-caps">LIFELINES</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">groups</span>
+<span class="font-label-caps text-label-caps">AUDIENCE</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">leaderboard</span>
+<span class="font-label-caps text-label-caps">STATS</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">logout</span>
+<span class="font-label-caps text-label-caps">LEAVE</span>
+</button>
+</nav>
+<script>
+        // Simple interaction script to simulate selecting an answer (fade and bloom effect)
+        document.querySelectorAll('.clip-diamond').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active classes from others
+                document.querySelectorAll('.clip-diamond').forEach(b => {
+                    b.classList.remove('border-secondary', 'active-pulse', 'bg-tertiary-container');
+                    b.classList.add('border-white/20');
+                });
+                
+                // Add active state to clicked
+                this.classList.remove('border-white/20');
+                this.classList.add('border-secondary', 'active-pulse', 'bg-tertiary-container');
+            });
+        });
+    </script>
+</body></html>

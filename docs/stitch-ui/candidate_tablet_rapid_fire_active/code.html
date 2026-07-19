@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rapid Fire - Lock Answer</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Space+Grotesk:wght@300..700&amp;family=Work+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#242b31",
+                        "on-surface": "#dde3eb",
+                        "outline-variant": "#46464d",
+                        "on-primary-fixed-variant": "#414562",
+                        "tertiary-container": "#0a0049",
+                        "inverse-primary": "#595c7b",
+                        "on-primary-container": "#777a9b",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#e3dfff",
+                        "on-secondary": "#3e2e00",
+                        "on-secondary-fixed": "#251a00",
+                        "on-tertiary-fixed-variant": "#3a28c0",
+                        "inverse-on-surface": "#2b3137",
+                        "outline": "#919098",
+                        "background": "#0e141a",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#161c22",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#1a2026",
+                        "on-secondary-container": "#3c2c00",
+                        "surface-tint": "#c1c4e8",
+                        "on-tertiary": "#2300a3",
+                        "on-primary": "#2b2e4b",
+                        "on-primary-fixed": "#151935",
+                        "secondary": "#f0c03e",
+                        "primary-container": "#0a0e29",
+                        "surface": "#0e141a",
+                        "primary-fixed": "#dfe0ff",
+                        "surface-dim": "#0e141a",
+                        "secondary-fixed": "#ffdf95",
+                        "on-surface-variant": "#c7c5ce",
+                        "on-secondary-fixed-variant": "#594400",
+                        "on-tertiary-container": "#7268f9",
+                        "secondary-container": "#ba9000",
+                        "primary": "#c1c4e8",
+                        "surface-container-highest": "#2f353c",
+                        "primary-fixed-dim": "#c1c4e8",
+                        "secondary-fixed-dim": "#f0c03e",
+                        "on-tertiary-fixed": "#130068",
+                        "tertiary": "#c4c0ff",
+                        "surface-bright": "#333a40",
+                        "tertiary-fixed-dim": "#c4c0ff",
+                        "surface-container-lowest": "#080f14",
+                        "surface-variant": "#2f353c",
+                        "on-background": "#dde3eb",
+                        "inverse-surface": "#dde3eb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "container-max": "1200px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Work Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "body-lg": ["Work Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "label-caps": ["Space Grotesk"],
+                        "display-lg": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "900" }],
+                        "label-caps": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "900" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .radial-bg {
+            background: radial-gradient(circle at center, #1a1a3a 0%, #080f14 80%);
+        }
+        .spotlight {
+            background: radial-gradient(ellipse at top, rgba(240, 192, 62, 0.15) 0%, transparent 60%);
+        }
+        .beam {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 180deg at 50% 100%, transparent 45%, rgba(240, 192, 62, 0.05) 50%, transparent 55%);
+            pointer-events: none;
+        }
+        .pulse-border {
+            animation: pulse-ring 2s infinite;
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(240, 192, 62, 0.7); }
+            70% { box-shadow: 0 0 0 30px rgba(240, 192, 62, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(240, 192, 62, 0); }
+        }
+        .timer-ring {
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+        .timer-circle {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 0;
+            animation: countdown 15s linear infinite;
+        }
+        @keyframes countdown {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: 283; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen overflow-hidden flex flex-col items-center justify-center radial-bg relative">
+<!-- Background Effects -->
+<div class="absolute inset-0 spotlight pointer-events-none"></div>
+<div class="beam"></div>
+<!-- Top App Bar (Hidden on Mobile, but conceptually present) -->
+<header class="hidden md:flex justify-between items-center px-margin-desktop h-20 w-full z-50 fixed top-0 border-b border-secondary/30 bg-surface-dim/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+<button class="text-secondary hover:bg-secondary/10 hover:text-secondary-fixed transition-all duration-300 active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-secondary drop-shadow-[0_0_10px_rgba(240,192,62,0.5)] uppercase tracking-widest">QUIZ SHOW LIVE</h1>
+<button class="text-secondary hover:bg-secondary/10 hover:text-secondary-fixed transition-all duration-300 active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="relative z-10 w-full max-w-4xl px-margin-mobile md:px-margin-desktop flex flex-col items-center justify-center flex-grow pt-8 pb-32 md:py-32">
+<!-- Question Area -->
+<div class="text-center mb-stack-lg relative z-20">
+<h2 class="font-display-lg-mobile md:font-display-lg text-secondary drop-shadow-[0_4px_20px_rgba(240,192,62,0.6)] leading-tight mb-stack-sm max-w-3xl mx-auto">
+                What element does the chemical symbol 'Au' represent?
+            </h2>
+</div>
+<!-- Timer -->
+<div class="relative w-32 h-32 mb-stack-lg flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full timer-ring" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="45" stroke="rgba(240,192,62,0.2)" stroke-width="4"></circle>
+<circle class="timer-circle" cx="50" cy="50" fill="none" r="45" stroke="#f0c03e" stroke-linecap="round" stroke-width="6" style="filter: drop-shadow(0 0 8px rgba(240,192,62,0.8));"></circle>
+</svg>
+<div class="font-display-lg-mobile text-secondary z-10 drop-shadow-[0_0_10px_rgba(240,192,62,0.8)]">12</div>
+</div>
+<!-- Interactive Core: Lock Button -->
+<div class="relative w-64 h-64 md:w-80 md:h-80 flex items-center justify-center z-30">
+<!-- Glow Underlay -->
+<div class="absolute inset-0 bg-secondary/20 rounded-full blur-2xl"></div>
+<button class="relative w-full h-full bg-gradient-to-br from-secondary to-secondary-container rounded-full flex flex-col items-center justify-center shadow-[inset_0_0_40px_rgba(255,255,255,0.4),0_10px_50px_rgba(240,192,62,0.6)] border-4 border-secondary-fixed pulse-border active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-[64px] text-on-secondary mb-stack-sm drop-shadow-md" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="font-label-caps text-label-caps text-on-secondary text-xl font-bold tracking-widest drop-shadow-md">LOCK ANSWER</span>
+</button>
+</div>
+</main>
+<!-- Bottom Nav Bar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-desktop py-4 bg-surface-dim/90 backdrop-blur-2xl border-t border-secondary/20 shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+<!-- Inactive -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1">bolt</span>
+<span class="font-label-caps text-[10px]">LIFELINES</span>
+</button>
+<!-- Inactive -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1">groups</span>
+<span class="font-label-caps text-[10px]">AUDIENCE</span>
+</button>
+<!-- Inactive -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1">leaderboard</span>
+<span class="font-label-caps text-[10px]">STATS</span>
+</button>
+<!-- Inactive -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 px-6 py-2 hover:text-secondary hover:bg-secondary/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1">logout</span>
+<span class="font-label-caps text-[10px]">LEAVE</span>
+</button>
+</nav>
+</body></html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rounds &amp; Questions - Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&amp;family=Work+Sans:wght@400&amp;family=Space+Grotesk:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-on-surface": "#2b3137",
+                      "on-surface": "#dde3eb",
+                      "on-error": "#690005",
+                      "surface-container-high": "#242b31",
+                      "on-error-container": "#ffdad6",
+                      "surface": "#0e141a",
+                      "on-tertiary": "#2300a3",
+                      "on-primary": "#2b2e4b",
+                      "on-secondary-fixed-variant": "#594400",
+                      "on-primary-fixed": "#151935",
+                      "surface-container-low": "#161c22",
+                      "outline-variant": "#46464d",
+                      "on-tertiary-fixed": "#130068",
+                      "on-primary-container": "#777a9b",
+                      "on-primary-fixed-variant": "#414562",
+                      "inverse-surface": "#dde3eb",
+                      "tertiary-fixed": "#e3dfff",
+                      "on-secondary": "#3e2e00",
+                      "secondary-fixed": "#ffdf95",
+                      "primary-fixed-dim": "#c1c4e8",
+                      "secondary-container": "#ba9000",
+                      "surface-bright": "#333a40",
+                      "on-secondary-container": "#3c2c00",
+                      "tertiary": "#c4c0ff",
+                      "error-container": "#93000a",
+                      "surface-tint": "#c1c4e8",
+                      "primary-fixed": "#dfe0ff",
+                      "on-tertiary-container": "#7268f9",
+                      "background": "#0e141a",
+                      "surface-container-highest": "#2f353c",
+                      "secondary": "#f0c03e",
+                      "on-tertiary-fixed-variant": "#3a28c0",
+                      "inverse-primary": "#595c7b",
+                      "primary": "#c1c4e8",
+                      "surface-dim": "#0e141a",
+                      "tertiary-container": "#0a0049",
+                      "tertiary-fixed-dim": "#c4c0ff",
+                      "surface-variant": "#2f353c",
+                      "outline": "#919098",
+                      "on-surface-variant": "#c7c5ce",
+                      "surface-container": "#1a2026",
+                      "on-background": "#dde3eb",
+                      "surface-container-lowest": "#080f14",
+                      "primary-container": "#0a0e29",
+                      "secondary-fixed-dim": "#f0c03e",
+                      "error": "#ffb4ab",
+                      "on-secondary-fixed": "#251a00"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "stack-sm": "8px",
+                      "stack-lg": "32px",
+                      "gutter": "24px",
+                      "container-max": "1200px",
+                      "margin-mobile": "16px",
+                      "stack-md": "16px"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "Work Sans"
+                      ],
+                      "body-lg": [
+                              "Work Sans"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "label-caps": [
+                              "Space Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "label-caps": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .clip-diamond {
+            clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+        }
+        
+        .gold-glow {
+            box-shadow: inset 0 0 15px rgba(240,192,62,0.4), 0 0 20px rgba(240,192,62,0.1);
+        }
+        
+        .purple-glow {
+            box-shadow: inset 0 0 15px rgba(114,104,249,0.4), 0 0 20px rgba(114,104,249,0.1);
+        }
+        
+        .glass-panel {
+            background: rgba(14, 20, 26, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(240,192,62,0.3);
+        }
+        
+        .glass-panel-active {
+            background: rgba(10, 14, 41, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(240,192,62,0.8);
+            box-shadow: inset 0 0 30px rgba(240,192,62,0.15), 0 0 40px rgba(240,192,62,0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden h-screen flex">
+<!-- Background Shader -->
+<div class="fixed inset-0 z-0 pointer-events-none">
+
+</div>
+<!-- SideNavBar (from JSON) -->
+<nav class="fixed left-0 top-0 h-full w-64 z-40 flex flex-col h-full pt-24 bg-surface-container-low/95 dark:bg-surface-container-low/95 backdrop-blur-2xl border-r border-secondary/20 shadow-[inset_0_0_20px_rgba(196,192,255,0.05)]">
+<div class="px-6 mb-12">
+<h1 class="text-secondary font-display-lg font-display-lg text-4xl mb-1">CONTROL ROOM</h1>
+<p class="text-on-surface-variant font-label-caps text-label-caps">Live Broadcast Mode</p>
+</div>
+<ul class="flex flex-col gap-2 flex-grow">
+<li>
+<a class="flex items-center gap-4 bg-secondary/10 text-secondary border-l-4 border-secondary px-6 py-4 shadow-[0_0_15px_rgba(240,192,62,0.2)] font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">quiz</span>
+                    Rounds &amp; Questions
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group-hover:translate-x-1 transition-transform duration-200 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">groups</span>
+                    Candidates
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group-hover:translate-x-1 transition-transform duration-200 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">sensors</span>
+                    Live Control
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group-hover:translate-x-1 transition-transform duration-200 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</li>
+</ul>
+<div class="px-6 py-8 border-t border-outline-variant/20 mt-auto">
+<button class="w-full bg-error text-on-error font-label-caps text-label-caps py-3 clip-diamond hover:bg-error-container hover:text-on-error-container transition-colors shadow-[0_0_15px_rgba(255,180,171,0.3)]">GO LIVE</button>
+</div>
+<div class="flex flex-col gap-2 pb-6">
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-3 hover:text-secondary transition-colors font-label-caps text-label-caps text-xs" href="#">
+<span class="material-symbols-outlined text-sm">help</span>
+                Help Center
+            </a>
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-3 hover:text-secondary transition-colors font-label-caps text-label-caps text-xs" href="#">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                System Logs
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 h-full overflow-y-auto relative z-10 px-margin-desktop py-12 scroll-smooth">
+<div class="max-w-[container-max] mx-auto flex flex-col gap-stack-lg">
+<!-- Header -->
+<div class="flex justify-between items-end pb-4 border-b border-secondary/20">
+<h2 class="font-display-lg text-display-lg text-secondary tracking-tighter drop-shadow-[0_0_15px_rgba(240,192,62,0.4)]">ROUNDS &amp; QUESTIONS</h2>
+<button class="clip-diamond bg-secondary/10 border border-secondary text-secondary px-8 py-3 font-label-caps text-label-caps flex items-center gap-2 hover:bg-secondary/20 hover:shadow-[0_0_20px_rgba(240,192,62,0.3)] transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+                    ADD ROUND
+                </button>
+</div>
+<!-- Rounds Grid/List -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-gutter items-start">
+<!-- Expanded Round Detail (General Knowledge) -->
+<div class="xl:col-span-2 glass-panel-active rounded-lg flex flex-col overflow-hidden relative">
+<!-- Glow Header -->
+<div class="p-6 border-b border-secondary/30 flex justify-between items-center bg-primary-container/40">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<h3 class="font-headline-md text-headline-md text-secondary">General Knowledge</h3>
+<span class="bg-primary-container text-primary text-xs px-2 py-1 rounded border border-primary/30 font-label-caps tracking-widest shadow-[inset_0_0_10px_rgba(193,196,232,0.2)]">MCQ MODE</span>
+</div>
+<p class="text-on-surface-variant text-sm font-body-md">Round 1 • 12 Active Questions</p>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-secondary hover:bg-secondary/10 rounded transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</div>
+</div>
+<!-- Question List Table -->
+<div class="p-0 overflow-y-auto max-h-[600px]">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/30 text-on-surface-variant font-label-caps text-xs">
+<th class="p-4 font-normal">#</th>
+<th class="p-4 font-normal w-3/5">QUESTION</th>
+<th class="p-4 font-normal">DIFFICULTY</th>
+<th class="p-4 font-normal text-right">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="font-body-md">
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors group">
+<td class="p-4 text-on-surface-variant">1</td>
+<td class="p-4 text-on-surface truncate max-w-xs">What is the capital of France?</td>
+<td class="p-4"><span class="text-tertiary">Easy</span></td>
+<td class="p-4 text-right">
+<button class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-all p-1"><span class="material-symbols-outlined text-sm">edit</span></button>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors group bg-secondary/5 border-l-2 border-l-secondary">
+<td class="p-4 text-secondary font-bold">2</td>
+<td class="p-4 text-on-surface truncate max-w-xs">Who wrote 'Romeo and Juliet'?</td>
+<td class="p-4"><span class="text-tertiary">Easy</span></td>
+<td class="p-4 text-right">
+<button class="text-secondary p-1"><span class="material-symbols-outlined text-sm">edit</span></button>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors group">
+<td class="p-4 text-on-surface-variant">3</td>
+<td class="p-4 text-on-surface truncate max-w-xs">What is the chemical symbol for Gold?</td>
+<td class="p-4"><span class="text-secondary">Medium</span></td>
+<td class="p-4 text-right">
+<button class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-all p-1"><span class="material-symbols-outlined text-sm">edit</span></button>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors group">
+<td class="p-4 text-on-surface-variant">4</td>
+<td class="p-4 text-on-surface truncate max-w-xs">In what year did the Titanic sink?</td>
+<td class="p-4"><span class="text-secondary">Medium</span></td>
+<td class="p-4 text-right">
+<button class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-all p-1"><span class="material-symbols-outlined text-sm">edit</span></button>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors group">
+<td class="p-4 text-on-surface-variant">5</td>
+<td class="p-4 text-on-surface truncate max-w-xs">What is the largest planet in our solar system?</td>
+<td class="p-4"><span class="text-error">Hard</span></td>
+<td class="p-4 text-right">
+<button class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-all p-1"><span class="material-symbols-outlined text-sm">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-secondary/20 flex justify-center bg-primary-container/20">
+<button class="text-secondary font-label-caps text-xs hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm">add</span> ADD QUESTION TO ROUND</button>
+</div>
+</div>
+<!-- Inactive Rounds Column -->
+<div class="flex flex-col gap-stack-md">
+<!-- Round Card 2 -->
+<div class="glass-panel rounded-lg p-5 flex flex-col gap-4 hover:border-secondary/50 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-md text-lg text-on-surface group-hover:text-secondary transition-colors">Science &amp; Tech</h3>
+<p class="text-on-surface-variant text-sm mt-1">Round 2 • 8 Questions</p>
+</div>
+<button class="text-outline hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<span class="bg-tertiary-container/50 text-tertiary text-[10px] px-2 py-1 rounded border border-tertiary/30 font-label-caps tracking-widest">OPEN ENDED</span>
+</div>
+</div>
+<!-- Round Card 3 -->
+<div class="glass-panel rounded-lg p-5 flex flex-col gap-4 hover:border-secondary/50 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-md text-lg text-on-surface group-hover:text-secondary transition-colors">Pop Culture</h3>
+<p class="text-on-surface-variant text-sm mt-1">Round 3 • 15 Questions</p>
+</div>
+<button class="text-outline hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<span class="bg-primary-container text-primary text-[10px] px-2 py-1 rounded border border-primary/30 font-label-caps tracking-widest">MCQ MODE</span>
+</div>
+</div>
+<!-- Round Card 4 -->
+<div class="glass-panel border-dashed border-outline-variant/50 rounded-lg p-5 flex flex-col items-center justify-center gap-2 hover:border-secondary/50 hover:bg-secondary/5 transition-colors cursor-pointer min-h-[120px]">
+<span class="material-symbols-outlined text-outline text-3xl">add_circle</span>
+<span class="font-label-caps text-outline text-xs tracking-widest">NEW ROUND</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Overlay Modal for Editing Question -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-margin-mobile md:p-margin-desktop">
+<div class="glass-panel-active rounded-xl w-full max-w-3xl flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-secondary/50 overflow-hidden relative">
+<!-- Modal Header -->
+<div class="px-6 py-4 border-b border-secondary/30 flex justify-between items-center bg-surface-container/50">
+<h3 class="font-headline-md text-secondary flex items-center gap-2">
+<span class="material-symbols-outlined">edit_square</span> Edit Question #2
+                </h3>
+<button class="text-outline hover:text-on-surface transition-colors"><span class="material-symbols-outlined">close</span></button>
+</div>
+<!-- Modal Body -->
+<div class="p-6 flex flex-col gap-6 overflow-y-auto max-h-[716px]">
+<!-- Question Text -->
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-xs text-secondary tracking-widest">QUESTION TEXT</label>
+<textarea class="w-full bg-surface-container-highest border-b border-tertiary focus:border-secondary focus:ring-0 text-on-surface font-headline-md text-xl p-4 rounded-t resize-none h-24 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] transition-colors focus:gold-glow" placeholder="Enter question...">Who wrote 'Romeo and Juliet'?</textarea>
+</div>
+<!-- Media Dropzone -->
+<div class="border-2 border-dashed border-secondary/40 rounded-lg p-8 flex flex-col items-center justify-center gap-3 bg-secondary/5 hover:bg-secondary/10 hover:border-secondary transition-all cursor-pointer gold-glow">
+<span class="material-symbols-outlined text-4xl text-secondary opacity-80">image</span>
+<p class="font-body-md text-on-surface-variant text-center">Drag &amp; drop media here<br/><span class="text-xs text-outline">or click to browse (Optional)</span></p>
+</div>
+<!-- MCQ Options Grid -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-end">
+<label class="font-label-caps text-xs text-secondary tracking-widest">MULTIPLE CHOICE OPTIONS</label>
+<span class="text-xs text-outline-variant font-body-md">Mark correct answer</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Option A -->
+<div class="relative group">
+<input class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary bg-surface border-outline focus:ring-secondary focus:ring-offset-surface" name="correct_answer" type="radio"/>
+<input class="w-full bg-surface-container border border-outline/30 focus:border-secondary focus:ring-0 text-on-surface font-body-lg p-3 pl-12 clip-diamond shadow-[inset_0_0_10px_rgba(0,0,0,0.3)] hover:border-secondary/50 transition-colors" type="text" value="Charles Dickens"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 font-display-lg text-lg text-outline-variant opacity-50 pointer-events-none">A</span>
+</div>
+<!-- Option B (Correct) -->
+<div class="relative group">
+<input checked="" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary bg-surface border-secondary focus:ring-secondary focus:ring-offset-surface" name="correct_answer" type="radio"/>
+<input class="w-full bg-surface-container border border-secondary text-on-surface font-body-lg p-3 pl-12 clip-diamond gold-glow" type="text" value="William Shakespeare"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 font-display-lg text-lg text-secondary opacity-50 pointer-events-none">B</span>
+</div>
+<!-- Option C -->
+<div class="relative group">
+<input class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary bg-surface border-outline focus:ring-secondary focus:ring-offset-surface" name="correct_answer" type="radio"/>
+<input class="w-full bg-surface-container border border-outline/30 focus:border-secondary focus:ring-0 text-on-surface font-body-lg p-3 pl-12 clip-diamond shadow-[inset_0_0_10px_rgba(0,0,0,0.3)] hover:border-secondary/50 transition-colors" type="text" value="Jane Austen"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 font-display-lg text-lg text-outline-variant opacity-50 pointer-events-none">C</span>
+</div>
+<!-- Option D -->
+<div class="relative group">
+<input class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary bg-surface border-outline focus:ring-secondary focus:ring-offset-surface" name="correct_answer" type="radio"/>
+<input class="w-full bg-surface-container border border-outline/30 focus:border-secondary focus:ring-0 text-on-surface font-body-lg p-3 pl-12 clip-diamond shadow-[inset_0_0_10px_rgba(0,0,0,0.3)] hover:border-secondary/50 transition-colors" type="text" value="Mark Twain"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 font-display-lg text-lg text-outline-variant opacity-50 pointer-events-none">D</span>
+</div>
+</div>
+</div>
+<!-- Meta Settings -->
+<div class="grid grid-cols-2 gap-6 pt-4 border-t border-outline-variant/20">
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-xs text-outline tracking-widest">POINTS VALUE</label>
+<div class="flex items-center gap-3">
+<input class="w-24 bg-surface-container border-b border-outline focus:border-secondary focus:ring-0 text-on-surface font-headline-md p-2 rounded-t text-center" type="number" value="100"/>
+<label class="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
+<input checked="" class="rounded text-secondary focus:ring-secondary bg-surface border-outline" type="checkbox"/>
+                                 Use Round Default
+                             </label>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-xs text-outline tracking-widest">TIME LIMIT (SEC)</label>
+<div class="flex items-center gap-3">
+<input class="w-24 bg-surface-container border-b border-outline focus:border-secondary focus:ring-0 text-on-surface font-headline-md p-2 rounded-t text-center" type="number" value="30"/>
+<label class="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
+<input checked="" class="rounded text-secondary focus:ring-secondary bg-surface border-outline" type="checkbox"/>
+                                Use Round Default
+                            </label>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer Actions -->
+<div class="px-6 py-5 border-t border-secondary/30 bg-surface-container-highest flex justify-end gap-4">
+<button class="px-6 py-2 font-label-caps text-sm text-on-surface-variant hover:text-on-surface transition-colors">CANCEL</button>
+<button class="px-8 py-2 font-label-caps text-sm bg-secondary text-on-secondary clip-diamond hover:bg-secondary-fixed transition-colors shadow-[0_0_20px_rgba(240,192,62,0.5)] flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">save</span>
+                    SAVE QUESTION
+                </button>
+</div>
+</div>
+</div>
+</body></html>

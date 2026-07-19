@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Invalid Link - THE HOT SEAT</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#595c7b",
+                    "tertiary": "#c4c0ff",
+                    "on-secondary-container": "#3c2c00",
+                    "error": "#ffb4ab",
+                    "surface-container-low": "#161c22",
+                    "secondary-fixed": "#ffdf95",
+                    "error-container": "#93000a",
+                    "tertiary-fixed-dim": "#c4c0ff",
+                    "surface-container": "#1a2026",
+                    "secondary-fixed-dim": "#f0c03e",
+                    "surface-container-highest": "#2f353c",
+                    "on-secondary-fixed": "#251a00",
+                    "surface-container-high": "#242b31",
+                    "on-primary-container": "#777a9b",
+                    "surface-tint": "#c1c4e8",
+                    "secondary": "#f0c03e",
+                    "tertiary-container": "#0a0049",
+                    "primary-container": "#0a0e29",
+                    "on-secondary-fixed-variant": "#594400",
+                    "on-tertiary": "#2300a3",
+                    "on-error": "#690005",
+                    "surface-bright": "#333a40",
+                    "surface": "#0e141a",
+                    "primary": "#c1c4e8",
+                    "inverse-on-surface": "#2b3137",
+                    "on-primary-fixed-variant": "#414562",
+                    "surface-container-lowest": "#080f14",
+                    "tertiary-fixed": "#e3dfff",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#3a28c0",
+                    "on-tertiary-fixed": "#130068",
+                    "surface-variant": "#2f353c",
+                    "on-primary": "#2b2e4b",
+                    "inverse-surface": "#dde3eb",
+                    "on-surface": "#dde3eb",
+                    "on-secondary": "#3e2e00",
+                    "primary-fixed-dim": "#c1c4e8",
+                    "primary-fixed": "#dfe0ff",
+                    "on-primary-fixed": "#151935",
+                    "outline-variant": "#46464d",
+                    "on-surface-variant": "#c7c5ce",
+                    "background": "#0e141a",
+                    "outline": "#919098",
+                    "on-tertiary-container": "#7268f9",
+                    "surface-dim": "#0e141a",
+                    "secondary-container": "#ba9000",
+                    "on-background": "#dde3eb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "stack-md": "16px",
+                    "margin-desktop": "64px",
+                    "stack-lg": "32px",
+                    "container-max": "1200px",
+                    "stack-sm": "8px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": [
+                            "Work Sans"
+                    ],
+                    "label-caps": [
+                            "Space Grotesk"
+                    ],
+                    "display-lg": [
+                            "Playfair Display"
+                    ],
+                    "display-lg-mobile": [
+                            "Playfair Display"
+                    ],
+                    "headline-md": [
+                            "Playfair Display"
+                    ],
+                    "body-md": [
+                            "Work Sans"
+                    ]
+            },
+            "fontSize": {
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-caps": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "0.1em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "display-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        /* Base Styles & Glow Utilities */
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            overflow-x: hidden;
+        }
+        
+        .bg-radial-cinematic {
+            background: radial-gradient(circle at center, #1a2026 0%, #080f14 100%);
+        }
+
+        .glass-panel {
+            background: rgba(22, 28, 34, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid theme('colors.secondary-fixed-dim');
+            box-shadow: inset 0 0 20px rgba(240, 192, 62, 0.1), 0 0 30px rgba(240, 192, 62, 0.15);
+        }
+        
+        .text-glow-secondary {
+            text-shadow: 0 0 10px rgba(240, 192, 62, 0.5);
+        }
+        
+        .pulse-slow {
+            animation: pulse-op 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-op {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Custom Diamond Shape for decorative elements */
+        .clip-diamond {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-radial-cinematic flex flex-col items-center justify-center relative w-full overflow-hidden">
+<!-- Atmospheric Background Shader -->
+<div class="absolute inset-0 z-0 pointer-events-none opacity-40">
+
+</div>
+<!-- Central Error Card Canvas -->
+<main aria-labelledby="error-headline" class="relative z-10 w-full max-w-md px-margin-mobile md:px-0 flex flex-col items-center justify-center">
+<!-- Glassmorphism Card -->
+<article class="glass-panel w-full rounded-xl p-stack-lg flex flex-col items-center text-center relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_40px_rgba(240,192,62,0.25)] group">
+<!-- Subtle Top Light Reflection -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary/50 to-transparent opacity-70"></div>
+<!-- Icon Container -->
+<div class="mb-stack-lg relative">
+<div class="absolute inset-0 bg-secondary blur-xl opacity-30 rounded-full pulse-slow scale-150"></div>
+<div class="w-20 h-20 rounded-full border border-secondary flex items-center justify-center bg-surface-container relative z-10 shadow-[inset_0_0_15px_rgba(240,192,62,0.3)]">
+<span aria-hidden="true" class="material-symbols-outlined text-secondary text-5xl" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+<!-- Content Stack -->
+<header class="flex flex-col gap-stack-sm w-full">
+<!-- Headline -->
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-secondary text-glow-secondary m-0" id="error-headline">
+                    This link isn't valid
+                </h1>
+<!-- Divider Line -->
+<div class="h-px w-24 bg-gradient-to-r from-transparent via-secondary/40 to-transparent mx-auto my-stack-sm"></div>
+<!-- Subtext -->
+<p class="font-body-lg text-body-lg text-on-surface m-0 opacity-90 max-w-xs mx-auto">
+                    Please check with your Quiz Master to get a new link.
+                </p>
+</header>
+<!-- Bottom Edge Decor -->
+<div class="absolute bottom-0 left-0 w-full flex justify-center translate-y-1/2">
+<div class="w-2 h-2 bg-secondary clip-diamond opacity-50 shadow-[0_0_10px_theme('colors.secondary')]"></div>
+</div>
+</article>
+<!-- Brand Footer / Aesthetic Anchor -->
+<footer class="mt-stack-lg opacity-50 text-center">
+<p class="font-label-caps text-label-caps text-outline tracking-[0.2em]">CINEMATIC BROADCAST SYSTEMS</p>
+</footer>
+</main>
+</body></html>

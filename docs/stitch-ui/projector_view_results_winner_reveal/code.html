@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Hot Seat - Results Reveal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#414562",
+                      "secondary": "#f0c03e",
+                      "error": "#ffb4ab",
+                      "surface-variant": "#2f353c",
+                      "surface-dim": "#0e141a",
+                      "tertiary": "#c4c0ff",
+                      "tertiary-container": "#0a0049",
+                      "primary-fixed-dim": "#c1c4e8",
+                      "on-secondary-fixed-variant": "#594400",
+                      "on-tertiary": "#2300a3",
+                      "surface-container-lowest": "#080f14",
+                      "surface-container-high": "#242b31",
+                      "secondary-container": "#ba9000",
+                      "on-secondary": "#3e2e00",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-highest": "#2f353c",
+                      "on-primary-fixed": "#151935",
+                      "surface-bright": "#333a40",
+                      "secondary-fixed-dim": "#f0c03e",
+                      "error-container": "#93000a",
+                      "inverse-on-surface": "#2b3137",
+                      "inverse-primary": "#595c7b",
+                      "on-primary": "#2b2e4b",
+                      "inverse-surface": "#dde3eb",
+                      "outline-variant": "#46464d",
+                      "tertiary-fixed-dim": "#c4c0ff",
+                      "primary-fixed": "#dfe0ff",
+                      "secondary-fixed": "#ffdf95",
+                      "on-tertiary-container": "#7268f9",
+                      "on-surface": "#dde3eb",
+                      "on-tertiary-fixed-variant": "#3a28c0",
+                      "surface": "#0e141a",
+                      "on-surface-variant": "#c7c5ce",
+                      "surface-tint": "#c1c4e8",
+                      "on-error": "#690005",
+                      "outline": "#919098",
+                      "on-secondary-fixed": "#251a00",
+                      "surface-container-low": "#161c22",
+                      "primary": "#c1c4e8",
+                      "on-primary-container": "#777a9b",
+                      "background": "#0e141a",
+                      "surface-container": "#1a2026",
+                      "on-secondary-container": "#3c2c00",
+                      "on-background": "#dde3eb",
+                      "primary-container": "#0a0e29",
+                      "on-tertiary-fixed": "#130068",
+                      "tertiary-fixed": "#e3dfff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "stack-md": "16px",
+                      "gutter": "24px",
+                      "stack-lg": "32px",
+                      "container-max": "1200px",
+                      "stack-sm": "8px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "Work Sans"
+                      ],
+                      "label-caps": [
+                              "Space Grotesk"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "Work Sans"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "900"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .diamond-clip {
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+        }
+        .diamond-inner {
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+        }
+        
+        .pulse-glow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.8), 0 0 20px rgba(240, 192, 62, 0.4);
+            }
+            50% {
+                box-shadow: inset 0 0 25px rgba(240, 192, 62, 1), 0 0 40px rgba(240, 192, 62, 0.7);
+            }
+        }
+        
+        .winner-bg {
+            background: radial-gradient(circle at center, rgba(240, 192, 62, 0.15) 0%, transparent 70%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen relative overflow-hidden flex flex-col items-center pt-16 md:pt-margin-desktop">
+<!-- Background Shader -->
+
+<!-- Top Section: Correct Answer -->
+<section class="w-full max-w-container-max px-margin-mobile md:px-margin-desktop flex flex-col items-center mb-16 relative z-10">
+<p class="font-label-caps text-label-caps text-secondary mb-4 tracking-[0.2em] uppercase">Correct Answer</p>
+<!-- Diamond Container -->
+<div class="relative w-full md:w-3/4 max-w-3xl h-32 md:h-40 p-[2px] bg-secondary diamond-clip shadow-[0_0_40px_rgba(240,192,62,0.4)]">
+<div class="w-full h-full bg-surface-container-lowest/90 backdrop-blur-[20px] diamond-inner flex items-center justify-center gap-6 relative overflow-hidden pulse-glow">
+<span class="material-symbols-outlined text-[48px] text-[#4ade80] drop-shadow-[0_0_15px_rgba(74,222,128,0.8)]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-secondary drop-shadow-[0_0_15px_rgba(240,192,62,0.6)]">
+                    A: Mars
+                </h1>
+</div>
+</div>
+</section>
+<!-- Main Section: Ranked Candidates -->
+<section class="w-full max-w-container-max px-margin-mobile md:px-margin-desktop flex flex-col items-center pb-24 z-10">
+<!-- Winner Card -->
+<div class="w-full max-w-4xl mb-stack-lg relative group">
+<!-- Glow Effect -->
+<div class="absolute -inset-1 bg-gradient-to-r from-secondary/0 via-secondary to-secondary/0 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-1000"></div>
+<div class="relative w-full bg-surface-container-low/95 backdrop-blur-[20px] border border-secondary rounded-xl p-8 flex items-center gap-8 shadow-[inset_0_0_30px_rgba(240,192,62,0.2)] winner-bg overflow-hidden">
+<!-- Rank/Trophy -->
+<div class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-full bg-secondary/20 border border-secondary/50 shadow-[0_0_15px_rgba(240,192,62,0.3)]">
+<span class="material-symbols-outlined text-[32px] text-secondary" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+</div>
+<!-- Avatar -->
+<div class="flex-shrink-0 w-20 h-20 rounded-full border-2 border-secondary overflow-hidden shadow-[0_0_20px_rgba(240,192,62,0.4)]">
+<img class="w-full h-full object-cover" data-alt="A cinematic, high-contrast portrait of a confident young woman with a slight smile, illuminated by dramatic rim lighting in gold and deep indigo. The background is completely dark, suggesting a theatrical stage setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaMEBQSPjiBYjI_fsi5CR2AEBlqPmnNex9gbSzLi_r6oDi9N2LMEsrDxb_Db-NhRvCCRFJrBcQrz9sdT3uMzkVQqqi6en_gTLvrw-sN_8-CwQlyeqbLu6mh1iPyYLYxdlcXiJ6LAwE6bf9zx29s6RwNN1pac6ZLran48whWPuRg5JBH9C3slTA1aP7uHvxhZ1TXqfvN9P6IqjlSlHjCo56zZhNMUHLJMo4F7iG7_AEcR75uQ1cTqfp3DXSYV6U-bnlaO5TMQftAMw3"/>
+</div>
+<!-- Info -->
+<div class="flex-grow">
+<p class="font-label-caps text-label-caps text-secondary mb-1">Fastest Correct</p>
+<h2 class="font-headline-md text-headline-md text-on-surface">Anya Sharma</h2>
+</div>
+<!-- Time -->
+<div class="flex-shrink-0 text-right">
+<p class="font-display-lg text-[40px] text-secondary font-black drop-shadow-[0_0_10px_rgba(240,192,62,0.5)]">2.14s</p>
+</div>
+</div>
+</div>
+<!-- Other Candidates Table -->
+<div class="w-full max-w-4xl flex flex-col gap-4">
+<!-- Row: Correct -->
+<div class="w-full bg-surface-container/80 backdrop-blur-[10px] border border-secondary/30 rounded-lg p-4 flex items-center gap-6 shadow-[inset_0_0_15px_rgba(240,192,62,0.05)]">
+<div class="w-8 text-center font-label-caps text-label-caps text-on-surface-variant">2</div>
+<div class="w-12 h-12 rounded-full border border-secondary/50 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A cinematic, high-contrast portrait of a focused young man, illuminated by dramatic rim lighting in gold and deep indigo. The background is completely dark, suggesting a theatrical stage setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5yM8gA2UDJGaBSEuASZcnWrMMKBxdn65Yqyo8NqbcsQpaK4VpsmqMcXpc8T6L383oLkmIN1qtI7GVqZCpsfm3jrpNbaLDvHt70GGMQXYJEkW56mzg82pWcZNuKZr3n8RhwTBo6ShBVel8wE0a0hL0emFxjVtsjb-37L-3CrxCZsAfktmbooTmsTDdueZpWXpdeWx4wkAf-baIsmh0nXcLJkWKfu7_xtQ-Em60Q7DMODeXPEG9-cET5Kf87PGPVcMlfxEvuIWQFEop"/>
+</div>
+<div class="flex-grow font-headline-md text-[20px] text-on-surface">David Chen</div>
+<div class="font-body-lg text-body-lg text-secondary font-bold">3.42s</div>
+</div>
+<!-- Row: Incorrect -->
+<div class="w-full bg-surface-container-lowest/80 backdrop-blur-[10px] border border-outline-variant/30 rounded-lg p-4 flex items-center gap-6 opacity-70 grayscale-[50%]">
+<div class="w-8 text-center font-label-caps text-label-caps text-outline">3</div>
+<div class="w-12 h-12 rounded-full border border-outline/50 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A cinematic, high-contrast portrait of a thoughtful mature woman, illuminated by dramatic rim lighting in silver and deep indigo. The background is completely dark, suggesting a theatrical stage setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAca53mdVjWxLOKwUsP4NTgSVyIRyVJIiGVkCPVuHPtWLOKamOAloUMSSiPkj789Ln2pf8zKJKWQ1qvYrebM1C3k7JbkqU08xFK4kahXIdfngbJ5o1SC3kYgqck3BL8axbDz2sSKLo4JIKuDcTx0ksL6PMPBClaqz3fir60DaXiEggRgPVryCmYYcQ_-H_8rMadal9xER-2hdo1rYp1IPTa4MnfJwoUe4972eJ-yDOUsDg-lRcAyFBO5guZ9AcCby83pKlZ7JIoeTq2"/>
+</div>
+<div class="flex-grow font-headline-md text-[20px] text-on-surface-variant">Sarah Jenkins</div>
+<div class="font-body-lg text-body-lg text-error/80">4.18s</div>
+</div>
+<!-- Row: Correct but Slow -->
+<div class="w-full bg-surface-container/80 backdrop-blur-[10px] border border-secondary/30 rounded-lg p-4 flex items-center gap-6 shadow-[inset_0_0_15px_rgba(240,192,62,0.05)]">
+<div class="w-8 text-center font-label-caps text-label-caps text-on-surface-variant">4</div>
+<div class="w-12 h-12 rounded-full border border-secondary/50 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A cinematic, high-contrast portrait of a surprised young man, illuminated by dramatic rim lighting in gold and deep indigo. The background is completely dark, suggesting a theatrical stage setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_L1r23bDsMuOx_oqCsdX7U7fS9FlEj7tVVLnIRQ8FtB52b2SFL_riNjb9BAUYbo03bTvaTsMedoZC9QwBmsomdv3anJhRrZmzyZAcv3IvDYu4bIGUl9K-hzd6S7gKstGOmM--9csnn47XXSyVow66aTpILkCERTND3VLkyES4QohLpmioKIwc_dUyHN5U3NHbpS9IrH9qrDCDPVpPZ-BCh0pUPwEgtNdCC0BZRZAWFgcvKIOTRxrGTZm3thIrDbCQBoMdDTONqadT"/>
+</div>
+<div class="flex-grow font-headline-md text-[20px] text-on-surface">Marcus Thorne</div>
+<div class="font-body-lg text-body-lg text-secondary font-bold">5.10s</div>
+</div>
+<!-- Row: No Answer -->
+<div class="w-full bg-surface-container-lowest/50 backdrop-blur-[10px] border border-outline-variant/10 rounded-lg p-4 flex items-center gap-6 opacity-50 grayscale">
+<div class="w-8 text-center font-label-caps text-label-caps text-outline-variant">-</div>
+<div class="w-12 h-12 rounded-full border border-outline-variant/50 overflow-hidden bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-outline-variant">person</span>
+</div>
+<div class="flex-grow font-headline-md text-[20px] text-outline">Elena Rodriguez</div>
+<div class="font-body-md text-body-md text-outline italic">No Answer</div>
+</div>
+</div>
+</section>
+</body></html>

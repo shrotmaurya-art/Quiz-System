@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Suspense Interlude</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#0a0e29",
+                    "inverse-primary": "#595c7b",
+                    "outline": "#919098",
+                    "on-secondary-fixed": "#251a00",
+                    "background": "#0e141a",
+                    "tertiary-fixed": "#e3dfff",
+                    "surface-container-lowest": "#080f14",
+                    "surface-variant": "#2f353c",
+                    "inverse-surface": "#dde3eb",
+                    "on-primary-container": "#777a9b",
+                    "on-error-container": "#ffdad6",
+                    "on-primary": "#2b2e4b",
+                    "inverse-on-surface": "#2b3137",
+                    "error-container": "#93000a",
+                    "on-surface-variant": "#c7c5ce",
+                    "surface-tint": "#c1c4e8",
+                    "outline-variant": "#46464d",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed": "#130068",
+                    "surface-container-highest": "#2f353c",
+                    "secondary-fixed-dim": "#f0c03e",
+                    "secondary-fixed": "#ffdf95",
+                    "secondary-container": "#ba9000",
+                    "surface-container": "#1a2026",
+                    "secondary": "#f0c03e",
+                    "primary-fixed": "#dfe0ff",
+                    "on-error": "#690005",
+                    "tertiary-fixed-dim": "#c4c0ff",
+                    "surface-container-high": "#242b31",
+                    "on-secondary-fixed-variant": "#594400",
+                    "on-secondary-container": "#3c2c00",
+                    "on-primary-fixed": "#151935",
+                    "on-surface": "#dde3eb",
+                    "surface-dim": "#0e141a",
+                    "primary": "#c1c4e8",
+                    "on-tertiary-fixed-variant": "#3a28c0",
+                    "surface-container-low": "#161c22",
+                    "surface": "#0e141a",
+                    "primary-fixed-dim": "#c1c4e8",
+                    "on-background": "#dde3eb",
+                    "on-secondary": "#3e2e00",
+                    "surface-bright": "#333a40",
+                    "tertiary-container": "#0a0049",
+                    "on-tertiary": "#2300a3",
+                    "on-primary-fixed-variant": "#414562",
+                    "tertiary": "#c4c0ff",
+                    "on-tertiary-container": "#7268f9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "stack-md": "16px",
+                    "container-max": "1200px",
+                    "stack-lg": "32px",
+                    "margin-desktop": "64px"
+            },
+            "fontFamily": {
+                    "display-lg": [
+                            "Playfair Display"
+                    ],
+                    "body-md": [
+                            "Work Sans"
+                    ],
+                    "label-caps": [
+                            "Space Grotesk"
+                    ],
+                    "headline-md": [
+                            "Playfair Display"
+                    ],
+                    "display-lg-mobile": [
+                            "Playfair Display"
+                    ],
+                    "body-lg": [
+                            "Work Sans"
+                    ]
+            },
+            "fontSize": {
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-caps": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "0.1em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        @keyframes pulse-glow {
+            0%, 100% {
+                text-shadow: 0 0 20px rgba(240, 192, 62, 0.5), 0 0 40px rgba(240, 192, 62, 0.3);
+                filter: drop-shadow(0 0 15px rgba(240, 192, 62, 0.6));
+                transform: scale(1);
+            }
+            50% {
+                text-shadow: 0 0 40px rgba(240, 192, 62, 0.9), 0 0 80px rgba(240, 192, 62, 0.7);
+                filter: drop-shadow(0 0 30px rgba(240, 192, 62, 0.9));
+                transform: scale(1.05);
+            }
+        }
+
+        .animate-suspense-pulse {
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+        
+        .luminous-text {
+            background: linear-gradient(to bottom, #ffdf95, #f0c03e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background overflow-hidden font-body-md h-screen w-screen flex flex-col justify-center items-center relative">
+<!-- Background Shader -->
+
+<!-- Deep Radial Vignette Overlay for Stage Focus -->
+<div class="absolute inset-0 bg-radial-gradient from-transparent via-background/50 to-background z-0 pointer-events-none" style="background: radial-gradient(circle at center, transparent 0%, rgba(14, 20, 26, 0.8) 70%, #0e141a 100%);"></div>
+<!-- Central Focus Container -->
+<main class="relative z-10 flex flex-col items-center justify-center text-center p-gutter max-w-container-max mx-auto h-full w-full">
+<!-- Countdown -->
+<div class="mb-stack-lg animate-suspense-pulse">
+<span class="font-display-lg text-[120px] leading-none tracking-tighter luminous-text drop-shadow-[0_0_30px_rgba(240,192,62,0.8)]">
+                3
+            </span>
+</div>
+<!-- Ornate Padlock Icon -->
+<div class="mb-stack-lg animate-suspense-pulse">
+<span class="material-symbols-outlined text-[150px] text-secondary drop-shadow-[0_0_50px_rgba(240,192,62,1)]" style="font-variation-settings: 'FILL' 1, 'wght' 200;">
+                lock
+            </span>
+</div>
+<!-- Theatrical Text -->
+<div class="animate-suspense-pulse" style="animation-delay: 0.2s;">
+<h1 class="font-display-lg text-display-lg tracking-wide uppercase text-secondary drop-shadow-[0_0_20px_rgba(240,192,62,0.6)]">
+                Answer Locking In...
+            </h1>
+</div>
+</main>
+<!-- Interactive Elements (Optional, for demo purposes) -->
+<script>
+        // Simple countdown logic for visual effect, though requirement asked for static "3" pulsing.
+        // Adding subtle interaction if a user clicks anywhere to simulate a lock.
+        document.body.addEventListener('click', () => {
+            const countdownEl = document.querySelector('.luminous-text');
+            let count = parseInt(countdownEl.innerText);
+            if(count > 1) {
+                countdownEl.innerText = count - 1;
+            } else if (count === 1) {
+                countdownEl.innerText = "LOCKED";
+                countdownEl.classList.remove('text-[120px]');
+                countdownEl.classList.add('text-[80px]', 'text-error');
+                countdownEl.style.background = 'linear-gradient(to bottom, #ffb4ab, #93000a)';
+                countdownEl.style.webkitBackgroundClip = 'text';
+                
+                const icon = document.querySelector('.material-symbols-outlined');
+                icon.innerText = 'lock_clock';
+                icon.classList.remove('text-secondary', 'drop-shadow-[0_0_50px_rgba(240,192,62,1)]');
+                icon.classList.add('text-error', 'drop-shadow-[0_0_50px_rgba(255,180,171,1)]');
+                
+                document.querySelector('h1').innerText = "FINAL ANSWER";
+                document.querySelector('h1').classList.remove('text-secondary');
+                document.querySelector('h1').classList.add('text-error');
+            }
+        });
+    </script>
+</body></html>

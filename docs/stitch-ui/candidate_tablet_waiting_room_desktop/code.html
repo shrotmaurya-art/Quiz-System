@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Candidate Waiting Room - The Hot Seat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#f0c03e",
+                        "on-primary-container": "#777a9b",
+                        "tertiary": "#c4c0ff",
+                        "surface-container-highest": "#2f353c",
+                        "primary-fixed-dim": "#c1c4e8",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#3c2c00",
+                        "on-surface": "#dde3eb",
+                        "on-secondary": "#3e2e00",
+                        "primary": "#c1c4e8",
+                        "on-secondary-fixed-variant": "#594400",
+                        "tertiary-fixed-dim": "#c4c0ff",
+                        "secondary": "#f0c03e",
+                        "on-background": "#dde3eb",
+                        "surface-container-high": "#242b31",
+                        "outline-variant": "#46464d",
+                        "surface-bright": "#333a40",
+                        "primary-container": "#0a0e29",
+                        "on-tertiary-fixed": "#130068",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#161c22",
+                        "on-tertiary": "#2300a3",
+                        "secondary-fixed": "#ffdf95",
+                        "on-error": "#690005",
+                        "on-surface-variant": "#c7c5ce",
+                        "primary-fixed": "#dfe0ff",
+                        "surface": "#0e141a",
+                        "on-tertiary-fixed-variant": "#3a28c0",
+                        "on-primary-fixed-variant": "#414562",
+                        "surface-container-lowest": "#080f14",
+                        "background": "#0e141a",
+                        "on-primary": "#2b2e4b",
+                        "on-primary-fixed": "#151935",
+                        "inverse-surface": "#dde3eb",
+                        "surface-container": "#1a2026",
+                        "error": "#ffb4ab",
+                        "tertiary-container": "#0a0049",
+                        "surface-dim": "#0e141a",
+                        "inverse-primary": "#595c7b",
+                        "surface-tint": "#c1c4e8",
+                        "secondary-container": "#ba9000",
+                        "inverse-on-surface": "#2b3137",
+                        "surface-variant": "#2f353c",
+                        "outline": "#919098",
+                        "tertiary-fixed": "#e3dfff",
+                        "on-tertiary-container": "#7268f9",
+                        "on-secondary-fixed": "#251a00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "container-max": "1200px",
+                        "margin-desktop": "64px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Space Grotesk"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["Work Sans"],
+                        "body-lg": ["Work Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "900" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "900" }]
+                    }
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .radial-bg {
+            background: radial-gradient(circle at center, rgba(35, 0, 163, 0.4) 0%, rgba(10, 14, 41, 0.9) 60%, #0e141a 100%);
+        }
+        .light-beams {
+            background: conic-gradient(from 0deg at 50% 50%, 
+                transparent 0deg, 
+                rgba(240, 192, 62, 0.05) 45deg, 
+                transparent 90deg, 
+                rgba(240, 192, 62, 0.05) 135deg, 
+                transparent 180deg, 
+                rgba(240, 192, 62, 0.05) 225deg, 
+                transparent 270deg, 
+                rgba(240, 192, 62, 0.05) 315deg, 
+                transparent 360deg);
+            animation: rotate-beams 60s linear infinite;
+        }
+        @keyframes rotate-beams {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .gold-glow {
+            box-shadow: 0 0 30px rgba(240, 192, 62, 0.5), inset 0 0 15px rgba(240, 192, 62, 0.3);
+        }
+        .pulse-text {
+            animation: pulse-opacity 2s ease-in-out infinite;
+        }
+        @keyframes pulse-opacity {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; text-shadow: 0 0 10px rgba(240, 192, 62, 0.4); }
+        }
+        
+        .sparkle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: sparkle-anim 3s ease-in-out infinite;
+        }
+        @keyframes sparkle-anim {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 0.8; transform: scale(1); box-shadow: 0 0 8px rgba(240, 192, 62, 0.8); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-hidden flex flex-col items-center justify-center relative">
+<!-- Background Elements -->
+<div class="absolute inset-0 radial-bg z-0 pointer-events-none"></div>
+<div class="absolute inset-[-50%] light-beams z-0 pointer-events-none opacity-50"></div>
+<!-- Sparkle Particles Container -->
+<div class="absolute inset-0 z-0 pointer-events-none overflow-hidden" id="sparkles-container">
+<!-- Sparkles injected via JS -->
+</div>
+<!-- Central Stage -->
+<main class="relative z-10 flex flex-col items-center justify-center w-full max-w-container-max px-gutter text-center">
+<!-- Spotlight Effect behind Avatar -->
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-secondary/10 rounded-full blur-[100px] z-0 pointer-events-none"></div>
+<!-- Avatar Container -->
+<div class="relative z-10 mb-stack-lg">
+<div class="w-48 h-48 md:w-64 md:h-64 rounded-full p-2 bg-gradient-to-br from-secondary to-tertiary-container gold-glow">
+<img alt="Candidate Avatar" class="w-full h-full rounded-full object-cover border-4 border-surface" data-alt="A striking portrait of a confident woman of Indian descent, positioned center stage in a dark, theatrical broadcast environment. She is illuminated by a warm, golden spotlight against a deep midnight-blue backdrop. Her expression is focused and determined. The high-contrast cinematic lighting highlights her features, evoking the dramatic tension of a premium quiz show. Luminous glows and subtle light beams surround her, enhancing the high-stakes, intellectual aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw19q7ySbw_ZbltTfy7A6RDr9aRLAk57okbtPDaTC5W0TR3NKhsaoo3Y9_pQE5oSs4H7sJK5I8bnvrMB1wS7WHWKAPdWcbt6Z7-vS8wPS5Coo7WO0SLVOaZafIXHx-EeGZZzbY8X_HkOd1B3gsr2L9M4qf7RogIlWCRgkrll_pEuBYves8XSnNisRvwIzUPu9OiBC2yH3bs7F6cPuYSF8AYx0ntzbw_JmNOi5-PiXjki-eO14L7QdtwzRuL6kVjwrXx7-NYcPq-hSD"/>
+</div>
+<!-- Connection Status Badge -->
+<div class="absolute bottom-4 right-4 bg-surface border border-secondary text-secondary font-label-caps text-label-caps px-4 py-1 rounded-full shadow-[0_0_15px_rgba(240,192,62,0.3)] flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#4ade80] shadow-[0_0_8px_#4ade80] animate-pulse"></span>
+                Connected
+            </div>
+</div>
+<!-- Candidate Name -->
+<h1 class="font-display-lg text-display-lg text-secondary mb-stack-sm tracking-tighter drop-shadow-[0_0_15px_rgba(240,192,62,0.4)] relative z-10">
+            Anya Sharma
+        </h1>
+<!-- Status Message -->
+<p class="font-headline-md text-headline-md text-primary pulse-text relative z-10 max-w-2xl">
+            Waiting for quiz to start...
+        </p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-stack-md relative z-10 opacity-70">
+            Please keep this window open and ensure your volume is up.
+        </p>
+</main>
+<!-- Footer Logo / Branding Anchor -->
+<div class="absolute bottom-margin-desktop left-0 w-full flex justify-center z-10 pointer-events-none opacity-30">
+<span class="font-display-lg text-headline-md font-black tracking-tighter text-secondary">
+            THE HOT SEAT
+        </span>
+</div>
+<script>
+        // Generate Sparkles
+        const container = document.getElementById('sparkles-container');
+        const numSparkles = 30;
+
+        for (let i = 0; i < numSparkles; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.classList.add('sparkle');
+            
+            // Random positioning
+            const left = Math.random() * 100;
+            const top = Math.random() * 100;
+            
+            // Random sizing (1px to 4px)
+            const size = Math.random() * 3 + 1;
+            
+            // Random animation delay and duration to make it look organic
+            const delay = Math.random() * 5;
+            const duration = Math.random() * 3 + 2;
+
+            sparkle.style.left = `${left}%`;
+            sparkle.style.top = `${top}%`;
+            sparkle.style.width = `${size}px`;
+            sparkle.style.height = `${size}px`;
+            sparkle.style.animationDelay = `${delay}s`;
+            sparkle.style.animationDuration = `${duration}s`;
+
+            // Randomly color some sparkles gold
+            if(Math.random() > 0.7) {
+                sparkle.style.background = '#f0c03e';
+            }
+
+            container.appendChild(sparkle);
+        }
+    </script>
+</body></html>

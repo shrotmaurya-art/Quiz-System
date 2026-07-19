@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Candidate Roster - The Hot Seat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "inverse-primary": "#595c7b",
+                            "inverse-on-surface": "#2b3137",
+                            "secondary-container": "#ba9000",
+                            "on-primary": "#2b2e4b",
+                            "error": "#ffb4ab",
+                            "tertiary-fixed-dim": "#c4c0ff",
+                            "primary-fixed-dim": "#c1c4e8",
+                            "surface-tint": "#c1c4e8",
+                            "surface-container-lowest": "#080f14",
+                            "on-surface-variant": "#c7c5ce",
+                            "on-primary-container": "#777a9b",
+                            "on-primary-fixed-variant": "#414562",
+                            "on-error": "#690005",
+                            "surface-container": "#1a2026",
+                            "secondary": "#f0c03e",
+                            "surface-bright": "#333a40",
+                            "on-secondary-fixed": "#251a00",
+                            "surface-container-highest": "#2f353c",
+                            "on-surface": "#dde3eb",
+                            "surface-container-high": "#242b31",
+                            "background": "#0e141a",
+                            "error-container": "#93000a",
+                            "tertiary-fixed": "#e3dfff",
+                            "on-tertiary": "#2300a3",
+                            "surface-dim": "#0e141a",
+                            "outline": "#919098",
+                            "surface-container-low": "#161c22",
+                            "on-tertiary-fixed-variant": "#3a28c0",
+                            "tertiary": "#c4c0ff",
+                            "tertiary-container": "#0a0049",
+                            "secondary-fixed-dim": "#f0c03e",
+                            "primary-fixed": "#dfe0ff",
+                            "on-error-container": "#ffdad6",
+                            "surface-variant": "#2f353c",
+                            "on-background": "#dde3eb",
+                            "inverse-surface": "#dde3eb",
+                            "on-secondary-container": "#3c2c00",
+                            "secondary-fixed": "#ffdf95",
+                            "surface": "#0e141a",
+                            "primary": "#c1c4e8",
+                            "on-tertiary-container": "#7268f9",
+                            "outline-variant": "#46464d",
+                            "primary-container": "#0a0e29",
+                            "on-secondary": "#3e2e00",
+                            "on-tertiary-fixed": "#130068",
+                            "on-secondary-fixed-variant": "#594400",
+                            "on-primary-fixed": "#151935"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.125rem",
+                            "lg": "0.25rem",
+                            "xl": "0.5rem",
+                            "full": "0.75rem"
+                    },
+                    "spacing": {
+                            "stack-lg": "32px",
+                            "margin-desktop": "64px",
+                            "container-max": "1200px",
+                            "stack-md": "16px",
+                            "stack-sm": "8px",
+                            "gutter": "24px",
+                            "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                            "body-lg": [
+                                    "Work Sans", "sans-serif"
+                            ],
+                            "headline-md": [
+                                    "Playfair Display", "serif"
+                            ],
+                            "display-lg-mobile": [
+                                    "Playfair Display", "serif"
+                            ],
+                            "body-md": [
+                                    "Work Sans", "sans-serif"
+                            ],
+                            "display-lg": [
+                                    "Playfair Display", "serif"
+                            ],
+                            "label-caps": [
+                                    "Space Grotesk", "sans-serif"
+                            ]
+                    },
+                    "fontSize": {
+                            "body-lg": [
+                                    "18px",
+                                    {
+                                            "lineHeight": "1.6",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "headline-md": [
+                                    "24px",
+                                    {
+                                            "lineHeight": "1.3",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "display-lg-mobile": [
+                                    "32px",
+                                    {
+                                            "lineHeight": "1.2",
+                                            "fontWeight": "900"
+                                    }
+                            ],
+                            "body-md": [
+                                    "16px",
+                                    {
+                                            "lineHeight": "1.5",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "display-lg": [
+                                    "48px",
+                                    {
+                                            "lineHeight": "1.1",
+                                            "letterSpacing": "0.02em",
+                                            "fontWeight": "900"
+                                    }
+                            ],
+                            "label-caps": [
+                                    "14px",
+                                    {
+                                            "lineHeight": "1.2",
+                                            "letterSpacing": "0.1em",
+                                            "fontWeight": "600"
+                                    }
+                            ]
+                    }
+            },
+                },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Space+Grotesk:wght@300..700&amp;family=Work+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .hexagon-clip {
+            clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
+        }
+        .glow-gold {
+            box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.5), 0 0 20px rgba(240, 192, 62, 0.2);
+        }
+        .glow-purple {
+            box-shadow: inset 0 0 15px rgba(196, 192, 255, 0.5), 0 0 20px rgba(196, 192, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden min-h-screen relative">
+
+<div class="fixed inset-0 w-full h-full bg-background/60 z-[-1]"></div>
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-secondary/30 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+<div class="flex justify-between items-center px-margin-desktop py-4 md:pl-[calc(16rem+64px)] hidden md:flex">
+<div class="font-display-lg text-headline-md font-black tracking-tighter text-secondary drop-shadow-[0_0_10px_rgba(240,192,62,0.5)]">
+                THE HOT SEAT
+            </div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-secondary dark:text-secondary">
+<button class="hover:text-secondary transition-all duration-300 transition-transform active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="hover:text-secondary transition-all duration-300 transition-transform active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings_suggest</span>
+</button>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-secondary/50">
+<img alt="Producer Avatar" class="w-full h-full object-cover" data-alt="A cinematic, high-contrast headshot of a stern television producer in a dimly lit broadcast control room. The lighting features deep indigo shadows and a rim light of glowing gold, casting a dramatic, professional aura typical of high-stakes television production." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbhJMBqlGWlLvIWoWJ53MeHCmcPt1tjCKA7YdCcBIayl_dRC_0cOp_hlziJXpO_FvKYvdu7JtceWNqIHNzU51VXkeiJkWYRes5HwFsUlx4qy1HykAcvHr-M5KWj-xlmNuHI8U6wReOYSG5EWviNNtd6x5-4F_kSoLBGGnWA1BZY4jtxcaU4nphJq00ZGHybuD16Adh8ae5IhA4aHD-jSeyG-9ikl9QTHPcSUtkjpiTfiTXJcODa4LcVKyUiAUoDBFA5YAjaLz7vMrA"/>
+</div>
+</div>
+</div>
+<!-- Mobile Top Nav -->
+<div class="flex justify-between items-center px-margin-mobile py-4 md:hidden">
+<div class="font-display-lg-mobile text-headline-md font-black tracking-tighter text-secondary drop-shadow-[0_0_10px_rgba(240,192,62,0.5)]">
+                THE HOT SEAT
+            </div>
+<button class="text-secondary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-64 z-40 bg-surface-container-low/95 dark:bg-surface-container-low/95 backdrop-blur-2xl border-r border-secondary/20 shadow-[inset_0_0_20px_rgba(196,192,255,0.05)] flex flex-col h-full pt-24 hidden md:flex">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full border border-secondary/50 overflow-hidden">
+<img alt="Producer Badge" class="w-full h-full object-cover" data-alt="A detailed close-up of a premium, brushed metal producer badge hanging on a dark indigo lanyard. The badge has subtle glowing golden accents and is set against a deeply blurred, cinematic dark background reminiscent of a high-end television studio control room." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc_ZkrROMJcxCFD8tuk1rUBFS5Gq_Wj0YdjHxnJEw4MT2UoXuN505T46Bnd86BM3uwLRsuXE6yjkQmuSidioVt_yW73T1J0-CDQcaex9l5J8zzofzPCZ5u9do5gbpKGF7reT-ejcNHc2NmeOaGLNWUnE_7xvAd9dSrh6uy2A5dux83WUvLgWNcAf1eCKkKCe6YLuKg8pRL9s4RhOu8M1bYX6lwqcJM-3f3D3XYBGCHDXGKqfBY-lX5X1pbdwZcheh8VSYfpNSAmnRY"/>
+</div>
+<div>
+<h2 class="font-label-caps text-label-caps text-on-surface tracking-wider">CONTROL ROOM</h2>
+<p class="text-xs text-on-surface-variant mt-1">Live Broadcast Mode</p>
+</div>
+</div>
+<button class="w-full py-3 bg-secondary/20 text-secondary border border-secondary rounded-DEFAULT font-label-caps text-label-caps hover:bg-secondary/30 transition-colors shadow-[0_0_15px_rgba(240,192,62,0.3)]">
+                GO LIVE
+            </button>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-2">
+<li>
+<a class="group flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">quiz</span>
+                        Rounds &amp; Questions
+                    </a>
+</li>
+<li>
+<a class="group flex items-center gap-4 bg-secondary/10 text-secondary border-l-4 border-secondary px-6 py-4 shadow-[0_0_15px_rgba(240,192,62,0.2)] font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200" style="font-variation-settings: 'FILL' 1;">groups</span>
+                        Candidates
+                    </a>
+</li>
+<li>
+<a class="group flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">sensors</span>
+                        Live Control
+                    </a>
+</li>
+<li>
+<a class="group flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">settings</span>
+                        Settings
+                    </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto border-t border-outline-variant/20 pt-4 pb-6">
+<ul class="space-y-1">
+<li>
+<a class="group flex items-center gap-4 text-on-surface-variant px-6 py-3 hover:text-on-surface transition-colors font-label-caps text-label-caps text-xs" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+                        Help Center
+                    </a>
+</li>
+<li>
+<a class="group flex items-center gap-4 text-on-surface-variant px-6 py-3 hover:text-on-surface transition-colors font-label-caps text-label-caps text-xs" href="#">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+                        System Logs
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="pt-24 md:pl-64 min-h-screen flex flex-col">
+<div class="px-margin-mobile md:px-margin-desktop py-stack-lg max-w-container-max mx-auto w-full flex-1">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-stack-lg gap-6">
+<div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-secondary drop-shadow-[0_0_15px_rgba(240,192,62,0.4)] tracking-wide">
+                        CANDIDATE ROSTER
+                    </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">
+                        Manage competing teams, generate secure join passes, and control active status for the live broadcast session.
+                    </p>
+</div>
+<button class="flex items-center gap-2 bg-secondary/10 border border-secondary px-8 py-4 rounded-DEFAULT text-secondary font-label-caps text-label-caps shadow-[inset_0_0_15px_rgba(240,192,62,0.3),0_0_20px_rgba(240,192,62,0.2)] hover:bg-secondary/20 transition-all duration-300 hexagon-clip shrink-0">
+<span class="material-symbols-outlined">add</span>
+                    ADD CANDIDATE
+                </button>
+</div>
+<!-- Roster Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Candidate Card 1 -->
+<div class="relative bg-surface-container-high/60 backdrop-blur-xl border border-secondary/20 rounded-xl p-6 shadow-[inset_0_0_20px_rgba(196,192,255,0.02)] hover:border-secondary/50 transition-colors duration-300 overflow-hidden group">
+<!-- Controls -->
+<div class="absolute top-4 right-4 flex gap-2">
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary border border-secondary/30 hover:bg-secondary/20 transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-error border border-error/30 hover:bg-error/20 transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+<!-- Header -->
+<div class="flex items-center gap-6 mb-6">
+<div class="w-20 h-20 rounded-full border-2 border-secondary p-1 shadow-[0_0_15px_rgba(240,192,62,0.4)] shrink-0">
+<img alt="Team Crest" class="w-full h-full rounded-full object-cover" data-alt="A majestic, high-contrast emblem of a university crest featuring a prominent eagle motif, set against a dark indigo background. The crest is illuminated by a dramatic golden rim light, exuding a sense of prestige, intellectual rigor, and high-stakes cinematic tension." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCy8MB1_vIC-XRw-LcMNgCU0AVLtzJZQ6MpllfbZuVgmKSlazElj6M4azzVhRD3cF2MHLx5iNlQuHyhPHDi4Ej96dd_WWqpq5jbDYYaqGA52b1j_obXUNvHBGJPpMC4oqhU5OOyQML-FWt0tBFsBw4VAHTgTIgqxL2388R95gkG6WnDzbV-t7wxhx_LJRbP3XRQu0MfHTaB2-4zEuU13lkGPyIkn5HySoP62lwx44x3L6WKBgzW9zYKy8Fi_Vx_c12L0ruE_L6Izt1R"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight uppercase">Oxford Univ.</h3>
+<div class="mt-2 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(240,192,62,0.8)]"></span>
+<span class="font-label-caps text-[12px] text-secondary tracking-widest">ACTIVE</span>
+</div>
+</div>
+</div>
+<!-- Join Pass Section -->
+<div class="bg-surface-container-low/80 border border-outline-variant/30 rounded-lg p-4 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-tertiary shadow-[0_0_10px_rgba(196,192,255,0.6)]"></div>
+<h4 class="font-label-caps text-[10px] text-on-surface-variant mb-3 tracking-widest">SECURE JOIN PASS</h4>
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 bg-white p-1 rounded-sm border border-secondary/50 shadow-[0_0_10px_rgba(240,192,62,0.2)] shrink-0">
+<img alt="QR Code" class="w-full h-full object-contain" data-alt="A clean, stark black-and-white QR code displayed on a slightly glowing white square canvas. The QR code is framed tightly, intended to look like a secure digital access token within a high-tech, cinematic user interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKjBdX1FGdBYd_VxjlHU6pYPL501XDxaIHEmsg-MW-OsBgr3rmnBTz8TK5KaCKGJVKekFvltebkM9Y4u3CSvlPw8TEbOYlw7zC9Yxu8tJGwkNLYvVGN-Ha-CIa7mbZuWKKudOIceVaEcD2KZW-i8nsVwu0rxEAD3atVvXTZsEvyGR2qXGabi8vVHhIv-CfzB3J4iui9dZ-EK3eaGixSmppHoHe_r5pnDz9Mj7ZaYGwnOUskZCxEoy6p75NyJmG25RVI06ExO7dU0kJ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="bg-surface-dim border border-outline-variant/50 rounded-DEFAULT p-2 flex items-center justify-between group-hover:border-tertiary/50 transition-colors">
+<span class="font-body-md text-[13px] text-on-surface truncate font-mono">hotseat.live/oxf-8a9b</span>
+<button class="text-tertiary hover:text-white transition-colors pl-2">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+<div class="mt-2 flex items-center justify-between">
+<span class="font-label-caps text-[10px] text-outline">PIN: 8492</span>
+<button class="text-[10px] text-secondary hover:underline font-label-caps">REGENERATE</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Candidate Card 2 -->
+<div class="relative bg-surface-container-high/60 backdrop-blur-xl border border-secondary/20 rounded-xl p-6 shadow-[inset_0_0_20px_rgba(196,192,255,0.02)] hover:border-secondary/50 transition-colors duration-300 overflow-hidden group">
+<!-- Controls -->
+<div class="absolute top-4 right-4 flex gap-2">
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary border border-secondary/30 hover:bg-secondary/20 transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-error border border-error/30 hover:bg-error/20 transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+<!-- Header -->
+<div class="flex items-center gap-6 mb-6">
+<div class="w-20 h-20 rounded-full border-2 border-outline-variant p-1 shrink-0 opacity-60">
+<img alt="Team Crest" class="w-full h-full rounded-full object-cover grayscale" data-alt="A distinguished crest logo for a fictional university, featuring a central shield and crossed quills. The emblem is rendered in a muted, slightly desaturated tone against a dark, moody background, suggesting an inactive or waiting status in a dramatic broadcast setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPx7as1RzgOg3l-yxSMy_AkM7TbPF4UNH1iVmJZ91lLLroxcgiRk7fU7fi2qG6Z9vat180dd8OtI-R626hFNxBDbdw2UEwYmzOFdT-07wfauu4nKz4uLtxWseY8FYg0imtqGBZ88HrMcn0qmfp1aTaMNGj_SkIU2lBS0pyg8z36kyrhopQF0CE6naK_UTu72_4JagDHTv7H00pcB6L2_6VMKhVbuMdQL4hlZHEtbYmIpRMxVyRfxLA7BB4ccNEwbcJ5XmGuXuRKf2G"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface-variant font-bold tracking-tight uppercase">Cambridge</h3>
+<div class="mt-2 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-label-caps text-[12px] text-outline tracking-widest">INACTIVE</span>
+</div>
+</div>
+</div>
+<!-- Join Pass Section -->
+<div class="bg-surface-container-low/80 border border-outline-variant/30 rounded-lg p-4 relative overflow-hidden opacity-70">
+<div class="absolute top-0 left-0 w-1 h-full bg-outline-variant"></div>
+<h4 class="font-label-caps text-[10px] text-on-surface-variant mb-3 tracking-widest">SECURE JOIN PASS</h4>
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 bg-surface-dim p-1 rounded-sm border border-outline-variant/50 shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline-variant text-[24px]">qr_code_scanner</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="bg-surface-dim border border-outline-variant/50 rounded-DEFAULT p-2 flex items-center justify-between">
+<span class="font-body-md text-[13px] text-outline truncate font-mono">hotseat.live/cam-...</span>
+</div>
+<div class="mt-2 flex items-center justify-between">
+<span class="font-label-caps text-[10px] text-outline-variant">PIN: ----</span>
+<button class="text-[10px] text-outline hover:text-white transition-colors font-label-caps">GENERATE</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quiz Master Control - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#3e2e00",
+                        "tertiary-fixed": "#e3dfff",
+                        "on-tertiary-fixed": "#130068",
+                        "on-error": "#690005",
+                        "inverse-surface": "#dde3eb",
+                        "on-primary-fixed": "#151935",
+                        "surface-tint": "#c1c4e8",
+                        "secondary-fixed": "#ffdf95",
+                        "secondary": "#f0c03e",
+                        "error-container": "#93000a",
+                        "surface": "#0e141a",
+                        "on-tertiary": "#2300a3",
+                        "surface-dim": "#0e141a",
+                        "surface-container-low": "#161c22",
+                        "outline": "#919098",
+                        "primary": "#c1c4e8",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#1a2026",
+                        "tertiary-fixed-dim": "#c4c0ff",
+                        "secondary-container": "#ba9000",
+                        "background": "#0e141a",
+                        "on-primary-container": "#777a9b",
+                        "surface-variant": "#2f353c",
+                        "on-surface-variant": "#c7c5ce",
+                        "secondary-fixed-dim": "#f0c03e",
+                        "surface-bright": "#333a40",
+                        "on-tertiary-container": "#7268f9",
+                        "outline-variant": "#46464d",
+                        "surface-container-lowest": "#080f14",
+                        "tertiary": "#c4c0ff",
+                        "error": "#ffb4ab",
+                        "primary-fixed-dim": "#c1c4e8",
+                        "on-tertiary-fixed-variant": "#3a28c0",
+                        "surface-container-high": "#242b31",
+                        "on-secondary-container": "#3c2c00",
+                        "on-primary": "#2b2e4b",
+                        "surface-container-highest": "#2f353c",
+                        "on-secondary-fixed": "#251a00",
+                        "inverse-primary": "#595c7b",
+                        "on-primary-fixed-variant": "#414562",
+                        "on-background": "#dde3eb",
+                        "on-secondary-fixed-variant": "#594400",
+                        "primary-fixed": "#dfe0ff",
+                        "on-surface": "#dde3eb",
+                        "primary-container": "#0a0e29",
+                        "inverse-on-surface": "#2b3137",
+                        "tertiary-container": "#0a0049"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "margin-desktop": "64px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px",
+                        "stack-lg": "32px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["Work Sans"],
+                        "label-caps": ["Space Grotesk"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["Work Sans"],
+                        "headline-md": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "900" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-caps": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "900" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hex-clip {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+        
+        .glow-border {
+            box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.5);
+            border: 1px solid rgba(240, 192, 62, 0.8);
+        }
+        
+        .glow-border-error {
+             box-shadow: inset 0 0 15px rgba(255, 180, 171, 0.5);
+             border: 1px solid rgba(255, 180, 171, 0.8);
+        }
+
+        .bloom-effect {
+            box-shadow: 0 0 30px rgba(240, 192, 62, 0.3);
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 15px rgba(240, 192, 62, 0.4); }
+            50% { box-shadow: 0 0 35px rgba(240, 192, 62, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(240, 192, 62, 0.4); }
+        }
+        
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.5s;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface h-screen w-screen overflow-hidden font-body-md flex items-center justify-center relative">
+<!-- Background Shader -->
+<!-- STITCH_SHADER_START:ANIMATION_2 class="absolute inset-0 w-full h-full z-0 opacity-80 pointer-events-none" -->
+<div class="absolute inset-0 w-full h-full z-0 opacity-80 pointer-events-none" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_2" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_2');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+float random (vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+}
+
+void main() {
+    vec2 uv = v_texCoord;
+    vec2 center = vec2(0.5, 0.5);
+    
+    // Deep indigo base
+    vec3 color_dark = vec3(0.039, 0.055, 0.161); // #0A0E29
+    vec3 color_mid = vec3(0.102, 0.071, 0.271);  // #1A1245
+    
+    // Radial gradient background
+    float d = distance(uv, center);
+    vec3 color = mix(color_mid, color_dark, smoothstep(0.2, 0.8, d));
+    
+    // Golden spotlight glow
+    float spotlight = 1.0 - smoothstep(0.0, 0.6, d);
+    color += vec3(0.96, 0.77, 0.26) * spotlight * 0.15;
+    
+    // Light rays
+    vec2 rel = uv - center;
+    float angle = atan(rel.y, rel.x);
+    float rays = sin(angle * 8.0 + u_time * 0.2) * 0.5 + 0.5;
+    rays *= pow(1.0 - d, 2.0);
+    color += vec3(0.36, 0.31, 0.88) * rays * 0.1; // Purple-blue rays
+    
+    // Subtle sparkles
+    vec2 st = uv * 50.0;
+    vec2 ipos = floor(st);
+    if (random(ipos) > 0.98) {
+        float spark = sin(u_time * 2.0 + random(ipos) * 6.28) * 0.5 + 0.5;
+        color += vec3(0.96, 0.77, 0.26) * spark * 0.4;
+    }
+    
+    gl_FragColor = vec4(color, 1.0);
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_2 -->
+<!-- Deep Radial Overlay -->
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(10,0,73,0.3)_0%,rgba(8,15,20,0.95)_100%)] z-10 pointer-events-none"></div>
+<!-- Rate Limit Banner (Example State) -->
+<div class="absolute top-0 left-0 w-full z-50 flex justify-center pt-stack-md transition-transform duration-300 transform -translate-y-full" id="rateLimitBanner">
+<div class="bg-error-container/80 backdrop-blur-md border border-error/50 px-gutter py-stack-sm rounded-b-lg shadow-[0_0_20px_rgba(255,180,171,0.2)] flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="font-label-caps text-label-caps text-on-error-container">Too many attempts — try again in 5 minutes</span>
+</div>
+</div>
+<!-- Main Content Canvas -->
+<main class="relative z-20 flex flex-col items-center justify-center w-full max-w-3xl px-margin-mobile md:px-margin-desktop">
+<!-- Trophy Icon -->
+<div class="mb-stack-lg relative">
+<div class="absolute inset-0 bg-secondary/20 blur-2xl rounded-full scale-150"></div>
+<span class="material-symbols-outlined text-[80px] text-secondary drop-shadow-[0_0_20px_rgba(240,192,62,0.8)] relative z-10" style="font-variation-settings: 'FILL' 1;">trophy</span>
+</div>
+<!-- Heading -->
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-secondary text-center mb-stack-lg drop-shadow-[0_0_15px_rgba(240,192,62,0.4)] tracking-tighter uppercase">
+            Quiz Master Control
+        </h1>
+<!-- Login Panel -->
+<div class="bg-surface/60 backdrop-blur-[20px] p-stack-lg md:p-margin-desktop border border-outline-variant/30 rounded-xl shadow-[inset_0_0_30px_rgba(10,0,73,0.8)] flex flex-col items-center w-full max-w-lg">
+<p class="font-label-caps text-label-caps text-tertiary-fixed mb-stack-md tracking-widest uppercase">Enter Access Code</p>
+<!-- PIN Input Row -->
+<div class="flex gap-stack-sm md:gap-stack-md mb-stack-lg animate-shake" id="pinInputContainer">
+<!-- Slot 1 -->
+<div class="w-12 h-14 md:w-16 md:h-20 bg-surface-container-highest/50 hex-clip flex items-center justify-center glow-border-error transition-all duration-200">
+<span class="font-headline-md text-headline-md text-secondary">8</span>
+</div>
+<!-- Slot 2 -->
+<div class="w-12 h-14 md:w-16 md:h-20 bg-surface-container-highest/50 hex-clip flex items-center justify-center glow-border-error transition-all duration-200">
+<span class="font-headline-md text-headline-md text-secondary">4</span>
+</div>
+<!-- Slot 3 -->
+<div class="w-12 h-14 md:w-16 md:h-20 bg-surface-container-highest/50 hex-clip flex items-center justify-center glow-border-error transition-all duration-200">
+<span class="font-headline-md text-headline-md text-secondary">9</span>
+</div>
+<!-- Slot 4 -->
+<div class="w-12 h-14 md:w-16 md:h-20 bg-surface-container-highest/50 hex-clip flex items-center justify-center glow-border transition-all duration-200 relative">
+<div class="w-3 h-3 bg-tertiary-fixed rounded-full animate-pulse"></div>
+</div>
+<!-- Slot 5 -->
+<div class="w-12 h-14 md:w-16 md:h-20 bg-surface-container-highest/50 hex-clip flex items-center justify-center border border-outline-variant/50 transition-all duration-200">
+</div>
+<!-- Slot 6 -->
+<div class="w-12 h-14 md:w-16 md:h-20 bg-surface-container-highest/50 hex-clip flex items-center justify-center border border-outline-variant/50 transition-all duration-200">
+</div>
+</div>
+<!-- Error Message (Example State) -->
+<div class="mb-stack-lg flex items-center gap-2 text-error" id="errorMessage">
+<span class="material-symbols-outlined text-[18px]">error</span>
+<span class="font-body-md text-body-md">Incorrect PIN — try again</span>
+</div>
+<!-- Action Button -->
+<button class="relative group w-full max-w-[240px] h-16 hex-clip bg-primary-container border border-secondary text-secondary font-label-caps text-label-caps hover:bg-secondary/10 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-secondary/50 bloom-effect animate-pulse-glow flex items-center justify-center overflow-hidden">
+<span class="relative z-10 flex items-center gap-2 tracking-widest">
+                    ENTER
+                    <span class="material-symbols-outlined text-[20px]">login</span>
+</span>
+<!-- Inner light sweep -->
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-secondary/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+</button>
+</div>
+</main>
+<style>
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+    </style>
+<script>
+        // Simple script to toggle demo states
+        setTimeout(() => {
+            document.getElementById('rateLimitBanner').classList.remove('-translate-y-full');
+            document.getElementById('rateLimitBanner').classList.add('translate-y-0');
+        }, 1000);
+    </script>
+</body></html>

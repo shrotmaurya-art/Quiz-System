@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>THE HOT SEAT - Live Projector View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-container": "#ba9000",
+                        "background": "#0e141a",
+                        "primary-fixed": "#dfe0ff",
+                        "surface-container-lowest": "#080f14",
+                        "surface-container": "#1a2026",
+                        "surface": "#0e141a",
+                        "tertiary-fixed-dim": "#c4c0ff",
+                        "surface-dim": "#0e141a",
+                        "on-background": "#dde3eb",
+                        "surface-variant": "#2f353c",
+                        "outline-variant": "#46464d",
+                        "tertiary-fixed": "#e3dfff",
+                        "on-tertiary-fixed": "#130068",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#594400",
+                        "inverse-primary": "#595c7b",
+                        "secondary": "#f0c03e",
+                        "primary-container": "#0a0e29",
+                        "on-primary-container": "#777a9b",
+                        "outline": "#919098",
+                        "on-tertiary": "#2300a3",
+                        "on-primary": "#2b2e4b",
+                        "on-primary-fixed-variant": "#414562",
+                        "on-surface": "#dde3eb",
+                        "secondary-fixed-dim": "#f0c03e",
+                        "surface-tint": "#c1c4e8",
+                        "on-tertiary-container": "#7268f9",
+                        "on-secondary-container": "#3c2c00",
+                        "tertiary-container": "#0a0049",
+                        "on-tertiary-fixed-variant": "#3a28c0",
+                        "surface-container-low": "#161c22",
+                        "surface-container-highest": "#2f353c",
+                        "on-secondary": "#3e2e00",
+                        "tertiary": "#c4c0ff",
+                        "secondary-fixed": "#ffdf95",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "surface-container-high": "#242b31",
+                        "on-primary-fixed": "#151935",
+                        "error": "#ffb4ab",
+                        "primary": "#c1c4e8",
+                        "inverse-surface": "#dde3eb",
+                        "primary-fixed-dim": "#c1c4e8",
+                        "inverse-on-surface": "#2b3137",
+                        "on-secondary-fixed": "#251a00",
+                        "surface-bright": "#333a40",
+                        "on-surface-variant": "#c7c5ce"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "margin-mobile": "16px",
+                        "container-max": "1200px"
+                    },
+                    fontFamily: {
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "label-caps": ["Space Grotesk"],
+                        "headline-md": ["Playfair Display"],
+                        "body-lg": ["Work Sans"],
+                        "body-md": ["Work Sans"]
+                    },
+                    fontSize: {
+                        "display-lg-mobile": ["32px", { lineHeight: "1.2", fontWeight: "900" }],
+                        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "0.02em", fontWeight: "900" }],
+                        "label-caps": ["14px", { lineHeight: "1.2", letterSpacing: "0.1em", fontWeight: "600" }],
+                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clip-diamond {
+            clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
+        }
+        .glow-gold {
+            box-shadow: inset 0 0 15px rgba(240,192,62,0.8), 0 0 20px rgba(240,192,62,0.3);
+        }
+        .glow-purple {
+            box-shadow: inset 0 0 15px rgba(163,222,254,0.3); /* Adjusting to fit the hybrid vibe */
+        }
+        .option-bg {
+            background: linear-gradient(135deg, rgba(10,0,73,0.9) 0%, rgba(21,25,53,0.9) 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen w-screen overflow-hidden relative font-body-lg">
+<!-- Background Shader -->
+
+<!-- Theatrical Overlay / Stage Lighting -->
+<div class="absolute inset-0 z-10 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-surface/40 to-surface-container-lowest/90"></div>
+<!-- Main Content Container -->
+<div class="relative z-20 flex flex-col h-full w-full px-margin-desktop py-stack-lg max-w-container-max mx-auto">
+<!-- Header -->
+<header class="flex justify-center items-start w-full relative h-24 shrink-0">
+<div class="bg-surface/80 backdrop-blur-xl border border-secondary rounded-full px-8 py-3 shadow-[0_0_20px_rgba(240,192,62,0.4)] flex items-center justify-center">
+<span class="font-headline-md text-headline-md text-secondary tracking-wide uppercase">
+                    Round 2 · Question 4 of 8
+                </span>
+</div>
+<!-- Timer (Top Right) -->
+<div class="absolute right-0 top-0 flex items-center justify-center">
+<div class="relative w-24 h-24 flex items-center justify-center rounded-full bg-surface-container-lowest/80 backdrop-blur-md border-2 border-secondary glow-gold">
+<svg class="absolute inset-0 w-full h-full transform -rotate-90">
+<circle cx="48" cy="48" fill="none" r="44" stroke="rgba(240,192,62,0.2)" stroke-width="4"></circle>
+<circle class="transition-all duration-1000 ease-linear" cx="48" cy="48" fill="none" r="44" stroke="#f0c03e" stroke-dasharray="276" stroke-dashoffset="69" stroke-width="4"></circle>
+</svg>
+<span class="font-display-lg text-display-lg text-secondary drop-shadow-[0_0_10px_rgba(240,192,62,0.8)] z-10">18</span>
+</div>
+</div>
+</header>
+<!-- Question Area -->
+<main class="flex-grow flex flex-col items-center justify-center w-full space-y-gutter relative z-30">
+<!-- Question Card -->
+<div class="w-full max-w-4xl bg-primary-container/90 backdrop-blur-2xl border-y-4 border-secondary shadow-[0_0_40px_rgba(10,0,73,0.8)] px-12 py-10 relative overflow-hidden text-center rounded-xl">
+<!-- Inner Glow / Light Beam Effect -->
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(240,192,62,0.15),_transparent_60%)] pointer-events-none"></div>
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(240,192,62,0.1),_transparent_60%)] pointer-events-none"></div>
+<h1 class="font-display-lg text-display-lg text-on-surface relative z-10 drop-shadow-lg">
+                    Which of these planets is known as the Red Planet?
+                </h1>
+<!-- Optional Media Placeholder -->
+<div class="mt-8 border border-secondary/30 rounded-lg p-2 bg-surface-container-lowest/50 backdrop-blur-sm inline-block mx-auto max-w-md w-full h-48 relative overflow-hidden hidden">
+<!-- Media would go here -->
+</div>
+</div>
+<!-- Answers Grid -->
+<div class="grid grid-cols-2 gap-x-8 gap-y-6 w-full max-w-5xl mt-stack-lg">
+<!-- Option A -->
+<div class="clip-diamond option-bg border border-secondary/50 h-24 flex items-center px-12 relative overflow-hidden group transition-all duration-300">
+<div class="absolute inset-0 bg-secondary/0 group-hover:bg-secondary/10 transition-colors"></div>
+<span class="font-display-lg text-display-lg text-secondary mr-6 drop-shadow-[0_0_8px_rgba(240,192,62,0.5)]">A:</span>
+<span class="font-headline-md text-headline-md text-on-surface tracking-wide">Mars</span>
+</div>
+<!-- Option B -->
+<div class="clip-diamond option-bg border border-secondary/50 h-24 flex items-center px-12 relative overflow-hidden group transition-all duration-300">
+<div class="absolute inset-0 bg-secondary/0 group-hover:bg-secondary/10 transition-colors"></div>
+<span class="font-display-lg text-display-lg text-secondary mr-6 drop-shadow-[0_0_8px_rgba(240,192,62,0.5)]">B:</span>
+<span class="font-headline-md text-headline-md text-on-surface tracking-wide">Jupiter</span>
+</div>
+<!-- Option C -->
+<div class="clip-diamond option-bg border border-secondary/50 h-24 flex items-center px-12 relative overflow-hidden group transition-all duration-300">
+<div class="absolute inset-0 bg-secondary/0 group-hover:bg-secondary/10 transition-colors"></div>
+<span class="font-display-lg text-display-lg text-secondary mr-6 drop-shadow-[0_0_8px_rgba(240,192,62,0.5)]">C:</span>
+<span class="font-headline-md text-headline-md text-on-surface tracking-wide">Venus</span>
+</div>
+<!-- Option D -->
+<div class="clip-diamond option-bg border border-secondary/50 h-24 flex items-center px-12 relative overflow-hidden group transition-all duration-300">
+<div class="absolute inset-0 bg-secondary/0 group-hover:bg-secondary/10 transition-colors"></div>
+<span class="font-display-lg text-display-lg text-secondary mr-6 drop-shadow-[0_0_8px_rgba(240,192,62,0.5)]">D:</span>
+<span class="font-headline-md text-headline-md text-on-surface tracking-wide">Saturn</span>
+</div>
+</div>
+</main>
+<!-- Footer / Status Bar -->
+<footer class="w-full shrink-0 flex items-center justify-between bg-surface-container-lowest/80 backdrop-blur-xl border-t border-outline-variant/30 px-8 py-4 rounded-t-xl mt-auto">
+<div class="flex items-center space-x-4">
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">3 of 4 Locked In</span>
+</div>
+<div class="flex items-center space-x-3">
+<!-- Avatar Slots -->
+<div class="w-12 h-12 rounded-full border-2 border-secondary bg-surface-variant overflow-hidden glow-gold relative">
+<img alt="Contestant 1" class="w-full h-full object-cover opacity-80" data-alt="A cinematic headshot of a quiz show contestant, intense lighting, dark background, professional photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDssQ5wJR0SR8F05EoEIVneOXe2AIjN3EAdEOQ_iDkBt4hz2R4wyGQBy_Dsq2KFKsnJPYsrb2ypjX8SgBbRpkY2Rt6TosihPa-_qytfxaXc0v2AC7ECSQ8iAeHNI5VciWV-UEHCjQ6vAxP-5rXm7RTFnJyLLPtQAAH2Is3oILwGYi8DL6s0ikEQitzUKNgWjymZd9Q4suCcV6lmhT-YZbXw9YeYMzmZk05jjJgBNwzQ3fGy2xOb9zcTSxn6VNX0cnB0nlXd9P7PFQjQ"/>
+</div>
+<div class="w-12 h-12 rounded-full border-2 border-secondary bg-surface-variant overflow-hidden glow-gold relative">
+<img alt="Contestant 2" class="w-full h-full object-cover opacity-80" data-alt="A cinematic headshot of a quiz show contestant, intense lighting, dark background, professional photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBkkWhIBc6w38Kr1G07yYobQw1ZhXLj8JMEO9BZWE7TKpByUq7kS8ScqGHAH_v85kUUEB1XecRP1FmsHZvCosBi5pSoXsMIUTGJ-62H4wIMwdzWQY-JYQw9QcEaO6TwzupPgpaXCNvkW_zkbXMQl31SdcmOgmZ5orOrxb94udtbJNpBIWzsHhPOHJZH8H1ZvAyUhwtQ7ZrqwX0B05-79X_4BQPdDNsbRvKZFUFiTrOM6pPolrxmn02JPjkWVFQYI97eMLv6nzC2wd5"/>
+</div>
+<div class="w-12 h-12 rounded-full border-2 border-secondary bg-surface-variant overflow-hidden glow-gold relative">
+<img alt="Contestant 3" class="w-full h-full object-cover opacity-80" data-alt="A cinematic headshot of a quiz show contestant, intense lighting, dark background, professional photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4eTVXWurmTTBlJJdv2hcLIJhY-4aL3xtt3UPWBSFY0KYRvRXtTDcj6_oQSWkfmp-aZ9K2QAPC5HwrRRqj3QnGsA6qQeT02ooODE7EeHtAshSFS8IKxVJ_9PLz_mrD06_BjQuV7klSscJeohLn6jGBoPSoRLiLNySBV_KA2tSKgA6Y8UEe3OyScyZmWckgej79MUJskTgu1Tcwy7CNDdBKa8tLGjcysvtXCmCu6GOVNdpocIsbhR3Td2F0ditzrPG0vBzIx81Sf07J"/>
+</div>
+<!-- Dimmed/Pending Slot -->
+<div class="w-12 h-12 rounded-full border-2 border-outline-variant bg-surface-container overflow-hidden opacity-50 relative flex items-center justify-center">
+<span class="material-symbols-outlined text-outline-variant" style="font-variation-settings: 'FILL' 0;">person</span>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

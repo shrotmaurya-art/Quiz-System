@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>THE HOT SEAT - Results</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#161c22",
+                        "on-tertiary": "#2300a3",
+                        "on-primary-fixed": "#151935",
+                        "inverse-surface": "#dde3eb",
+                        "inverse-primary": "#595c7b",
+                        "primary-fixed-dim": "#c1c4e8",
+                        "on-secondary": "#3e2e00",
+                        "on-primary-container": "#777a9b",
+                        "surface-container-high": "#242b31",
+                        "error-container": "#93000a",
+                        "outline": "#919098",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#3a28c0",
+                        "surface": "#0e141a",
+                        "primary-container": "#0a0e29",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#3c2c00",
+                        "background": "#0e141a",
+                        "surface-container-highest": "#2f353c",
+                        "on-background": "#dde3eb",
+                        "tertiary-fixed-dim": "#c4c0ff",
+                        "on-tertiary-container": "#7268f9",
+                        "secondary-fixed": "#ffdf95",
+                        "secondary": "#f0c03e",
+                        "on-tertiary-fixed": "#130068",
+                        "on-secondary-fixed-variant": "#594400",
+                        "on-primary": "#2b2e4b",
+                        "on-surface": "#dde3eb",
+                        "on-error": "#690005",
+                        "primary-fixed": "#dfe0ff",
+                        "tertiary": "#c4c0ff",
+                        "surface-container-lowest": "#080f14",
+                        "inverse-on-surface": "#2b3137",
+                        "surface-dim": "#0e141a",
+                        "primary": "#c1c4e8",
+                        "on-primary-fixed-variant": "#414562",
+                        "tertiary-container": "#0a0049",
+                        "surface-variant": "#2f353c",
+                        "secondary-container": "#ba9000",
+                        "on-surface-variant": "#c7c5ce",
+                        "on-secondary-fixed": "#251a00",
+                        "outline-variant": "#46464d",
+                        "tertiary-fixed": "#e3dfff",
+                        "surface-tint": "#c1c4e8",
+                        "surface-container": "#1a2026",
+                        "surface-bright": "#333a40",
+                        "secondary-fixed-dim": "#f0c03e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "container-max": "1200px",
+                        "gutter": "24px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Work Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["Work Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "label-caps": ["Space Grotesk"],
+                        "headline-md": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "900" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "900" }],
+                        "label-caps": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hex-clip { clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%); }
+        .inner-glow-gold { box-shadow: inset 0 0 20px rgba(240,192,62,0.3); }
+        .inner-glow-purple { box-shadow: inset 0 0 15px rgba(196,192,255,0.1); }
+        .bloom-gold { box-shadow: 0 0 30px rgba(240,192,62,0.4); }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(240,192,62,0.5), inset 0 0 15px rgba(240,192,62,0.3); }
+            50% { box-shadow: 0 0 40px rgba(240,192,62,0.8), inset 0 0 25px rgba(240,192,62,0.5); }
+        }
+        .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden">
+<!-- WebGL Background -->
+
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-secondary/30 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+<div class="flex justify-between items-center px-margin-desktop py-4">
+<div class="font-display-lg text-headline-md font-black tracking-tighter text-secondary drop-shadow-[0_0_10px_rgba(240,192,62,0.5)]">
+                THE HOT SEAT
+            </div>
+<div class="flex items-center gap-6">
+<!-- Search Bar (on_right logic implied) -->
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-high border border-outline-variant/30 rounded-full py-2 pl-10 pr-4 text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors w-64" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-secondary transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:text-secondary transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined">settings_suggest</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-secondary/30">
+<img alt="Producer Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a television producer in a dimly lit studio environment. Dramatic lighting highlights their face, with subtle gold and purple rim lights reflecting off the equipment. Cinematic high-contrast styling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7tzAZfFcKB43GH7Q7RTnUCYquecAvJDoLpC0TJU98Z4kXowsYWARCUCcM7p-c21efZlWJuRKg3LMODY2V_HCumM31uNRf82Dw5RMv25TlWdziOa2OmbsDj4yU-E64Unul63gT7iVyumktByPuPEz8mFtXuozAbia5z0wE4hPjjILVcGTy-bR3JWi-vfpjF1gK7w4e4MLZqVQ_t1jyla6zjlJ4JkpKJf7G-EEu2hAlpD36gMIC4LY9POWLxmuktGJ61vCGCWwld_Ar"/>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 z-40 bg-surface-container-low/95 dark:bg-surface-container-low/95 backdrop-blur-2xl border-r border-secondary/20 shadow-[inset_0_0_20px_rgba(196,192,255,0.05)] pt-24 pb-8">
+<div class="px-6 mb-8">
+<h2 class="font-label-caps text-label-caps text-secondary tracking-widest">CONTROL ROOM</h2>
+<p class="text-on-surface-variant text-sm mt-1">Live Broadcast Mode</p>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">quiz</span>
+<span class="font-label-caps text-label-caps">Rounds &amp; Questions</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">groups</span>
+<span class="font-label-caps text-label-caps">Candidates</span>
+</a>
+<a class="flex items-center gap-4 bg-secondary/10 text-secondary border-l-4 border-secondary px-6 py-4 shadow-[0_0_15px_rgba(240,192,62,0.2)] group" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">sensors</span>
+<span class="font-label-caps text-label-caps font-bold">Live Control</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</nav>
+<div class="px-6 mt-auto flex flex-col gap-4">
+<button class="w-full py-3 bg-secondary text-on-secondary font-label-caps text-label-caps rounded-sm hover:bg-secondary-fixed transition-colors">GO LIVE</button>
+<div class="flex flex-col gap-2 pt-4 border-t border-outline-variant/20">
+<a class="flex items-center gap-3 text-on-surface-variant text-sm hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+                    Help Center
+                </a>
+<a class="flex items-center gap-3 text-on-surface-variant text-sm hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+                    System Logs
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-64 pt-24 pb-32 px-margin-mobile md:px-margin-desktop min-h-screen relative z-10">
+<!-- Header / Phase Status -->
+<header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-stack-lg gap-4">
+<div>
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface tracking-wide drop-shadow-md">Leaderboard</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Round 3 Complete - Final Standings</p>
+</div>
+<!-- Phase Badge -->
+<div class="flex items-center gap-3 bg-surface-container-highest/80 backdrop-blur-md px-6 py-3 rounded-full border border-secondary bloom-gold">
+<div class="w-3 h-3 rounded-full bg-secondary animate-pulse"></div>
+<span class="font-label-caps text-label-caps text-secondary font-bold tracking-widest">RESULTS PHASE</span>
+</div>
+</header>
+<!-- Ranking Container - The Diamond Center -->
+<div class="max-w-4xl mx-auto flex flex-col gap-stack-md">
+<!-- 1st Place - The Winner's Row -->
+<div class="relative bg-surface-container-high/90 backdrop-blur-xl border border-secondary p-6 md:p-8 flex items-center justify-between gap-6 inner-glow-gold bloom-gold transform transition-transform hover:scale-[1.02] z-20 overflow-hidden">
+<!-- Ambient highlight -->
+<div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-secondary/10 to-transparent pointer-events-none"></div>
+<div class="flex items-center gap-6 z-10">
+<div class="flex flex-col items-center justify-center w-16 text-center">
+<span class="font-display-lg text-display-lg text-secondary">1</span>
+</div>
+<div class="w-20 h-20 rounded-full border-2 border-secondary overflow-hidden bg-surface-container-lowest shrink-0">
+<img alt="Winner Logo" class="w-full h-full object-cover p-2" data-alt="A prestigious university crest glowing with an ethereal golden light against a dark background, evoking academic excellence and high-stakes competition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx1wT0Msh7UbsTRabqHIzjcjiZxiBFXiMSkyw2TYfD0meGvt7PaL8OuJWMmvscc_EG5ogmI08OoSmT5-rmoZqxoh_gmvw8Wvu0pgNptHOXSKrwqi0v64CDJ61kizPRFx_Fm2mrzUJ4pZcveiZVSIYnOIZC1aCXBznFo4jCTWTvx48ZMTnFki1WxUc1C_YqxNysoVHpqJEpw4FRrRhXN2LO0qH3BpQZp3Q1i4KZWR4f82JcUokmsJ2vyOAMUsE8LL6uwewToq3wVyPZ"/>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<span class="font-label-caps text-label-caps text-secondary bg-secondary/20 px-2 py-1 rounded">🏆 WINNER</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">Alexander Vance</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Oxford University</p>
+</div>
+</div>
+<div class="text-right z-10 flex flex-col items-end">
+<div class="font-display-lg text-display-lg-mobile md:text-display-lg text-secondary">12,450</div>
+<div class="font-body-md text-body-md text-[#4ade80] flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">arrow_upward</span>
+                        +1,200 pts
+                    </div>
+</div>
+</div>
+<!-- 2nd Place -->
+<div class="bg-surface-container-low/80 backdrop-blur-md border border-outline-variant/50 p-4 md:p-6 flex items-center justify-between gap-4 inner-glow-purple hover:bg-surface-container-high/90 transition-colors">
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-center justify-center w-12 text-center">
+<span class="font-headline-md text-headline-md text-on-surface-variant">2</span>
+</div>
+<div class="w-14 h-14 rounded-full border border-outline-variant overflow-hidden bg-surface-container-lowest shrink-0">
+<img alt="Runner Up Logo" class="w-full h-full object-cover p-2" data-alt="A modern, abstract academic logo in deep purple and silver tones, appearing sleek and competitive on a dark studio background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtQLkP64UyVGHsxf-rWo4cgLqMy1xBsLAQAaL3uA9ZAfLNf2tezsZMTd23TS3fC-dV_2NfSVXrWRzqMekm508_KS574_D_cQetLF15UMJi0F6e469XshxIUMkA47vx99_pZxaR2YnGpERLw1Mgvab-jECOsNSK4diNchMwR5CjDX3LhTI3o1yPmTCnN_KgZikZB3ybA5HFeKKQgNLtfM1BntzdIdSGT-KeU6x-gx6Om3H5fSttxUr-CAHepXdSnRK9bvOrb8UcTZpO"/>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-bold">Sarah Chen</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">MIT</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-headline-md text-headline-md text-on-surface">10,800</div>
+<div class="font-body-md text-body-md text-[#4ade80] flex items-center gap-1 text-sm justify-end">
+<span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                        +850 pts
+                    </div>
+</div>
+</div>
+<!-- 3rd Place -->
+<div class="bg-surface-container-low/80 backdrop-blur-md border border-outline-variant/50 p-4 md:p-6 flex items-center justify-between gap-4 hover:bg-surface-container-high/90 transition-colors">
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-center justify-center w-12 text-center">
+<span class="font-headline-md text-headline-md text-on-surface-variant">3</span>
+</div>
+<div class="w-14 h-14 rounded-full border border-outline-variant overflow-hidden bg-surface-container-lowest shrink-0">
+<img alt="3rd Place Logo" class="w-full h-full object-cover p-2" data-alt="A classic ivy league shield logo illuminated by a soft, dramatic spotlight, setting a scholarly and intense mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdRlZX0Vl03yjJz2UG1jSZkrB6xauGBvItn42hETR8vUnoIiqtz8hxsF3y8X7lw-8hBGNpM2Ryi1ywkKTenJKGKuKaumRqRSVqKVDBIXf8ymN7dY36mrie_3jfcB676ocLT4amRrituP524Dw3XM55aMrsMRIgFPxTcoBV-K2RfKugOaewzdVvaruWxLVoA1P7SoVjxUyVOT9vLsv0wvIwiqWPGI5BVCRe8k8ymyGcRIO5dUwx607d2Oiss6aame8jjWMk0GBnbNyQ"/>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-bold">Marcus Sterling</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Cambridge</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-headline-md text-headline-md text-on-surface">9,200</div>
+<div class="font-body-md text-body-md text-error flex items-center gap-1 text-sm justify-end">
+<span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+                        -150 pts
+                    </div>
+</div>
+</div>
+<!-- 4th Place -->
+<div class="bg-surface-container-low/60 backdrop-blur-sm border border-outline-variant/30 p-4 flex items-center justify-between gap-4 opacity-80">
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-center justify-center w-12 text-center">
+<span class="font-body-lg text-body-lg text-outline">4</span>
+</div>
+<div class="w-10 h-10 rounded-full border border-outline-variant/50 overflow-hidden bg-surface-container-lowest shrink-0">
+<img alt="4th Place Logo" class="w-full h-full object-cover p-1" data-alt="A minimalist tech institute logo in muted grey tones against a nearly pitch-black backdrop, showing signs of fading out of the spotlight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDUpGI3nbbFcA9MPPl8qoNvM0aknNpHFDdOB26ndNlVGMk3gHWAlVnncg0A2rhOC5LU-uaANTUwQJue_GfjEJQD-RJKxWS_qZFpfVJ2kaa8SjcZJH6JECmHC9kC7CFo02LqVPkN5KuoPcS8l-XLyHjD2I2bnmrE2Tjcz9_leEl3aBJoDzZ2AuSRxkKhbU7ePH7PwSzxbbi6WWT9z4k2B1ox3w7TsV1j2t-7qrPu_vm0dDJgPrFLp-bjHONxw1K-TmA3eY_QrjXXRBH"/>
+</div>
+<div>
+<h3 class="font-body-md text-body-md text-outline font-medium">Elena Rostova</h3>
+<p class="font-body-md text-body-md text-outline-variant text-sm">Stanford</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-body-lg text-body-lg text-outline">8,100</div>
+<div class="font-body-md text-body-md text-outline-variant flex items-center gap-1 text-sm justify-end">
+<span class="material-symbols-outlined text-[16px]">horizontal_rule</span>
+                        0 pts
+                    </div>
+</div>
+</div>
+<!-- Primary Action -->
+<div class="mt-12 flex justify-center w-full">
+<button class="relative hex-clip bg-secondary/90 hover:bg-secondary text-on-secondary px-12 py-6 font-label-caps text-label-caps text-lg font-bold tracking-[0.2em] transition-all duration-300 animate-pulse-glow group">
+<span class="relative z-10 flex items-center gap-3">
+                        ANNOUNCE WINNER
+                        <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform">campaign</span>
+</span>
+<!-- Button inner light effect -->
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+</button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="md:ml-64 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/10 absolute bottom-0 right-0 w-full md:w-[calc(100%-16rem)] flex justify-between items-center px-margin-desktop py-4 z-40">
+<div class="font-body-md text-body-md text-outline">
+            © 2024 THE HOT SEAT BROADCAST GROUP
+        </div>
+<div class="flex gap-6">
+<a class="font-body-md text-body-md text-outline hover:text-secondary transition-colors cursor-pointer" href="#">System Status: Operational</a>
+<a class="font-body-md text-body-md text-outline hover:text-secondary transition-colors cursor-pointer" href="#">Privacy Protocol</a>
+<a class="font-body-md text-body-md text-outline hover:text-secondary transition-colors cursor-pointer" href="#">Legal</a>
+</div>
+</footer>
+<style>
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</body></html>

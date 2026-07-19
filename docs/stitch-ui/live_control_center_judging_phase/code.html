@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Live Control Center - Judging Phase</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&amp;family=Space+Grotesk:wght@600&amp;family=Work+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#161c22",
+                      "on-tertiary": "#2300a3",
+                      "on-primary-fixed": "#151935",
+                      "inverse-surface": "#dde3eb",
+                      "inverse-primary": "#595c7b",
+                      "primary-fixed-dim": "#c1c4e8",
+                      "on-secondary": "#3e2e00",
+                      "on-primary-container": "#777a9b",
+                      "surface-container-high": "#242b31",
+                      "error-container": "#93000a",
+                      "outline": "#919098",
+                      "error": "#ffb4ab",
+                      "on-tertiary-fixed-variant": "#3a28c0",
+                      "surface": "#0e141a",
+                      "primary-container": "#0a0e29",
+                      "on-error-container": "#ffdad6",
+                      "on-secondary-container": "#3c2c00",
+                      "background": "#0e141a",
+                      "surface-container-highest": "#2f353c",
+                      "on-background": "#dde3eb",
+                      "tertiary-fixed-dim": "#c4c0ff",
+                      "on-tertiary-container": "#7268f9",
+                      "secondary-fixed": "#ffdf95",
+                      "secondary": "#f0c03e",
+                      "on-tertiary-fixed": "#130068",
+                      "on-secondary-fixed-variant": "#594400",
+                      "on-primary": "#2b2e4b",
+                      "on-surface": "#dde3eb",
+                      "on-error": "#690005",
+                      "primary-fixed": "#dfe0ff",
+                      "tertiary": "#c4c0ff",
+                      "surface-container-lowest": "#080f14",
+                      "inverse-on-surface": "#2b3137",
+                      "surface-dim": "#0e141a",
+                      "primary": "#c1c4e8",
+                      "on-primary-fixed-variant": "#414562",
+                      "tertiary-container": "#0a0049",
+                      "surface-variant": "#2f353c",
+                      "secondary-container": "#ba9000",
+                      "on-surface-variant": "#c7c5ce",
+                      "on-secondary-fixed": "#251a00",
+                      "outline-variant": "#46464d",
+                      "tertiary-fixed": "#e3dfff",
+                      "surface-tint": "#c1c4e8",
+                      "surface-container": "#1a2026",
+                      "surface-bright": "#333a40",
+                      "secondary-fixed-dim": "#f0c03e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "stack-lg": "32px",
+                      "stack-md": "16px",
+                      "stack-sm": "8px",
+                      "container-max": "1200px",
+                      "gutter": "24px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "body-md": ["Work Sans"],
+                      "display-lg-mobile": ["Playfair Display"],
+                      "body-lg": ["Work Sans"],
+                      "display-lg": ["Playfair Display"],
+                      "label-caps": ["Space Grotesk"],
+                      "headline-md": ["Playfair Display"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "900"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "900"}],
+                      "label-caps": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Theatrical Glows & Clip Paths */
+        .glass-panel {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(22, 28, 34, 0.7); /* surface-container-low approx */
+        }
+        .hex-clip {
+            clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%);
+        }
+        .diamond-clip {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+        .inner-glow-gold {
+            box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.3); /* secondary */
+        }
+        .bloom-gold {
+            box-shadow: 0 0 20px rgba(240, 192, 62, 0.25);
+        }
+        .correct-btn:hover {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.4); /* Emerald-ish bloom */
+            border-color: #10b981;
+        }
+        .incorrect-btn:hover {
+            box-shadow: 0 0 25px rgba(225, 29, 72, 0.4); /* Ruby-ish bloom */
+            border-color: #e11d48;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-hidden selection:bg-secondary selection:text-on-secondary relative flex font-body-md">
+<!-- Background Animation -->
+
+<!-- Vignette Overlay -->
+<div class="absolute inset-0 bg-radial from-transparent via-background/50 to-background pointer-events-none -z-10"></div>
+<!-- SideNavBar (Hidden on Mobile) -->
+<aside class="hidden md:flex flex-col h-full pt-24 fixed left-0 top-0 w-64 z-40 bg-surface-container-low/95 dark:bg-surface-container-low/95 backdrop-blur-2xl border-r border-secondary/20 shadow-[inset_0_0_20px_rgba(196,192,255,0.05)] transition-transform active:scale-95">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3 mb-2">
+<img alt="Producer Badge" class="w-10 h-10 rounded-full border border-secondary/50" data-alt="A detailed headshot portrait of a television producer in a dark studio setting. The lighting is moody with gold accents. Cinematic style. 50 words minimum." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT1WgoforOKy58dD5DOuZWex05Vmo0GsD_sSMdz10PRilGFb4gt6D2b1T2vKVV09gFL_bZBl0rBrcMFhm6fv8QHI6SNYIvOXkI0OFu2NMrhVgaiTXY3qrKVTfxJy8owUI86MtDA6iuxurmi98lku1JNNZ8WbJljxOBrSnbqdzDezzqEunk-euuMm-PlorJNEf9r94Emyg7Kq3ETuFofSQod-4vmCPUg5zUEn4m4UBcYqkMUsVdL9h4FoyphCSb2M7V7Wsqn90j4V-h"/>
+<div>
+<h2 class="font-label-caps text-label-caps text-secondary tracking-widest">CONTROL ROOM</h2>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Live Broadcast Mode</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<!-- Active Tab: Live Control (Since we are in Judging Phase) -->
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">quiz</span>
+<span class="font-label-caps text-label-caps">Rounds &amp; Questions</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">groups</span>
+<span class="font-label-caps text-label-caps">Candidates</span>
+</a>
+<a class="flex items-center gap-4 bg-secondary/10 text-secondary border-l-4 border-secondary px-6 py-4 shadow-[0_0_15px_rgba(240,192,62,0.2)] group" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">sensors</span>
+<span class="font-label-caps text-label-caps">Live Control</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform duration-200">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pb-8 border-t border-secondary/10 pt-4 flex flex-col gap-2">
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-3 hover:bg-surface-container-highest hover:text-on-surface transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-lg">help</span>
+<span class="font-label-caps text-label-caps">Help Center</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant px-6 py-3 hover:bg-surface-container-highest hover:text-on-surface transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-lg">terminal</span>
+<span class="font-label-caps text-label-caps">System Logs</span>
+</a>
+<div class="px-6 mt-4">
+<button class="w-full bg-secondary/20 border border-secondary text-secondary font-label-caps text-label-caps py-2 rounded inner-glow-gold bloom-gold hover:bg-secondary/40 transition-colors">
+                    GO LIVE
+                </button>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-secondary/30 shadow-[0_4px_30px_rgba(0,0,0,0.5)] flex justify-between items-center px-margin-desktop py-4 transition-transform active:scale-95">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Toggle (Placeholder logic) -->
+<button class="md:hidden text-on-surface-variant p-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-display-lg text-headline-md font-black tracking-tighter text-secondary drop-shadow-[0_0_10px_rgba(240,192,62,0.5)]">
+                THE HOT SEAT
+            </h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex bg-surface-container-high border border-outline/30 rounded-full px-4 py-2 items-center focus-within:border-secondary transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant mr-2 text-sm">search</span>
+<input class="bg-transparent border-none outline-none text-body-md text-on-surface w-48 placeholder-on-surface-variant/50 focus:ring-0" placeholder="Search..." type="text"/>
+</div>
+<button class="text-on-surface-variant hover:text-secondary transition-all duration-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary transition-all duration-300">
+<span class="material-symbols-outlined">settings_suggest</span>
+</button>
+<div class="h-8 w-8 rounded-full border border-secondary overflow-hidden">
+<img alt="Producer Avatar" class="w-full h-full object-cover" data-alt="A cinematic, high contrast avatar of a producer wearing a headset in a dark control room. 50 words minimum." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbi6PMRKlQxboXiwjs9vGA-HAHbKOL1dk1u7CVCvqwRe8ctoD0ppTksK_n6N695MrcPqS6b92txCvClFxcgUQR-GV-UmQO8BHbmsC0fRiu6dZcJ0LrGE7vTnnmkqeJ5CVK9kSIh4dhPk9XAnaJVvlkdV3KV2F5gAIgrPRdiROn3eMzDQedW-8QqAoIuP5IEYFOVQ5xGDQPGDo_a7z9k473khw_7dGVMuAHjHAAjJtHddMFyMY32-A4hGZizAgumyNlmN4x7dTYc0e_"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-0 md:ml-64 pt-24 px-margin-mobile md:px-margin-desktop pb-32 overflow-y-auto relative z-10 flex flex-col items-center">
+<!-- Phase Indicator -->
+<div class="mb-stack-lg animate-[pulse_3s_ease-in-out_infinite]">
+<div class="bg-secondary-container/20 border border-secondary rounded-full px-6 py-2 flex items-center gap-3 bloom-gold">
+<div class="w-3 h-3 rounded-full bg-secondary animate-ping"></div>
+<span class="font-label-caps text-label-caps tracking-[0.2em] text-secondary">PHASE: JUDGING</span>
+</div>
+</div>
+<!-- Central Diamond Flow Container -->
+<div class="w-full max-w-4xl flex flex-col gap-stack-md">
+<!-- Context Header (The Question) -->
+<div class="glass-panel border-t-2 border-b-2 border-secondary/50 p-6 md:p-8 text-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-secondary/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+<h3 class="font-label-caps text-on-surface-variant mb-2">CURRENT QUESTION - ROUND 3</h3>
+<p class="font-headline-md text-headline-md text-on-surface drop-shadow-md">
+                    Which philosopher famously stated, "I think, therefore I am"?
+                </p>
+<div class="mt-4 flex justify-center gap-4 text-sm text-outline">
+<span>Target Answer: <strong class="text-inverse-surface">René Descartes</strong></span>
+</div>
+</div>
+<!-- Judging List Container -->
+<div class="mt-stack-md flex flex-col gap-4">
+<div class="flex justify-between px-4 text-xs font-label-caps text-on-surface-variant/70 uppercase tracking-wider">
+<span>Rank / Time</span>
+<span>Candidate</span>
+<span>Decision</span>
+</div>
+<!-- Candidate Row 1 (Fastest) -->
+<div class="glass-panel hex-clip border border-secondary/30 p-1 relative inner-glow-gold hover:border-secondary/60 transition-colors">
+<div class="bg-surface/50 p-4 flex items-center justify-between gap-4">
+<!-- Rank & Time -->
+<div class="flex items-center gap-4 w-32">
+<div class="w-10 h-10 diamond-clip bg-secondary text-on-secondary flex items-center justify-center font-bold text-lg">
+                                1
+                            </div>
+<div class="font-label-caps text-secondary drop-shadow-[0_0_5px_rgba(240,192,62,0.8)]">
+                                0.8s
+                            </div>
+</div>
+<!-- Candidate Info -->
+<div class="flex-1 flex items-center gap-4">
+<img alt="Candidate 1" class="w-12 h-12 rounded-full border border-outline-variant object-cover grayscale" data-alt="A dramatic portrait of a male contestant sitting in the hot seat, face illuminated by blue screens. 50 words minimum." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPrfq3CEKrWXjTot8KqAqpSCmFVqZuVQTImY4J3yiNwuSeLsGlSEhYwFxFEYhXoQcZMgJ2JsDW062zKzPU3Ry27TwVnqNRS11fvDGFg45cD4b0JSTrNAVpemeFkh-RiE9x17RG813mhcvyDhPk2p0Db6fD-DzlTxb2qs41gfzqUltaEYW_nON_v8KXQO3QfU0GOhbVpmMUBPWSrXNm3-n9HtX8VNyhgZJCkr-3AFSIEDPu8o4HVdhgN43yIEgc5OBO0jGJ13TCq9_Q"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-body-lg text-on-surface">Alex Mercer</span>
+<span class="text-xs text-on-surface-variant font-label-caps">Podium A</span>
+</div>
+</div>
+<!-- Decision Actions -->
+<div class="flex gap-2">
+<button class="correct-btn border border-outline-variant bg-surface-container-highest text-on-surface px-6 py-3 rounded-sm font-label-caps tracking-widest text-xs transition-all flex items-center gap-2 group">
+<span class="material-symbols-outlined text-lg group-hover:text-emerald-400 transition-colors">check_circle</span>
+<span class="group-hover:text-emerald-400 transition-colors">CORRECT</span>
+</button>
+<button class="incorrect-btn border border-outline-variant bg-surface-container-highest text-on-surface px-6 py-3 rounded-sm font-label-caps tracking-widest text-xs transition-all flex items-center gap-2 group">
+<span class="material-symbols-outlined text-lg group-hover:text-rose-500 transition-colors">cancel</span>
+<span class="group-hover:text-rose-500 transition-colors">INCORRECT</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Candidate Row 2 -->
+<div class="glass-panel hex-clip border border-outline-variant/30 p-1 relative hover:border-outline-variant transition-colors opacity-80">
+<div class="bg-surface/50 p-4 flex items-center justify-between gap-4">
+<div class="flex items-center gap-4 w-32">
+<div class="w-10 h-10 diamond-clip bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-lg">
+                                2
+                            </div>
+<div class="font-label-caps text-on-surface-variant">
+                                1.2s
+                            </div>
+</div>
+<div class="flex-1 flex items-center gap-4">
+<img alt="Candidate 2" class="w-12 h-12 rounded-full border border-outline-variant object-cover grayscale" data-alt="A dramatic portrait of a female contestant sitting in the hot seat, looking intense, studio lighting. 50 words minimum." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBWwI7VAgMuyQ84h9D4FUsdO-95RYWj0MyvoByWS-cfhrUYGlZbB1UyywD_PFdg9_WIr7CZgsdQCq4ZGT-MwgKRgFnP6dbWCrF2EwZ6NB1CwzJcMu0mTzXcXSfP3AgHiYKmmeZm9swsFhpBp5ybE7Tpl0Itwd7veqPoxmTKJVxNb10RL-OHSwBy5wSeFdGTyJH6YfziFLUwQvZbjoWOITa927bWZyS-JBWKrMPTcxr5iLutt9741lvDOqIjqHvnONNKul1MosSP8zB"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-body-lg text-on-surface">Sarah Jenkins</span>
+<span class="text-xs text-on-surface-variant font-label-caps">Podium C</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="correct-btn border border-outline-variant bg-surface-container-highest text-on-surface px-6 py-3 rounded-sm font-label-caps tracking-widest text-xs transition-all flex items-center gap-2 group">
+<span class="material-symbols-outlined text-lg group-hover:text-emerald-400 transition-colors">check_circle</span>
+</button>
+<button class="incorrect-btn border border-outline-variant bg-surface-container-highest text-on-surface px-6 py-3 rounded-sm font-label-caps tracking-widest text-xs transition-all flex items-center gap-2 group">
+<span class="material-symbols-outlined text-lg group-hover:text-rose-500 transition-colors">cancel</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Candidate Row 3 (Missed / Timeout) -->
+<div class="glass-panel hex-clip border border-error-container/30 p-1 relative opacity-50 grayscale hover:grayscale-0 transition-all">
+<div class="bg-surface/50 p-4 flex items-center justify-between gap-4">
+<div class="flex items-center gap-4 w-32">
+<div class="w-10 h-10 diamond-clip bg-surface-container-lowest text-outline flex items-center justify-center font-bold text-lg">
+                                -
+                            </div>
+<div class="font-label-caps text-error">
+                                T/O
+                            </div>
+</div>
+<div class="flex-1 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full border border-outline-variant bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-body-lg text-outline">Marcus Vance</span>
+<span class="text-xs text-outline-variant font-label-caps">Podium B</span>
+</div>
+</div>
+<div class="flex gap-2">
+<span class="font-label-caps text-error px-6 py-3 border border-transparent">LOCKED OUT</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="absolute bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/10 flex justify-between items-center px-margin-desktop py-4 z-30">
+<div class="font-body-md text-body-md text-outline dark:text-outline text-sm">
+            © 2024 THE HOT SEAT BROADCAST GROUP
+        </div>
+<div class="flex gap-6">
+<a class="font-body-md text-body-md text-outline hover:text-secondary transition-colors cursor-pointer text-sm" href="#">System Status: Operational</a>
+<a class="font-body-md text-body-md text-outline hover:text-secondary transition-colors cursor-pointer text-sm" href="#">Privacy Protocol</a>
+<a class="font-body-md text-body-md text-outline hover:text-secondary transition-colors cursor-pointer text-sm" href="#">Legal</a>
+</div>
+</footer>
+</body></html>
