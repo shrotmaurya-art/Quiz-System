@@ -525,42 +525,66 @@ export default function LiveControl() {
                         Final Standings
                       </h4>
                       <div className="flex flex-col gap-2">
-                        {scoreboard.map((team, idx) => (
-                          <div
-                            key={team.id}
-                            className={`flex items-center justify-between p-4 rounded-lg border backdrop-blur-md ${
-                              idx === 0
-                                ? 'bg-secondary/15 border-secondary inner-glow-gold'
-                                : 'bg-surface-container-low/80 border-outline-variant/40'
-                            }`}
-                          >
-                            <div className="flex items-center gap-4">
-                              <span className={`font-display-lg text-lg font-bold ${idx === 0 ? 'text-secondary' : 'text-on-surface-variant'}`}>
-                                {idx + 1}
+                        {scoreboard.map((team, idx) => {
+                          const hasWinner = scoreboard.length > 0 && scoreboard[0].score > 0;
+                          const isWinner = hasWinner && idx === 0;
+                          return (
+                            <div
+                              key={team.id}
+                              className={`flex items-center justify-between p-4 rounded-lg border backdrop-blur-md ${
+                                isWinner
+                                  ? 'bg-secondary/15 border-secondary inner-glow-gold'
+                                  : 'bg-surface-container-low/80 border-outline-variant/40'
+                              }`}
+                            >
+                              <div className="flex items-center gap-4">
+                                <span className={`font-display-lg text-lg font-bold ${isWinner ? 'text-secondary' : 'text-on-surface-variant'}`}>
+                                  {idx + 1}
+                                </span>
+                                {team.logoUrl && (
+                                  <img src={team.logoUrl} alt={team.name} className="w-10 h-10 rounded-full object-cover border border-outline/25" />
+                                )}
+                                <p className={`font-body-lg text-sm font-bold ${isWinner ? 'text-secondary' : 'text-on-surface'}`}>
+                                  {team.name}
+                                </p>
+                              </div>
+                              <span className={`font-headline-md text-headline-sm font-bold ${isWinner ? 'text-secondary' : 'text-on-surface-variant'}`}>
+                                {team.score}
                               </span>
-                              {team.logoUrl && (
-                                <img src={team.logoUrl} alt={team.name} className="w-10 h-10 rounded-full object-cover border border-outline/25" />
-                              )}
-                              <p className={`font-body-lg text-sm font-bold ${idx === 0 ? 'text-secondary' : 'text-on-surface'}`}>
-                                {team.name}
-                              </p>
                             </div>
-                            <span className={`font-headline-md text-headline-sm font-bold ${idx === 0 ? 'text-secondary' : 'text-on-surface-variant'}`}>
-                              {team.score}
-                            </span>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      socket.emit('admin:requestState');
-                    }}
-                    className="mt-8 hex-clip px-8 py-3 bg-tertiary-container/30 border border-on-tertiary-container/20 hover:border-on-tertiary-container/50 hover:bg-tertiary-container/50 transition-all text-tertiary font-label-caps text-xs tracking-widest"
-                  >
-                    REFRESH STATE
-                  </button>
+                  <div className="flex gap-4 mt-8">
+                    <button
+                      onClick={() => {
+                        socket.emit('admin:requestState');
+                      }}
+                      className="hex-clip px-8 py-3 bg-tertiary-container/30 border border-on-tertiary-container/20 hover:border-on-tertiary-container/50 hover:bg-tertiary-container/50 transition-all text-tertiary font-label-caps text-xs tracking-widest"
+                    >
+                      REFRESH STATE
+                    </button>
+                    <button
+                      onClick={() => {
+                        setConfirmModal({
+                          title: 'Restart Quiz?',
+                          message: 'This will reset all question progress and start from Round 1, Question 1. Candidate scores will NOT be reset.',
+                          onConfirm: () => {
+                            socket.emit('admin:startQuiz', {}, (ack) => {
+                              if (ack?.error) alert(ack.error);
+                            });
+                            setConfirmModal(null);
+                          },
+                        });
+                      }}
+                      className="btn-gold-pulse hex-clip px-8 py-3 bg-secondary text-on-secondary font-label-caps text-xs font-bold tracking-widest hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-sm">restart_alt</span>
+                      RESTART QUIZ
+                    </button>
+                  </div>
                 </div>
               )}
 
