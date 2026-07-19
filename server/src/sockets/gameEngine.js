@@ -1,5 +1,4 @@
-'use strict';
-
+const crypto = require('crypto');
 const { get, run, all, getGlobalSettings } = require('../db/db');
 
 /**
@@ -553,10 +552,87 @@ function revealResults() {
   state.phase = 'RESULTS';
   state.resultsRevealed = true;
   saveGameState(state); // Save before computeWinner to get the correct RESULTS state in computeWinner
-  state.winnerCandidateId = computeWinner();
-  saveGameState(state); // Save with the computed winner ID
+  
+  const winnerCandidateId = computeWinner();
+  state.winnerCandidateId = winnerCandidateId;
 
+  if (winnerCandidateId !== null) {
+    // Determine the resolved points for this question:
+    // question's pointsOverride if set, else the round's pointsPerQuestion
+    const question = get('SELECT pointsOverride, roundId FROM questions WHERE id = ?', [state.currentQuestionId]);
+    const round = get('SELECT pointsPerQuestion FROM rounds WHERE id = ?', [state.currentRoundId]);
+    
+    if (question && round) {
+      const points = question.pointsOverride !== null 
+        ? question.pointsOverride 
+        : round.pointsPerQuestion;
+
+      // 1. Update candidate score
+      run('UPDATE candidates SET score = score + ? WHERE id = ?', [points, winnerCandidateId]);
+
+      // 2. Insert into score_log
+      const logId = crypto.randomUUID();
+      run(
+        'INSERT INTO score_log (id, questionId, candidateId, pointsChange, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?)',
+        [
+          logId,
+          state.currentQuestionId,
+          winnerCandidateId,
+          points,
+          'timed_ranking_win',
+          Date.now()
+        ]
+      );
+    }
+  }
+
+  saveGameState(state); // Save with the computed winner ID and resultsRevealed set
   return { success: true, state };
+}
+
+/**
+ * Manually adjusts a candidate's score and logs the change (admin override).
+ * Valid at any time regardless of game phase.
+ * @param {string} candidateId
+ * @param {number} delta
+ * @param {string} reason
+ * @returns {Object} { success: true } or { error }
+ */
+function adjustScoreManually(candidateId, delta, reason) {
+  const candidate = get('SELECT id, score FROM candidates WHERE id = ?', [candidateId]);
+  if (!candidate) {
+    return { error: `Candidate "${candidateId}" not found.` };
+  }
+
+  const state = getGameState();
+  let questionId = state ? state.currentQuestionId : null;
+  if (!questionId) {
+    const fallbackQ = get('SELECT id FROM questions LIMIT 1');
+    if (fallbackQ) {
+      questionId = fallbackQ.id;
+    } else {
+      return { error: 'Cannot manually adjust score: no questions exist in the database to reference for the audit trail.' };
+    }
+  }
+
+  // 1. Update candidate score
+  run('UPDATE candidates SET score = score + ? WHERE id = ?', [delta, candidateId]);
+
+  // 2. Insert into score_log
+  const logId = crypto.randomUUID();
+  run(
+    'INSERT INTO score_log (id, questionId, candidateId, pointsChange, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?)',
+    [
+      logId,
+      questionId,
+      candidateId,
+      delta,
+      'manual_adjustment',
+      Date.now()
+    ]
+  );
+
+  return { success: true };
 }
 
 module.exports = {
@@ -573,5 +649,6 @@ module.exports = {
   enterGap,
   exitGap,
   revealResults,
-  registerOnTimeUp
+  registerOnTimeUp,
+  adjustScoreManually
 };
