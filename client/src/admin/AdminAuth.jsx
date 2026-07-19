@@ -61,7 +61,15 @@ export function AdminAuthProvider({ children }) {
     socket.on('connect_error', (error) => {
       if (isTokenSocketError(error)) {
         clearSession('Your admin session is no longer valid. Please enter the PIN again.');
+      } else {
+        console.error('[Socket] Connection error:', error.message);
       }
+    });
+    socket.on('connect', () => {
+      console.log('[Socket] Connected, id:', socket.id);
+    });
+    socket.on('disconnect', (reason) => {
+      console.warn('[Socket] Disconnected:', reason);
     });
   }, [clearSession]);
 

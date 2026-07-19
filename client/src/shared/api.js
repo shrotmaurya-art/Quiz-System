@@ -1,5 +1,4 @@
-const apiBaseUrl = import.meta.env.VITE_API_URL
-  ?? `${window.location.protocol}//${window.location.hostname}:4000`;
+const apiBaseUrl = import.meta.env.VITE_API_URL || '';
 
 let adminToken = null;
 let unauthorizedHandler = null;

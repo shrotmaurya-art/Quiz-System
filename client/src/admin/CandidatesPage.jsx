@@ -3,8 +3,7 @@ import QRCode from 'qrcode';
 import { useAdminAuth } from './AdminAuth';
 import { apiFetch } from '../shared/api';
 
-const apiBaseUrl = import.meta.env.VITE_API_URL
-  ?? `${window.location.protocol}//${window.location.hostname}:4000`;
+const apiBaseUrl = import.meta.env.VITE_API_URL || '';
 
 function JoinLinkUrl(candidateId, joinToken) {
   const host = window.location.hostname;
