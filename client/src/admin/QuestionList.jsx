@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../shared/api';
 
-export default function QuestionList({ roundId, answerMode, onEdit, onDelete, onAddQuestion }) {
+export default function QuestionList({ roundId, answerMode, refreshKey, onEdit, onDelete, onAddQuestion }) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -12,7 +12,7 @@ export default function QuestionList({ roundId, answerMode, onEdit, onDelete, on
     setLoading(false);
   }, [roundId]);
 
-  useEffect(() => { fetchQuestions(); }, [fetchQuestions]);
+  useEffect(() => { fetchQuestions(); }, [fetchQuestions, refreshKey]);
 
   if (loading) {
     return (
