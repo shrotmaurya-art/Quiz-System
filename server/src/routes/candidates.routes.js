@@ -47,7 +47,7 @@ function saveLogo(file) {
 
 // GET /api/candidates/public
 router.get('/public', (req, res) => {
-  const candidates = all('SELECT * FROM candidates ORDER BY name');
+  const candidates = all('SELECT * FROM candidates WHERE isActive = 1 ORDER BY name');
   return res.json(candidates.map(toPublicCandidate));
 });
 

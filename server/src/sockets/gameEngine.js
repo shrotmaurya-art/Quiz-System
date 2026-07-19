@@ -753,6 +753,27 @@ function endQuiz() {
   return { success: true, state };
 }
 
+function resetQuiz() {
+  const state = getGameState();
+  assertPhase(state.phase, ['QUIZ_ENDED']);
+
+  clearQuestionTimeout();
+
+  state.phase = 'IDLE';
+  state.currentRoundId = null;
+  state.currentQuestionId = null;
+  state.timerStartedAt = null;
+  state.timeLimitSeconds = 30;
+  state.gapEnabled = 1;
+  state.gapSeconds = 10;
+  state.locks = {};
+  state.judgements = {};
+  state.winnerCandidateId = null;
+  state.resultsRevealed = false;
+  saveGameState(state);
+  return { success: true, state };
+}
+
 module.exports = {
   PhaseError,
   assertPhase,
@@ -772,5 +793,6 @@ module.exports = {
   registerOnTimeUp,
   adjustScoreManually,
   nextRound,
-  endQuiz
+  endQuiz,
+  resetQuiz
 };

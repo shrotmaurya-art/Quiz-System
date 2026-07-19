@@ -572,9 +572,9 @@ export default function LiveControl() {
                       onClick={() => {
                         setConfirmModal({
                           title: 'Restart Quiz?',
-                          message: 'This will reset all question progress and start from Round 1, Question 1. Candidate scores will NOT be reset.',
+                          message: 'This will reset question progress and return to idle state. Candidate scores will NOT be reset. You can then start the quiz fresh.',
                           onConfirm: () => {
-                            socket.emit('admin:startQuiz', {}, (ack) => {
+                            socket.emit('admin:resetQuiz', {}, (ack) => {
                               if (ack?.error) alert(ack.error);
                             });
                             setConfirmModal(null);

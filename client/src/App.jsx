@@ -6,6 +6,7 @@ import CandidatesPage from './admin/CandidatesPage';
 import SettingsBackup from './admin/SettingsBackup';
 import AdminLogin from './admin/AdminLogin';
 import { AdminAuthProvider, useAdminAuth } from './admin/AdminAuth';
+import DisplayShell from './display/DisplayShell';
 
 function CandidateTablet() {
   const { candidateId } = useParams();
@@ -56,13 +57,19 @@ function AdminApp() {
 
 export default function App() {
   return (
-    <AdminAuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/play/:candidateId" element={<CandidateTablet />} />
-          <Route path="/*" element={<AdminApp />} />
-        </Routes>
-      </BrowserRouter>
-    </AdminAuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/display" element={<DisplayShell />} />
+        <Route path="/play/:candidateId" element={<CandidateTablet />} />
+        <Route
+          path="/*"
+          element={
+            <AdminAuthProvider>
+              <AdminApp />
+            </AdminAuthProvider>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }

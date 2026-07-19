@@ -132,10 +132,11 @@ function broadcastGameState(io) {
  * Broadcasts unredacted and redacted candidates list to their respective rooms.
  */
 function broadcastCandidates(io) {
-  const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
+  const allCandidates = all('SELECT * FROM candidates ORDER BY name ASC');
+  const activeCandidates = all('SELECT * FROM candidates WHERE isActive = 1 ORDER BY name ASC');
   
-  io.to('admin').emit('candidates:updated', candidates.map(toAdminCandidate));
-  io.to('display').emit('candidates:public-updated', candidates.map(toPublicCandidate));
+  io.to('admin').emit('candidates:updated', allCandidates.map(toAdminCandidate));
+  io.to('display').emit('candidates:public-updated', activeCandidates.map(toPublicCandidate));
 }
 
 function broadcastScoreboard(io) {
@@ -201,6 +202,7 @@ function startQuestionTick(io, timeLimitSeconds) {
   clearQuestionTick();
   let remaining = timeLimitSeconds;
 
+  io.to('admin').emit('timer:tick', { remainingSeconds: remaining });
   io.to('display').emit('timer:tick', { remainingSeconds: remaining });
   const state = gameEngine.getGameState();
   for (const cid in state.locks) {
@@ -212,6 +214,7 @@ function startQuestionTick(io, timeLimitSeconds) {
     if (remaining <= 0) {
       clearQuestionTick();
     } else {
+      io.to('admin').emit('timer:tick', { remainingSeconds: remaining });
       io.to('display').emit('timer:tick', { remainingSeconds: remaining });
       const currentLocks = gameEngine.getGameState().locks;
       for (const cid in currentLocks) {
@@ -236,6 +239,7 @@ function startGapTimerCountdown(io, gapSeconds) {
   clearGapTimerCountdown();
   let remaining = gapSeconds;
 
+  io.to('admin').emit('gap:tick', { remainingSeconds: remaining });
   io.to('display').emit('gap:tick', { remainingSeconds: remaining });
   const state = gameEngine.getGameState();
   for (const cid in state.locks) {
@@ -247,6 +251,7 @@ function startGapTimerCountdown(io, gapSeconds) {
     if (remaining <= 0) {
       clearGapTimerCountdown();
     } else {
+      io.to('admin').emit('gap:tick', { remainingSeconds: remaining });
       io.to('display').emit('gap:tick', { remainingSeconds: remaining });
       const currentLocks = gameEngine.getGameState().locks;
       for (const cid in currentLocks) {
@@ -385,7 +390,7 @@ function initSockets(server) {
         : null;
       socket.emit('game:state:public', redactGameState(state, question, round));
 
-      const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
+      const candidates = all('SELECT * FROM candidates WHERE isActive = 1 ORDER BY name ASC');
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
 
       // Send initial scoreboard
@@ -404,7 +409,7 @@ function initSockets(server) {
         : null;
       socket.emit('game:state:public', redactGameState(state, question, round));
 
-      const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
+      const candidates = all('SELECT * FROM candidates WHERE isActive = 1 ORDER BY name ASC');
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
 
       // Send initial scoreboard
@@ -632,7 +637,6 @@ function initSockets(server) {
         else socket.emit('error', res.error);
       } else {
         clearQuestionTick();
-        clearQuestionTimeout();
         clearGapTimerCountdown();
         if (typeof ack === 'function') ack({ success: true });
         broadcastGameState(io);
@@ -653,7 +657,22 @@ function initSockets(server) {
         else socket.emit('error', res.error);
       } else {
         clearQuestionTick();
-        clearQuestionTimeout();
+        clearGapTimerCountdown();
+        if (typeof ack === 'function') ack({ success: true });
+        broadcastGameState(io);
+        broadcastScoreboard(io);
+      }
+    });
+
+    socket.on('admin:resetQuiz', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+      const res = runGameAction(() => gameEngine.resetQuiz(), ack);
+      if (!res) return;
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        clearQuestionTick();
         clearGapTimerCountdown();
         if (typeof ack === 'function') ack({ success: true });
         broadcastGameState(io);
