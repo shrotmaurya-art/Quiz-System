@@ -21,7 +21,7 @@ function DisplayContent() {
   const PhaseView = PHASE_MAP[phase] ?? IdleView;
 
   return (
-    <div className="fixed inset-0 h-full w-full overflow-hidden bg-[#0A0E29]">
+    <div className="fixed inset-0 h-full w-full overflow-hidden">
       <ShaderBackground />
       <div className="relative z-10 h-full w-full">
         <PhaseView />

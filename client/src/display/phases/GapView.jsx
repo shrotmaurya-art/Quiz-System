@@ -16,8 +16,8 @@ export default function GapView() {
   const remaining = gap?.remainingSeconds ?? gap?.gapSeconds ?? 0;
 
   return (
-    <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-[#0A0E29] text-center">
-      {/* Radial vignette for stage focus */}
+    <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden text-center">
+      {/* Radial vignette for stage focus (transparent center lets the ambient shader show through) */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
