@@ -30,7 +30,7 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback } f
  *   game:state:public snapshot IS the truth.
  */
 
-const CandidateGameContext = createContext(null);
+export const CandidateGameContext = createContext(null);
 
 const initialState = {
   /** @type {'IDLE'|'QUESTION_SHOWN'|'TIME_UP'|'JUDGING'|'GAP'|'RESULTS'|'QUIZ_ENDED'} */
