@@ -1,0 +1,530 @@
+'use strict';
+
+const { get, run, all, getGlobalSettings } = require('../db/db');
+
+/**
+ * Normalises an SQLite boolean (integer 1/0 or null) to a JavaScript boolean or null.
+ * @param {any} val
+ * @returns {boolean|null}
+ */
+function dbBool(val) {
+  if (val === null || val === undefined) return null;
+  return Boolean(val);
+}
+
+/**
+ * Retrieves the current game state from the database, parsing JSON fields.
+ * @returns {Object|null}
+ */
+function getGameState() {
+  const state = get('SELECT * FROM game_state WHERE id = 1');
+  if (!state) return null;
+  return {
+    ...state,
+    locks: JSON.parse(state.locks || '{}'),
+    judgements: JSON.parse(state.judgements || '{}'),
+    resultsRevealed: Boolean(state.resultsRevealed),
+    gapEnabled: state.gapEnabled === null ? null : Boolean(state.gapEnabled)
+  };
+}
+
+/**
+ * Persists the game state back to the database, stringifying JSON fields.
+ * @param {Object} state
+ */
+function saveGameState(state) {
+  run(
+    `UPDATE game_state SET
+      phase = ?,
+      currentRoundId = ?,
+      currentQuestionId = ?,
+      timerStartedAt = ?,
+      timeLimitSeconds = ?,
+      gapEnabled = ?,
+      gapSeconds = ?,
+      locks = ?,
+      judgements = ?,
+      winnerCandidateId = ?,
+      resultsRevealed = ?
+    WHERE id = 1`,
+    [
+      state.phase,
+      state.currentRoundId,
+      state.currentQuestionId,
+      state.timerStartedAt,
+      state.timeLimitSeconds,
+      state.gapEnabled === null ? null : Number(state.gapEnabled),
+      state.gapSeconds,
+      JSON.stringify(state.locks),
+      JSON.stringify(state.judgements),
+      state.winnerCandidateId,
+      Number(state.resultsRevealed)
+    ]
+  );
+}
+
+/**
+ * Resolves the timing values for a given question and round, falling back to global settings.
+ * @param {Object} question
+ * @param {Object} round
+ * @param {Object} globalSettings
+ * @returns {{ timeLimitSeconds: number, gapEnabled: boolean, gapSeconds: number }}
+ */
+function resolveTiming(question, round, globalSettings) {
+  const timeLimitSeconds = question.timeLimitOverrideSeconds !== null
+    ? question.timeLimitOverrideSeconds
+    : (round.timeLimitSeconds !== null ? round.timeLimitSeconds : globalSettings.defaultTimeLimitSeconds);
+
+  const gapEnabledRaw = question.gapEnabledOverride !== null
+    ? question.gapEnabledOverride
+    : (round.gapEnabled !== null ? round.gapEnabled : globalSettings.defaultGapEnabled);
+  const gapEnabled = Boolean(gapEnabledRaw);
+
+  const gapSeconds = question.gapSecondsOverride !== null
+    ? question.gapSecondsOverride
+    : (round.gapSeconds !== null ? round.gapSeconds : globalSettings.defaultGapSeconds);
+
+  return { timeLimitSeconds, gapEnabled, gapSeconds };
+}
+
+// ---------------------------------------------------------------------------
+// Game Engine Exported Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Sets the phase to QUESTION_SHOWN on Round 1, Question 1.
+ * Valid from IDLE or QUIZ_ENDED.
+ * @returns {Object} { success: true, state } or { error }
+ */
+function startQuiz() {
+  const state = getGameState();
+  if (state.phase !== 'IDLE' && state.phase !== 'QUIZ_ENDED') {
+    return { error: `Cannot start quiz from current phase: ${state.phase}` };
+  }
+
+  const activeCandidates = all('SELECT id FROM candidates WHERE isActive = 1');
+  if (activeCandidates.length === 0) {
+    return { error: 'Cannot start quiz: no active candidates configured.' };
+  }
+
+  const round = get('SELECT * FROM rounds ORDER BY "order" ASC LIMIT 1');
+  if (!round) {
+    return { error: 'Cannot start quiz: no rounds configured.' };
+  }
+
+  const question = get('SELECT * FROM questions WHERE roundId = ? ORDER BY "order" ASC LIMIT 1', [round.id]);
+  if (!question) {
+    return { error: `Cannot start quiz: round "${round.name}" has no questions.` };
+  }
+
+  const globalSettings = getGlobalSettings();
+  const timing = resolveTiming(question, round, globalSettings);
+
+  const locks = {};
+  for (const c of activeCandidates) {
+    locks[c.id] = { optionKey: null, elapsedMs: null, answered: false };
+  }
+
+  state.phase = 'QUESTION_SHOWN';
+  state.currentRoundId = round.id;
+  state.currentQuestionId = question.id;
+  state.timerStartedAt = Date.now();
+  state.timeLimitSeconds = timing.timeLimitSeconds;
+  state.gapEnabled = timing.gapEnabled;
+  state.gapSeconds = timing.gapSeconds;
+  state.locks = locks;
+  state.judgements = {};
+  state.winnerCandidateId = null;
+  state.resultsRevealed = false;
+
+  saveGameState(state);
+  return { success: true, state };
+}
+
+/**
+ * Advances currentRoundId/currentQuestionId to the next question.
+ * Valid from RESULTS or IDLE.
+ * @returns {Object} { success: true, state, ended: boolean } or { error }
+ */
+function nextQuestion() {
+  const state = getGameState();
+  if (state.phase !== 'RESULTS' && state.phase !== 'IDLE') {
+    return { error: `Cannot advance to next question from current phase: ${state.phase}` };
+  }
+
+  const currentRound = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
+  const currentQuestion = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
+
+  if (!currentRound || !currentQuestion) {
+    return { error: 'Current round or question not found in database.' };
+  }
+
+  // Find next question in the same round
+  let nextQ = get(
+    'SELECT * FROM questions WHERE roundId = ? AND "order" > ? ORDER BY "order" ASC LIMIT 1',
+    [state.currentRoundId, currentQuestion.order]
+  );
+  let nextR = null;
+
+  if (!nextQ) {
+    // Find next round
+    nextR = get(
+      'SELECT * FROM rounds WHERE "order" > ? ORDER BY "order" ASC LIMIT 1',
+      [currentRound.order]
+    );
+    if (nextR) {
+      nextQ = get(
+        'SELECT * FROM questions WHERE roundId = ? ORDER BY "order" ASC LIMIT 1',
+        [nextR.id]
+      );
+    }
+  }
+
+  if (!nextQ) {
+    // No more questions or rounds: transition to QUIZ_ENDED
+    state.phase = 'QUIZ_ENDED';
+    state.locks = {};
+    state.judgements = {};
+    state.winnerCandidateId = null;
+    state.resultsRevealed = false;
+    saveGameState(state);
+    return { success: true, ended: true, state };
+  }
+
+  // Next question found: initialise state
+  const resolvedRound = nextR || currentRound;
+  const globalSettings = getGlobalSettings();
+  const timing = resolveTiming(nextQ, resolvedRound, globalSettings);
+
+  const activeCandidates = all('SELECT id FROM candidates WHERE isActive = 1');
+  const locks = {};
+  for (const c of activeCandidates) {
+    locks[c.id] = { optionKey: null, elapsedMs: null, answered: false };
+  }
+
+  state.phase = 'QUESTION_SHOWN';
+  state.currentRoundId = resolvedRound.id;
+  state.currentQuestionId = nextQ.id;
+  state.timerStartedAt = Date.now();
+  state.timeLimitSeconds = timing.timeLimitSeconds;
+  state.gapEnabled = timing.gapEnabled;
+  state.gapSeconds = timing.gapSeconds;
+  state.locks = locks;
+  state.judgements = {};
+  state.winnerCandidateId = null;
+  state.resultsRevealed = false;
+
+  saveGameState(state);
+  return { success: true, state };
+}
+
+/**
+ * Rewinds currentRoundId/currentQuestionId to the previous question.
+ * Valid from any phase EXCEPT IDLE.
+ * @returns {Object} { success: true, state } or { error }
+ */
+function previousQuestion() {
+  const state = getGameState();
+  if (state.phase === 'IDLE') {
+    return { error: 'Cannot go to previous question when the quiz has not started.' };
+  }
+
+  const currentRound = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
+  const currentQuestion = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
+
+  if (!currentRound || !currentQuestion) {
+    return { error: 'Current round or question not found in database.' };
+  }
+
+  // Find previous question in the same round
+  let prevQ = get(
+    'SELECT * FROM questions WHERE roundId = ? AND "order" < ? ORDER BY "order" DESC LIMIT 1',
+    [state.currentRoundId, currentQuestion.order]
+  );
+  let prevR = null;
+
+  if (!prevQ) {
+    // Find previous round
+    prevR = get(
+      'SELECT * FROM rounds WHERE "order" < ? ORDER BY "order" DESC LIMIT 1',
+      [currentRound.order]
+    );
+    if (prevR) {
+      prevQ = get(
+        'SELECT * FROM questions WHERE roundId = ? ORDER BY "order" DESC LIMIT 1',
+        [prevR.id]
+      );
+    }
+  }
+
+  if (!prevQ) {
+    return { error: 'No previous question found.' };
+  }
+
+  // Previous question found: reset state
+  const resolvedRound = prevR || currentRound;
+  const globalSettings = getGlobalSettings();
+  const timing = resolveTiming(prevQ, resolvedRound, globalSettings);
+
+  const activeCandidates = all('SELECT id FROM candidates WHERE isActive = 1');
+  const locks = {};
+  for (const c of activeCandidates) {
+    locks[c.id] = { optionKey: null, elapsedMs: null, answered: false };
+  }
+
+  state.phase = 'QUESTION_SHOWN';
+  state.currentRoundId = resolvedRound.id;
+  state.currentQuestionId = prevQ.id;
+  state.timerStartedAt = Date.now();
+  state.timeLimitSeconds = timing.timeLimitSeconds;
+  state.gapEnabled = timing.gapEnabled;
+  state.gapSeconds = timing.gapSeconds;
+  state.locks = locks;
+  state.judgements = {};
+  state.winnerCandidateId = null;
+  state.resultsRevealed = false;
+
+  saveGameState(state);
+  return { success: true, state };
+}
+
+/**
+ * Locks in an answer for a specific candidate.
+ * Valid only during QUESTION_SHOWN.
+ * @param {string} candidateId
+ * @param {string|null} optionKey
+ * @returns {Object} { success: true, state } or { error }
+ */
+function lockAnswer(candidateId, optionKey) {
+  const state = getGameState();
+  if (state.phase !== 'QUESTION_SHOWN') {
+    return { error: `Answers can only be locked in during QUESTION_SHOWN phase. Current phase: ${state.phase}` };
+  }
+
+  const lock = state.locks[candidateId];
+  if (!lock) {
+    return { error: `Candidate "${candidateId}" is not active in this round.` };
+  }
+
+  if (lock.answered) {
+    return { error: `Candidate "${candidateId}" has already locked in an answer.` };
+  }
+
+  const elapsedMs = Date.now() - state.timerStartedAt;
+  state.locks[candidateId] = {
+    optionKey: optionKey === undefined ? null : optionKey,
+    elapsedMs,
+    answered: true
+  };
+
+  saveGameState(state);
+  return { success: true, state };
+}
+
+/**
+ * Handles timer reaching zero: sets unanswered to false, moves to JUDGING (OPEN) or GAP/RESULTS (MCQ).
+ * Valid only during QUESTION_SHOWN.
+ * @returns {Object} { success: true, state } or { error }
+ */
+function handleTimeUp() {
+  const state = getGameState();
+  if (state.phase !== 'QUESTION_SHOWN') {
+    return { error: `Cannot trigger time up outside of QUESTION_SHOWN phase. Current phase: ${state.phase}` };
+  }
+
+  // Mark all unanswered candidates as answered: false
+  for (const cid in state.locks) {
+    if (!state.locks[cid].answered) {
+      state.locks[cid] = {
+        optionKey: null,
+        elapsedMs: null,
+        answered: false
+      };
+    }
+  }
+
+  state.phase = 'TIME_UP';
+
+  const round = get('SELECT answerMode FROM rounds WHERE id = ?', [state.currentRoundId]);
+  if (!round) {
+    return { error: 'Current round not found in database.' };
+  }
+
+  if (round.answerMode === 'OPEN') {
+    state.phase = 'JUDGING';
+    // Initialize empty judgements for all candidates who locked in (answered: true)
+    const judgements = {};
+    for (const cid in state.locks) {
+      if (state.locks[cid].answered) {
+        judgements[cid] = null;
+      }
+    }
+    state.judgements = judgements;
+    saveGameState(state);
+    return { success: true, state };
+  } else {
+    // MCQ round: auto-resolves correctness. Move to GAP or RESULTS
+    saveGameState(state);
+    return enterGap();
+  }
+}
+
+/**
+ * Behaves exactly like the timer reaching zero (manual admin override).
+ * Valid only during QUESTION_SHOWN.
+ * @returns {Object} { success: true, state } or { error }
+ */
+function endTimerNow() {
+  return handleTimeUp();
+}
+
+/**
+ * Submits a verbal correct/incorrect judgement for a candidate.
+ * Valid only during JUDGING on an OPEN round.
+ * @param {string} candidateId
+ * @param {boolean} isCorrect
+ * @returns {Object} { success: true, state } or { error }
+ */
+function submitJudgement(candidateId, isCorrect) {
+  const state = getGameState();
+  if (state.phase !== 'JUDGING') {
+    return { error: `Judgements can only be submitted during JUDGING phase. Current phase: ${state.phase}` };
+  }
+
+  const round = get('SELECT answerMode FROM rounds WHERE id = ?', [state.currentRoundId]);
+  if (!round || round.answerMode !== 'OPEN') {
+    return { error: 'Judgements are only valid for OPEN rounds.' };
+  }
+
+  if (state.judgements[candidateId] === undefined) {
+    return { error: `Candidate "${candidateId}" did not lock in an answer and cannot be judged.` };
+  }
+
+  state.judgements[candidateId] = Boolean(isCorrect);
+
+  saveGameState(state);
+  return { success: true, state };
+}
+
+/**
+ * Standalone helper checking if all answered candidates in an OPEN round have been judged.
+ * @returns {boolean}
+ */
+function allJudged() {
+  const state = getGameState();
+  const round = get('SELECT answerMode FROM rounds WHERE id = ?', [state.currentRoundId]);
+  if (!round || round.answerMode !== 'OPEN') {
+    return true;
+  }
+  for (const cid in state.judgements) {
+    if (state.judgements[cid] === null) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Determines the winner according to the timed-ranking rule (lowest elapsedMs among correct candidates).
+ * @returns {string|null} Winner candidateId or null
+ */
+function computeWinner() {
+  const state = getGameState();
+  const round = get('SELECT answerMode FROM rounds WHERE id = ?', [state.currentRoundId]);
+  const question = get('SELECT correctOptionKey FROM questions WHERE id = ?', [state.currentQuestionId]);
+
+  if (!round || !question) return null;
+
+  let winnerId = null;
+  let minElapsedMs = Infinity;
+
+  for (const cid in state.locks) {
+    const lock = state.locks[cid];
+    if (lock && lock.answered) {
+      let isCorrect = false;
+      if (round.answerMode === 'MCQ') {
+        isCorrect = lock.optionKey === question.correctOptionKey;
+      } else {
+        isCorrect = state.judgements[cid] === true;
+      }
+
+      if (isCorrect && lock.elapsedMs !== null && lock.elapsedMs < minElapsedMs) {
+        minElapsedMs = lock.elapsedMs;
+        winnerId = cid;
+      }
+    }
+  }
+
+  return winnerId;
+}
+
+/**
+ * Transitions phase to GAP if gapEnabled is true, otherwise skips to RESULTS.
+ * Valid from TIME_UP or JUDGING.
+ * @returns {Object} { success: true, state } or { error }
+ */
+function enterGap() {
+  const state = getGameState();
+  if (state.phase !== 'TIME_UP' && state.phase !== 'JUDGING') {
+    return { error: `Cannot enter GAP phase from current phase: ${state.phase}` };
+  }
+
+  if (state.gapEnabled) {
+    state.phase = 'GAP';
+    saveGameState(state);
+    return { success: true, state };
+  } else {
+    // Gap disabled: skip to results
+    return revealResults();
+  }
+}
+
+/**
+ * Transitions from GAP to RESULTS.
+ * Valid only during GAP.
+ * @returns {Object} { success: true, state } or { error }
+ */
+function exitGap() {
+  const state = getGameState();
+  if (state.phase !== 'GAP') {
+    return { error: `Cannot exit GAP phase as current phase is: ${state.phase}` };
+  }
+
+  return revealResults();
+}
+
+/**
+ * Reveals correct answer, computes winner candidate.
+ * Valid from TIME_UP, JUDGING, or GAP.
+ * @returns {Object} { success: true, state } or { error }
+ */
+function revealResults() {
+  const state = getGameState();
+  if (state.phase !== 'TIME_UP' && state.phase !== 'JUDGING' && state.phase !== 'GAP') {
+    return { error: `Cannot reveal results from current phase: ${state.phase}` };
+  }
+
+  state.phase = 'RESULTS';
+  state.resultsRevealed = true;
+  saveGameState(state); // Save before computeWinner to get the correct RESULTS state in computeWinner
+  state.winnerCandidateId = computeWinner();
+  saveGameState(state); // Save with the computed winner ID
+
+  return { success: true, state };
+}
+
+module.exports = {
+  getGameState,
+  startQuiz,
+  nextQuestion,
+  previousQuestion,
+  lockAnswer,
+  handleTimeUp,
+  endTimerNow,
+  submitJudgement,
+  allJudged,
+  computeWinner,
+  enterGap,
+  exitGap,
+  revealResults
+};
