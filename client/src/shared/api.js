@@ -21,10 +21,15 @@ export function setUnauthorizedHandler(handler) {
  * A 401 from an authenticated request clears the session through the registered handler.
  */
 export async function apiFetch(path, { skipAuth = false, skipUnauthorized = false, headers, ...options } = {}) {
-  const requestHeaders = new Headers(headers);
+  const isFormData = options.body instanceof FormData;
+  const requestHeaders = isFormData ? {} : new Headers(headers);
 
   if (!skipAuth && adminToken) {
-    requestHeaders.set('Authorization', `Bearer ${adminToken}`);
+    if (isFormData) {
+      requestHeaders['Authorization'] = `Bearer ${adminToken}`;
+    } else {
+      requestHeaders.set('Authorization', `Bearer ${adminToken}`);
+    }
   }
 
   const response = await fetch(`${apiBaseUrl}${path}`, {

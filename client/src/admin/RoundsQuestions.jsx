@@ -14,6 +14,7 @@ export default function RoundsQuestions() {
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [questionFormRoundId, setQuestionFormRoundId] = useState(null);
+  const [questionRefreshKey, setQuestionRefreshKey] = useState(0);
 
   const fetchRounds = useCallback(async () => {
     const res = await apiFetch('/api/rounds');
@@ -53,7 +54,7 @@ export default function RoundsQuestions() {
   async function handleDeleteQuestion(id, roundId) {
     if (!confirm('Delete this question?')) return;
     const res = await apiFetch(`/api/questions/${id}`, { method: 'DELETE' });
-    if (res.ok) fetchRounds();
+    if (res.ok) { fetchRounds(); setQuestionRefreshKey((k) => k + 1); }
   }
 
   async function handleSaveQuestion(data) {
@@ -63,23 +64,38 @@ export default function RoundsQuestions() {
         payload.append('media', value);
       } else if (key === 'options') {
         payload.append('options', JSON.stringify(value));
+      } else if (key === 'gapEnabledOverride' && value !== undefined && value !== null) {
+        payload.append(key, String(value));
       } else if (value !== undefined && value !== null) {
         payload.append(key, value);
       }
     }
 
-    if (editingQuestion) {
-      const res = await apiFetch(`/api/questions/${editingQuestion.id}`, {
-        method: 'PUT',
-        body: payload,
-      });
-      if (res.ok) { setEditingQuestion(null); setShowQuestionForm(false); fetchRounds(); }
-    } else {
-      const res = await apiFetch('/api/questions', {
-        method: 'POST',
-        body: payload,
-      });
-      if (res.ok) { setShowQuestionForm(false); fetchRounds(); }
+    try {
+      let res;
+      if (editingQuestion) {
+        res = await apiFetch(`/api/questions/${editingQuestion.id}`, {
+          method: 'PUT',
+          body: payload,
+        });
+      } else {
+        res = await apiFetch('/api/questions', {
+          method: 'POST',
+          body: payload,
+        });
+      }
+
+      if (res.ok) {
+        setEditingQuestion(null);
+        setShowQuestionForm(false);
+        fetchRounds();
+        setQuestionRefreshKey((k) => k + 1);
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+        alert(err.error || `Error ${res.status}`);
+      }
+    } catch (e) {
+      alert('Network error: ' + e.message);
     }
   }
 
@@ -156,6 +172,7 @@ export default function RoundsQuestions() {
               <QuestionList
                 roundId={expandedRound.id}
                 answerMode={expandedRound.answerMode}
+                refreshKey={questionRefreshKey}
                 onEdit={(q) => { setEditingQuestion(q); setShowQuestionForm(true); }}
                 onDelete={(qId) => handleDeleteQuestion(qId, expandedRound.id)}
                 onAddQuestion={() => { setEditingQuestion(null); setQuestionFormRoundId(expandedRound.id); setShowQuestionForm(true); }}
