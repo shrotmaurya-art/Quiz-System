@@ -1,0 +1,565 @@
+'use strict';
+
+const socketIo = require('socket.io');
+const { get, all } = require('../db/db');
+const { isValidAdminToken } = require('../middleware/auth');
+const gameEngine = require('./gameEngine');
+
+// Global timer/tick interval references
+let questionTickInterval = null;
+let gapTickInterval = null;
+let gapTimeout = null;
+
+// Helper to convert candidate to Admin schema (contains token)
+function toAdminCandidate(c) {
+  return {
+    id: c.id,
+    name: c.name,
+    logoUrl: c.logoUrl,
+    score: c.score,
+    isActive: Boolean(c.isActive),
+    joinToken: c.joinToken
+  };
+}
+
+// Helper to convert candidate to Public schema (no token)
+function toPublicCandidate(c) {
+  return {
+    id: c.id,
+    name: c.name,
+    logoUrl: c.logoUrl,
+    score: c.score,
+    isActive: Boolean(c.isActive)
+  };
+}
+
+/**
+ * Returns the unredacted game state (including correctOptionKey, elapsedMs, and tokens).
+ */
+function getUnredactedGameState(state, question) {
+  if (!state) return null;
+  const fullQuestion = question ? { ...question } : null;
+  if (fullQuestion) {
+    fullQuestion.options = JSON.parse(fullQuestion.options || '[]');
+  }
+  return {
+    ...state,
+    question: fullQuestion
+  };
+}
+
+/**
+ * Returns the redacted, public-safe game state.
+ * - Hides correctOptionKey unless revealed.
+ * - Hides locks' optionKey and elapsedMs unless revealed.
+ * - Includes status in locks (correct/incorrect/no_answer) only when revealed.
+ */
+function redactGameState(state, question, round) {
+  if (!state) return null;
+
+  const redactedQuestion = question ? { ...question } : null;
+  if (redactedQuestion) {
+    redactedQuestion.options = JSON.parse(redactedQuestion.options || '[]');
+    if (!state.resultsRevealed) {
+      delete redactedQuestion.correctOptionKey;
+    }
+  }
+
+  const redactedLocks = {};
+  for (const cid in state.locks) {
+    const lock = state.locks[cid];
+    if (state.resultsRevealed) {
+      let status = 'no_answer';
+      if (lock.answered) {
+        let isCorrect = false;
+        if (round && round.answerMode === 'MCQ') {
+          isCorrect = lock.optionKey === (question ? question.correctOptionKey : null);
+        } else {
+          isCorrect = state.judgements[cid] === true;
+        }
+        status = isCorrect ? 'correct' : 'incorrect';
+      }
+      redactedLocks[cid] = {
+        optionKey: lock.optionKey,
+        elapsedMs: lock.elapsedMs,
+        answered: lock.answered,
+        status
+      };
+    } else {
+      redactedLocks[cid] = {
+        answered: lock.answered
+      };
+    }
+  }
+
+  return {
+    phase: state.phase,
+    currentRoundId: state.currentRoundId,
+    currentQuestionId: state.currentQuestionId,
+    timerStartedAt: state.timerStartedAt,
+    timeLimitSeconds: state.timeLimitSeconds,
+    gapEnabled: state.gapEnabled,
+    gapSeconds: state.gapSeconds,
+    locks: redactedLocks,
+    judgements: state.phase === 'JUDGING' || state.resultsRevealed ? state.judgements : {},
+    winnerCandidateId: state.resultsRevealed ? state.winnerCandidateId : null,
+    resultsRevealed: Boolean(state.resultsRevealed),
+    question: redactedQuestion
+  };
+}
+
+/**
+ * Broadcasts the unredacted state to the admin room and the redacted state to display & candidates.
+ */
+function broadcastGameState(io) {
+  const state = gameEngine.getGameState();
+  if (!state) return;
+
+  const question = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
+  const round = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
+
+  const unredacted = getUnredactedGameState(state, question);
+  const publicState = redactGameState(state, question, round);
+
+  io.to('admin').emit('game:state', unredacted);
+  io.to('display').emit('game:state:public', publicState);
+  for (const cid in state.locks) {
+    io.to(`candidate:${cid}`).emit('game:state:public', publicState);
+  }
+}
+
+/**
+ * Broadcasts unredacted and redacted candidates list to their respective rooms.
+ */
+function broadcastCandidates(io) {
+  const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
+  
+  io.to('admin').emit('candidates:updated', candidates.map(toAdminCandidate));
+  io.to('display').emit('candidates:public-updated', candidates.map(toPublicCandidate));
+}
+
+/**
+ * Broadcasts the current scoreboard.
+ */
+function broadcastScoreboard(io) {
+  const candidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+  io.to('admin').to('display').emit('scoreboard:update', candidates.map(toPublicCandidate));
+}
+
+/**
+ * Broadcasts results:revealed event to all screens with correct rankings and correctness.
+ */
+function broadcastResultsRevealed(io, state) {
+  const round = get('SELECT answerMode FROM rounds WHERE id = ?', [state.currentRoundId]);
+  const question = get('SELECT correctOptionKey FROM questions WHERE id = ?', [state.currentQuestionId]);
+
+  const rankings = [];
+  for (const cid in state.locks) {
+    const lock = state.locks[cid];
+    let status = 'no_answer';
+    if (lock.answered) {
+      let isCorrect = false;
+      if (round && round.answerMode === 'MCQ') {
+        isCorrect = lock.optionKey === (question ? question.correctOptionKey : null);
+      } else {
+        isCorrect = state.judgements[cid] === true;
+      }
+      status = isCorrect ? 'correct' : 'incorrect';
+    }
+    rankings.push({
+      candidateId: cid,
+      elapsedMs: lock.elapsedMs,
+      status
+    });
+  }
+
+  const payload = {
+    correctOptionKey: (round && round.answerMode === 'MCQ' && question) ? question.correctOptionKey : null,
+    rankings,
+    winnerCandidateId: state.winnerCandidateId
+  };
+
+  io.to('admin').to('display').emit('results:revealed', payload);
+  for (const cid in state.locks) {
+    io.to(`candidate:${cid}`).emit('results:revealed', payload);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Socket Layer Countdown Intervals
+// ---------------------------------------------------------------------------
+
+function clearQuestionTick() {
+  if (questionTickInterval) {
+    clearInterval(questionTickInterval);
+    questionTickInterval = null;
+  }
+}
+
+function startQuestionTick(io, timeLimitSeconds) {
+  clearQuestionTick();
+  let remaining = timeLimitSeconds;
+
+  io.to('display').emit('timer:tick', { remainingSeconds: remaining });
+  const state = gameEngine.getGameState();
+  for (const cid in state.locks) {
+    io.to(`candidate:${cid}`).emit('timer:tick', { remainingSeconds: remaining });
+  }
+
+  questionTickInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearQuestionTick();
+    } else {
+      io.to('display').emit('timer:tick', { remainingSeconds: remaining });
+      const currentLocks = gameEngine.getGameState().locks;
+      for (const cid in currentLocks) {
+        io.to(`candidate:${cid}`).emit('timer:tick', { remainingSeconds: remaining });
+      }
+    }
+  }, 1000);
+}
+
+function clearGapTimerCountdown() {
+  if (gapTickInterval) {
+    clearInterval(gapTickInterval);
+    gapTickInterval = null;
+  }
+  if (gapTimeout) {
+    clearTimeout(gapTimeout);
+    gapTimeout = null;
+  }
+}
+
+function startGapTimerCountdown(io, gapSeconds) {
+  clearGapTimerCountdown();
+  let remaining = gapSeconds;
+
+  io.to('display').emit('gap:tick', { remainingSeconds: remaining });
+  const state = gameEngine.getGameState();
+  for (const cid in state.locks) {
+    io.to(`candidate:${cid}`).emit('gap:tick', { remainingSeconds: remaining });
+  }
+
+  gapTickInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearGapTimerCountdown();
+    } else {
+      io.to('display').emit('gap:tick', { remainingSeconds: remaining });
+      const currentLocks = gameEngine.getGameState().locks;
+      for (const cid in currentLocks) {
+        io.to(`candidate:${cid}`).emit('gap:tick', { remainingSeconds: remaining });
+      }
+    }
+  }, 1000);
+
+  // Automatically transition to results when gap timer ends
+  gapTimeout = setTimeout(() => {
+    clearGapTimerCountdown();
+    const res = gameEngine.revealResults();
+    if (res.success) {
+      broadcastGameState(io);
+      broadcastResultsRevealed(io, res.state);
+      broadcastScoreboard(io);
+    }
+  }, gapSeconds * 1000);
+}
+
+// ---------------------------------------------------------------------------
+// Socket.IO Server Setup
+// ---------------------------------------------------------------------------
+
+function initSockets(server) {
+  const io = new socketIo.Server(server, {
+    cors: {
+      origin: '*',
+      methods: ['GET', 'POST']
+    }
+  });
+
+  // Socket.IO Auth Middleware
+  io.use((socket, next) => {
+    const { role, candidateId, joinToken } = socket.handshake.query || {};
+    const auth = socket.handshake.auth || {};
+    const adminToken = auth.token || socket.handshake.query.adminToken;
+
+    // 1. Admin Authentication Check
+    if (role === 'admin' || adminToken) {
+      if (isValidAdminToken(adminToken)) {
+        socket.decodedAuth = { role: 'admin' };
+        return next();
+      }
+      return next(new Error('Authentication failed: Invalid admin session token.'));
+    }
+
+    // 2. Candidate Authentication Check
+    if (candidateId && joinToken) {
+      const candidate = get(
+        'SELECT id FROM candidates WHERE id = ? AND joinToken = ? AND isActive = 1',
+        [candidateId, joinToken]
+      );
+      if (candidate) {
+        socket.decodedAuth = { role: 'candidate', candidateId };
+        return next();
+      }
+      return next(new Error('Authentication failed: Invalid candidate credentials.'));
+    }
+
+    // 3. Display connection check (Unauthenticated Display is allowed)
+    if (role === 'display') {
+      socket.decodedAuth = { role: 'display' };
+      return next();
+    }
+
+    return next(new Error('Authentication failed: Missing role or credentials.'));
+  });
+
+  // Register Timer Callback from gameEngine layer
+  gameEngine.registerOnTimeUp((state) => {
+    clearQuestionTick();
+
+    // Broadcast time:up event
+    const unanswered = [];
+    for (const cid in state.locks) {
+      if (!state.locks[cid].answered) {
+        unanswered.push(cid);
+      }
+    }
+
+    io.to('admin').to('display').emit('time:up', { noAnswerCandidateIds: unanswered });
+    for (const cid in state.locks) {
+      io.to(`candidate:${cid}`).emit('time:up', { noAnswerCandidateIds: unanswered });
+    }
+
+    broadcastGameState(io);
+
+    if (state.phase === 'JUDGING') {
+      io.to('admin').emit('judging:started', {
+        rankedCandidateIds: Object.keys(state.locks)
+          .filter(cid => state.locks[cid].answered)
+          .sort((a, b) => state.locks[a].elapsedMs - state.locks[b].elapsedMs)
+      });
+    } else if (state.phase === 'GAP') {
+      io.to('admin').to('display').emit('gap:started', { gapSeconds: state.gapSeconds });
+      for (const cid in state.locks) {
+        io.to(`candidate:${cid}`).emit('gap:started', { gapSeconds: state.gapSeconds });
+      }
+      startGapTimerCountdown(io, state.gapSeconds);
+    } else if (state.phase === 'RESULTS') {
+      broadcastResultsRevealed(io, state);
+      broadcastScoreboard(io);
+    }
+  });
+
+  io.on('connection', (socket) => {
+    const auth = socket.decodedAuth;
+
+    // Join room based on verified credentials
+    if (auth.role === 'admin') {
+      socket.join('admin');
+      
+      const state = gameEngine.getGameState();
+      const question = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
+      socket.emit('game:state', getUnredactedGameState(state, question));
+
+      const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
+      socket.emit('candidates:updated', candidates.map(toAdminCandidate));
+    } 
+    else if (auth.role === 'candidate') {
+      socket.join(`candidate:${auth.candidateId}`);
+
+      const state = gameEngine.getGameState();
+      const question = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
+      const round = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
+      socket.emit('game:state:public', redactGameState(state, question, round));
+
+      const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
+      socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
+    } 
+    else if (auth.role === 'display') {
+      socket.join('display');
+
+      const state = gameEngine.getGameState();
+      const question = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
+      const round = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
+      socket.emit('game:state:public', redactGameState(state, question, round));
+
+      const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
+      socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
+    }
+
+    // Role-verification helpers for event execution
+    function verifyIsAdmin(ack) {
+      if (auth.role !== 'admin') {
+        const err = 'Permission denied: Admin role required.';
+        if (typeof ack === 'function') ack({ error: err });
+        else socket.emit('error', err);
+        return false;
+      }
+      return true;
+    }
+
+    function verifyIsCandidate(candidateId, ack) {
+      if (auth.role !== 'candidate' || auth.candidateId !== candidateId) {
+        const err = 'Permission denied: Candidate mismatch or invalid credentials.';
+        if (typeof ack === 'function') ack({ error: err });
+        else socket.emit('error', err);
+        return false;
+      }
+      return true;
+    }
+
+    // Client-to-server handlers
+
+    socket.on('admin:nextQuestion', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+      
+      clearQuestionTick();
+      clearGapTimerCountdown();
+
+      const res = gameEngine.nextQuestion();
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        if (typeof ack === 'function') ack({ success: true });
+        broadcastGameState(io);
+        if (res.state.phase === 'QUESTION_SHOWN') {
+          startQuestionTick(io, res.state.timeLimitSeconds);
+        } else if (res.ended) {
+          broadcastScoreboard(io);
+        }
+      }
+    });
+
+    socket.on('admin:prevQuestion', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+
+      clearQuestionTick();
+      clearGapTimerCountdown();
+
+      const res = gameEngine.previousQuestion();
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        if (typeof ack === 'function') ack({ success: true });
+        broadcastGameState(io);
+        if (res.state.phase === 'QUESTION_SHOWN') {
+          startQuestionTick(io, res.state.timeLimitSeconds);
+        }
+      }
+    });
+
+    socket.on('admin:endTimerNow', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+
+      clearQuestionTick();
+
+      const res = gameEngine.endTimerNow();
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        if (typeof ack === 'function') ack({ success: true });
+
+        const unanswered = [];
+        for (const cid in res.state.locks) {
+          if (!res.state.locks[cid].answered) {
+            unanswered.push(cid);
+          }
+        }
+        io.to('admin').to('display').emit('time:up', { noAnswerCandidateIds: unanswered });
+        for (const cid in res.state.locks) {
+          io.to(`candidate:${cid}`).emit('time:up', { noAnswerCandidateIds: unanswered });
+        }
+
+        broadcastGameState(io);
+
+        if (res.state.phase === 'JUDGING') {
+          io.to('admin').emit('judging:started', {
+            rankedCandidateIds: Object.keys(res.state.locks)
+              .filter(cid => res.state.locks[cid].answered)
+              .sort((a, b) => res.state.locks[a].elapsedMs - res.state.locks[b].elapsedMs)
+          });
+        } else if (res.state.phase === 'GAP') {
+          io.to('admin').to('display').emit('gap:started', { gapSeconds: res.state.gapSeconds });
+          for (const cid in res.state.locks) {
+            io.to(`candidate:${cid}`).emit('gap:started', { gapSeconds: res.state.gapSeconds });
+          }
+          startGapTimerCountdown(io, res.state.gapSeconds);
+        } else if (res.state.phase === 'RESULTS') {
+          broadcastResultsRevealed(io, res.state);
+          broadcastScoreboard(io);
+        }
+      }
+    });
+
+    socket.on('admin:submitJudgement', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+      const { candidateId, isCorrect } = data || {};
+      const res = gameEngine.submitJudgement(candidateId, isCorrect);
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        if (typeof ack === 'function') ack({ success: true });
+        broadcastGameState(io);
+      }
+    });
+
+    socket.on('admin:advanceFromGap', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+      clearGapTimerCountdown();
+
+      const res = gameEngine.revealResults(); // Exit gap manually goes directly to results
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        if (typeof ack === 'function') ack({ success: true });
+        broadcastGameState(io);
+        broadcastResultsRevealed(io, res.state);
+        broadcastScoreboard(io);
+      }
+    });
+
+    socket.on('admin:adjustScore', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+      const { candidateId, delta, reason } = data || {};
+      const res = gameEngine.adjustScoreManually(candidateId, delta, reason);
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        if (typeof ack === 'function') ack({ success: true });
+        broadcastCandidates(io);
+        broadcastScoreboard(io);
+      }
+    });
+
+    socket.on('candidate:lockAnswer', (data, ack) => {
+      const { candidateId, optionKey } = data || {};
+      if (!verifyIsCandidate(candidateId, ack)) return;
+      
+      const res = gameEngine.lockAnswer(candidateId, optionKey);
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        if (typeof ack === 'function') ack({ success: true });
+        io.to('admin').to('display').emit('candidate:locked', { candidateId });
+        broadcastGameState(io);
+      }
+    });
+
+    socket.on('disconnect', () => {
+      // Sockets clean up on disconnect silently
+    });
+  });
+
+  return io;
+}
+
+module.exports = initSockets;

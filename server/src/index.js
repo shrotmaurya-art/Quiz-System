@@ -12,6 +12,7 @@ const roundsRouter = require('./routes/rounds.routes');
 const questionsRouter = require('./routes/questions.routes');
 const candidatesRouter = require('./routes/candidates.routes');
 const { handleAdminLogin, requireAdmin } = require('./middleware/auth');
+const initSockets = require('./sockets/index');
 const { toPublicCandidate } = candidatesRouter;
 
 app.use(express.json());
@@ -175,6 +176,8 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server listening on http://${getLanAddress()}:${PORT}`);
   console.log(`Server running — try http://localhost:${PORT}/api/health`);
 });
+
+initSockets(server);
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
