@@ -443,6 +443,16 @@ function initSockets(server) {
       }
     }
 
+    socket.on('admin:requestState', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+      const state = gameEngine.getGameState();
+      const question = state && state.currentQuestionId
+        ? get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId])
+        : null;
+      socket.emit('game:state', getUnredactedGameState(state, question));
+      if (typeof ack === 'function') ack({ success: true });
+    });
+
     // Client-to-server handlers
 
     socket.on('admin:startQuiz', (data, ack) => {
