@@ -51,6 +51,19 @@ router.get('/public', (req, res) => {
   return res.json(candidates.map(toPublicCandidate));
 });
 
+// GET /api/candidates/:id/public
+// Public, unauthenticated, token-free self-profile for a single candidate.
+// Safe to expose: returns ONLY this candidate's own id/name/logoUrl/score/
+// isActive (never joinToken, never any other candidate). Used by the candidate
+// tablet waiting screen to show the contestant's own name + logo on connect.
+router.get('/:id/public', (req, res) => {
+  const candidate = get('SELECT * FROM candidates WHERE id = ?', [req.params.id]);
+  if (!candidate) {
+    return res.status(404).json({ error: 'Candidate not found.' });
+  }
+  return res.json(toPublicCandidate(candidate));
+});
+
 router.use(requireAdmin);
 
 // GET /api/candidates

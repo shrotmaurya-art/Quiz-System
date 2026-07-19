@@ -6,6 +6,7 @@ import { CandidateGameProvider, useCandidateGame } from './CandidateGameContext'
 import McqQuestionView from './McqQuestionView';
 import OpenQuestionView from './OpenQuestionView';
 import ResultsView from './ResultsView';
+import WaitingRoom from './WaitingRoom';
 
 /**
  * Candidate tablet entry point — route /play/:candidateId?token=...
@@ -104,23 +105,9 @@ export default function CandidateTablet() {
 function CandidateContent() {
   const { phase, gameState, timer, isLockedIn, gap } = useCandidateGame();
 
-  // IDLE / QUIZ_ENDED — waiting shell
+  // IDLE / QUIZ_ENDED — waiting shell (Task 5.6)
   if (phase === 'IDLE' || phase === 'QUIZ_ENDED') {
-    return (
-      <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-center">
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(circle at center, #1a2026 0%, #080f14 100%)' }}
-        />
-        <div className="glass-panel relative z-10 flex flex-col items-center rounded-2xl p-12">
-          <span className="material-symbols-outlined mb-6 block text-[64px] text-secondary">sports_esports</span>
-          <h1 className="mb-4 font-display-lg text-display-lg text-secondary">THE HOT SEAT</h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant">
-            {phase === 'QUIZ_ENDED' ? 'Quiz has ended — thanks for playing!' : 'Waiting for the quiz to start…'}
-          </p>
-        </div>
-      </div>
-    );
+    return <WaitingRoom candidateId={candidateId} />;
   }
 
   // If MCQ, render MCQ question screen during active phases (including TIME_UP and GAP)
