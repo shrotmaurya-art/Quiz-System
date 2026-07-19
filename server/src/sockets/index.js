@@ -368,6 +368,10 @@ function initSockets(server) {
 
       const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
       socket.emit('candidates:updated', candidates.map(toAdminCandidate));
+
+      // Send initial scoreboard so the bottom-bar widget isn't empty
+      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+      socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
     } 
     else if (auth.role === 'candidate') {
       socket.join(`candidate:${auth.candidateId}`);
@@ -383,6 +387,10 @@ function initSockets(server) {
 
       const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
+
+      // Send initial scoreboard
+      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+      socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
     } 
     else if (auth.role === 'display') {
       socket.join('display');
@@ -398,6 +406,10 @@ function initSockets(server) {
 
       const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
+
+      // Send initial scoreboard
+      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+      socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
     }
 
     // Role-verification helpers for event execution
@@ -450,6 +462,13 @@ function initSockets(server) {
         ? get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId])
         : null;
       socket.emit('game:state', getUnredactedGameState(state, question));
+
+      // Also push candidates and scoreboard for a complete state refresh
+      const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
+      socket.emit('candidates:updated', candidates.map(toAdminCandidate));
+      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+      socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
+
       if (typeof ack === 'function') ack({ success: true });
     });
 
@@ -600,6 +619,44 @@ function initSockets(server) {
       } else {
         if (typeof ack === 'function') ack({ success: true });
         broadcastCandidates(io);
+        broadcastScoreboard(io);
+      }
+    });
+
+    socket.on('admin:endRound', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+      const res = runGameAction(() => gameEngine.nextRound(), ack);
+      if (!res) return;
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        clearQuestionTick();
+        clearQuestionTimeout();
+        clearGapTimerCountdown();
+        if (typeof ack === 'function') ack({ success: true });
+        broadcastGameState(io);
+        if (res.ended) {
+          broadcastScoreboard(io);
+        } else {
+          startQuestionTick(io, res.state.timeLimitSeconds);
+        }
+      }
+    });
+
+    socket.on('admin:endQuiz', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+      const res = runGameAction(() => gameEngine.endQuiz(), ack);
+      if (!res) return;
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        clearQuestionTick();
+        clearQuestionTimeout();
+        clearGapTimerCountdown();
+        if (typeof ack === 'function') ack({ success: true });
+        broadcastGameState(io);
         broadcastScoreboard(io);
       }
     });

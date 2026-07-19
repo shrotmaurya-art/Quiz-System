@@ -656,6 +656,103 @@ function adjustScoreManually(candidateId, delta, reason) {
   return { success: true };
 }
 
+/**
+ * Skips remaining questions in the current round and advances to the first
+ * question of the next round. If this is the last round, ends the quiz.
+ * Valid from any active phase.
+ * @returns {Object} { success: true, state, ended: boolean } or { error }
+ */
+function nextRound() {
+  const state = getGameState();
+  assertPhase(state.phase, ['QUESTION_SHOWN', 'TIME_UP', 'JUDGING', 'GAP', 'RESULTS', 'QUIZ_ENDED']);
+
+  const currentRound = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
+  if (!currentRound) {
+    return { error: 'Current round not found in database.' };
+  }
+
+  clearQuestionTimeout();
+
+  // Find next round
+  const nextR = get(
+    'SELECT * FROM rounds WHERE "order" > ? ORDER BY "order" ASC LIMIT 1',
+    [currentRound.order]
+  );
+
+  if (!nextR) {
+    // Last round: end the quiz
+    state.phase = 'QUIZ_ENDED';
+    state.locks = {};
+    state.judgements = {};
+    state.winnerCandidateId = null;
+    state.resultsRevealed = false;
+    saveGameState(state);
+    return { success: true, ended: true, state };
+  }
+
+  // Find first question of the next round
+  const nextQ = get(
+    'SELECT * FROM questions WHERE roundId = ? ORDER BY "order" ASC LIMIT 1',
+    [nextR.id]
+  );
+
+  if (!nextQ) {
+    // Next round has no questions: end the quiz
+    state.phase = 'QUIZ_ENDED';
+    state.locks = {};
+    state.judgements = {};
+    state.winnerCandidateId = null;
+    state.resultsRevealed = false;
+    saveGameState(state);
+    return { success: true, ended: true, state };
+  }
+
+  // Initialise state for the next round's first question
+  const globalSettings = getGlobalSettings();
+  const timing = resolveTiming(nextQ, nextR, globalSettings);
+
+  const activeCandidates = all('SELECT id FROM candidates WHERE isActive = 1');
+  const locks = {};
+  for (const c of activeCandidates) {
+    locks[c.id] = { optionKey: null, elapsedMs: null, answered: false };
+  }
+
+  state.phase = 'QUESTION_SHOWN';
+  state.currentRoundId = nextR.id;
+  state.currentQuestionId = nextQ.id;
+  state.timerStartedAt = Date.now();
+  state.timeLimitSeconds = timing.timeLimitSeconds;
+  state.gapEnabled = timing.gapEnabled;
+  state.gapSeconds = timing.gapSeconds;
+  state.locks = locks;
+  state.judgements = {};
+  state.winnerCandidateId = null;
+  state.resultsRevealed = false;
+
+  saveGameState(state);
+  scheduleQuestionTimeout(timing.timeLimitSeconds);
+  return { success: true, state };
+}
+
+/**
+ * Immediately ends the quiz from any active phase.
+ * @returns {Object} { success: true, state } or { error }
+ */
+function endQuiz() {
+  const state = getGameState();
+  assertPhase(state.phase, ['QUESTION_SHOWN', 'TIME_UP', 'JUDGING', 'GAP', 'RESULTS', 'QUIZ_ENDED']);
+
+  clearQuestionTimeout();
+
+  state.phase = 'QUIZ_ENDED';
+  state.locks = {};
+  state.judgements = {};
+  state.winnerCandidateId = null;
+  state.resultsRevealed = false;
+  saveGameState(state);
+  return { success: true, state };
+}
+
 module.exports = {
   PhaseError,
   assertPhase,
@@ -673,5 +770,7 @@ module.exports = {
   exitGap,
   revealResults,
   registerOnTimeUp,
-  adjustScoreManually
+  adjustScoreManually,
+  nextRound,
+  endQuiz
 };
