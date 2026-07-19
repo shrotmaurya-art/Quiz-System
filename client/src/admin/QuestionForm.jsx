@@ -94,7 +94,7 @@ export default function QuestionForm({ question, roundId, rounds, onSave, onCanc
               value={form.text}
               onChange={(e) => set('text', e.target.value)}
               rows={3}
-              className="w-full bg-surface-container-highest border-b border-tertiary focus:border-secondary focus:ring-0 text-on-surface font-headline-md text-lg p-4 rounded-t resize-none transition-colors"
+              className="w-full bg-surface-container-highest border-b border-tertiary focus:border-secondary focus:ring-0 text-on-surface font-headline-md text-lg p-4 rounded-t resize-none transition-colors focus:gold-glow shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
               placeholder="Enter question..."
             />
           </div>
@@ -102,25 +102,25 @@ export default function QuestionForm({ question, roundId, rounds, onSave, onCanc
           {/* Media upload */}
           <div className="flex flex-col gap-2">
             <label className="font-label-caps text-xs text-secondary tracking-widest">MEDIA (OPTIONAL)</label>
-            <div className="flex items-center gap-4">
-              <select
-                value={form.mediaType}
-                onChange={(e) => set('mediaType', e.target.value)}
-                className="bg-surface-container-highest border border-outline/30 text-on-surface p-2 rounded focus:border-secondary focus:ring-0 text-sm"
-              >
-                <option value="none">No media</option>
-                <option value="image">Image</option>
-                <option value="video">Video</option>
-              </select>
-              {form.mediaType !== 'none' && (
-                <input
-                  type="file"
-                  accept={form.mediaType === 'image' ? 'image/*' : 'video/*'}
-                  onChange={(e) => set('media', e.target.files?.[0] || null)}
-                  className="text-sm text-on-surface-variant file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-secondary/20 file:text-secondary hover:file:bg-secondary/30"
-                />
-              )}
-            </div>
+            <label className="border-2 border-dashed border-secondary/40 rounded-lg p-6 flex flex-col items-center justify-center gap-2 bg-secondary/5 hover:bg-secondary/10 hover:border-secondary transition-all cursor-pointer gold-glow">
+              <span className="material-symbols-outlined text-3xl text-secondary opacity-80">image</span>
+              <p className="font-body-md text-on-surface-variant text-center text-sm">
+                {form.media ? form.media.name : 'Click to browse (Optional)'}
+              </p>
+              <span className="text-xs text-outline">Image or Video</span>
+              <input
+                type="file"
+                accept="image/*,video/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    set('media', file);
+                    set('mediaType', file.type.startsWith('video') ? 'video' : 'image');
+                  }
+                }}
+              />
+            </label>
           </div>
 
           {/* MCQ Options */}

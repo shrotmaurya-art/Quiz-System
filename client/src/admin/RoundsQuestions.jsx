@@ -147,7 +147,7 @@ export default function RoundsQuestions() {
             </div>
           )}
           {expandedRound && (
-            <div className="glass-panel rounded-lg flex flex-col overflow-hidden border border-secondary/50">
+            <div className="glass-panel-active rounded-lg flex flex-col overflow-hidden">
               <div className="p-6 border-b border-secondary/30 bg-primary-container/40 flex justify-between items-center">
                 <div>
                   <div className="flex items-center gap-3 mb-2">

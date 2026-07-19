@@ -14,7 +14,7 @@ function SidebarLink({ to, label, icon }) {
       className={({ isActive }) =>
         isActive
           ? 'flex items-center gap-4 bg-secondary/10 text-secondary border-l-4 border-secondary px-6 py-4 shadow-[0_0_15px_rgba(240,192,62,0.2)] font-label-caps text-label-caps'
-          : 'flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface transition-colors group font-label-caps text-label-caps'
+          :           'flex items-center gap-4 text-on-surface-variant px-6 py-4 hover:bg-surface-container-highest hover:text-on-surface hover:translate-x-1 transition-all group font-label-caps text-label-caps'
       }
     >
       {({ isActive }) => (
@@ -54,8 +54,15 @@ export default function AdminLayout() {
           ))}
         </nav>
 
+        {/* GO LIVE CTA */}
+        <div className="px-6 py-4 border-t border-outline/10">
+          <button className="w-full bg-error text-on-error font-label-caps text-label-caps py-3 rounded hover:bg-error/90 transition-colors shadow-[0_0_15px_rgba(147,0,10,0.5)] animate-pulse font-bold tracking-widest uppercase">
+            GO LIVE
+          </button>
+        </div>
+
         {/* Bottom */}
-        <div className="p-6 border-t border-outline/10 flex flex-col gap-2">
+        <div className="px-6 pb-6 flex flex-col gap-2">
           <a className="flex items-center gap-3 text-on-surface-variant px-2 py-2 hover:text-on-surface transition-colors text-sm" href="#">
             <span className="material-symbols-outlined text-[18px]">help</span>
             <span className="font-label-caps text-label-caps text-xs">Help Center</span>

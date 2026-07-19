@@ -454,23 +454,25 @@ export default function LiveControl() {
                                 <div className="flex gap-2">
                                   <button
                                     onClick={() => handleSubmitJudgement(cid, true)}
-                                    className={`px-3 py-1.5 rounded flex items-center gap-1 font-label-caps text-[11px] tracking-wider transition-colors ${
+                                    className={`correct-btn px-3 py-1.5 rounded flex items-center gap-1 font-label-caps text-[11px] tracking-wider transition-all ${
                                       currentJudgement === true
-                                        ? 'bg-emerald-500 text-on-primary font-bold'
-                                        : 'bg-surface-container-highest hover:bg-emerald-500/20 hover:text-emerald-400 border border-outline/30'
+                                        ? 'bg-emerald-500 text-on-primary font-bold border border-emerald-500'
+                                        : 'bg-surface-container-highest border border-outline-variant'
                                     }`}
                                   >
-                                    <span className="material-symbols-outlined text-sm">check_circle</span> CORRECT
+                                    <span className="material-symbols-outlined text-lg group-hover:text-emerald-400 transition-colors">check_circle</span>
+                                    <span className="group-hover:text-emerald-400 transition-colors">CORRECT</span>
                                   </button>
                                   <button
                                     onClick={() => handleSubmitJudgement(cid, false)}
-                                    className={`px-3 py-1.5 rounded flex items-center gap-1 font-label-caps text-[11px] tracking-wider transition-colors ${
+                                    className={`incorrect-btn px-3 py-1.5 rounded flex items-center gap-1 font-label-caps text-[11px] tracking-wider transition-all ${
                                       currentJudgement === false
-                                        ? 'bg-error-container text-on-error-container font-bold'
-                                        : 'bg-surface-container-highest hover:bg-error-container/20 hover:text-error border border-outline/30'
+                                        ? 'bg-error-container text-on-error-container font-bold border border-error-container'
+                                        : 'bg-surface-container-highest border border-outline-variant'
                                     }`}
                                   >
-                                    <span className="material-symbols-outlined text-sm">cancel</span> INCORRECT
+                                    <span className="material-symbols-outlined text-lg group-hover:text-rose-500 transition-colors">cancel</span>
+                                    <span className="group-hover:text-rose-500 transition-colors">INCORRECT</span>
                                   </button>
                                 </div>
                               </div>
