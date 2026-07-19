@@ -10,7 +10,7 @@ const PHASE_MAP = {
   IDLE: IdleView,
   QUESTION_SHOWN: QuestionView,
   TIME_UP: QuestionView,
-  JUDGING: GapView,
+  JUDGING: QuestionView,
   GAP: GapView,
   RESULTS: ResultsView,
   QUIZ_ENDED: ScoreboardView,

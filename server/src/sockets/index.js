@@ -36,7 +36,7 @@ function toPublicCandidate(c) {
 /**
  * Returns the unredacted game state (including correctOptionKey, elapsedMs, and tokens).
  */
-function getUnredactedGameState(state, question) {
+function getUnredactedGameState(state, question, round) {
   if (!state) return null;
   const fullQuestion = question ? { ...question } : null;
   if (fullQuestion) {
@@ -44,7 +44,8 @@ function getUnredactedGameState(state, question) {
   }
   return {
     ...state,
-    question: fullQuestion
+    question: fullQuestion,
+    roundName: round?.name || null
   };
 }
 

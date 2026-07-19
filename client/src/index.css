@@ -164,3 +164,17 @@
 .animate-slow-pulse {
   animation: slow-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* ── Gap-state suspense screen (Section 10 / FR25) ── */
+.luminous-text {
+  background: linear-gradient(180deg, #fff6d8 0%, #f0c03e 55%, #ba9000 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgba(240, 192, 62, 0.45));
+}
+
+.animate-suspense-pulse {
+  animation: pulse-glow 2.4s ease-in-out infinite;
+}
