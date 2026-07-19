@@ -22,9 +22,9 @@ export default function LiveControl() {
 
   // UI overlays & modals
   const [confirmModal, setConfirmModal] = useState(null); // { title, message, onConfirm }
-  const [adjustScoreModal, setAdjustScoreModal] = useState(null); // { candidateId, candidateName }
+  const [adjustScoreModal, setAdjustScoreModal] = useState(null); // { candidateId, candidateName, currentScore }
   const [scoreDelta, setScoreDelta] = useState('10');
-  const [scoreReason, setScoreReason] = useState('Manual correction');
+  const [scoreReason, setScoreReason] = useState('');
 
   // Load initial static lists
   const fetchRounds = useCallback(async () => {
@@ -255,6 +255,10 @@ export default function LiveControl() {
       alert('Please enter a valid numeric points value.');
       return;
     }
+    if (deltaVal === 0) {
+      alert('Delta cannot be zero — use a positive or negative value to change the score.');
+      return;
+    }
     socket.emit(
       'admin:adjustScore',
       {
@@ -267,8 +271,6 @@ export default function LiveControl() {
           alert(ack.error);
         } else {
           setAdjustScoreModal(null);
-          setScoreDelta('10');
-          setScoreReason('Manual correction');
         }
       }
     );
@@ -804,27 +806,29 @@ export default function LiveControl() {
           </div>
 
           {/* Mini Real-time Scoreboard & Score Modifiers */}
-          <div className="flex gap-3 max-w-lg overflow-x-auto pb-1">
-            {scoreboard.slice(0, 3).map((team) => (
+          <div className="flex gap-3 max-w-2xl overflow-x-auto pb-1">
+            {scoreboard.map((team) => (
               <div
                 key={team.id}
-                className="bg-surface/50 border border-outline/10 rounded px-3 py-1.5 flex items-center gap-3 min-w-[160px]"
+                className="bg-surface/50 border border-outline/10 rounded px-3 py-1.5 flex items-center gap-3 min-w-[140px]"
               >
-                <span className="font-label-caps text-[10px] text-on-surface-variant truncate w-16 uppercase">
+                <span className="font-label-caps text-[10px] text-on-surface-variant truncate w-20 uppercase">
                   {team.name}
                 </span>
                 <span className="font-headline-md text-headline-sm text-secondary font-bold flex-1 text-center">
                   {team.score}
                 </span>
-                <div className="flex flex-col gap-0.5">
-                  <button
-                    onClick={() => setAdjustScoreModal({ candidateId: team.id, candidateName: team.name })}
-                    className="w-5 h-5 bg-surface-container-high rounded flex items-center justify-center hover:bg-secondary/20 hover:text-secondary text-outline transition-colors"
-                    title="Manual score adjustment"
-                  >
-                    <span className="material-symbols-outlined text-[12px]">edit</span>
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    setScoreDelta(String(currentRound?.pointsPerQuestion || 10));
+                    setScoreReason('');
+                    setAdjustScoreModal({ candidateId: team.id, candidateName: team.name, currentScore: team.score });
+                  }}
+                  className="w-7 h-7 rounded flex items-center justify-center bg-surface-container-high hover:bg-secondary/20 hover:text-secondary text-outline transition-colors border border-outline/20"
+                  title="Manual score adjustment"
+                >
+                  <span className="material-symbols-outlined text-[14px]">edit</span>
+                </button>
               </div>
             ))}
           </div>
@@ -869,11 +873,17 @@ export default function LiveControl() {
             <h3 className="font-headline-md text-headline-sm text-secondary mb-3">
               Manual Score Correction
             </h3>
-            <p className="text-on-surface-variant font-body-md mb-6">
+            <p className="text-on-surface-variant font-body-md mb-2">
               Adjust score for <strong className="text-on-surface">{adjustScoreModal.candidateName}</strong>.
             </p>
+            <p className="text-on-surface-variant font-body-md mb-6 text-sm">
+              Current score: <strong className="text-secondary">{adjustScoreModal.currentScore ?? '?'}</strong>
+              {scoreDelta && !isNaN(parseInt(scoreDelta, 10)) && parseInt(scoreDelta, 10) !== 0 && (
+                <span> → New score: <strong className="text-secondary">{(adjustScoreModal.currentScore ?? 0) + parseInt(scoreDelta, 10)}</strong></span>
+              )}
+            </p>
 
-            <div className="flex flex-col gap-4 mb-8">
+            <div className="flex flex-col gap-4 mb-6">
               <div>
                 <label className="block text-xs font-label-caps text-on-surface-variant uppercase tracking-wider mb-2">
                   Points Change (Delta)
@@ -883,8 +893,23 @@ export default function LiveControl() {
                   value={scoreDelta}
                   onChange={(e) => setScoreDelta(e.target.value)}
                   className="w-full bg-surface-container border border-outline/30 rounded px-4 py-2 text-on-surface focus:outline-none focus:border-secondary"
-                  placeholder="e.g. 10 or -10"
+                  placeholder="Positive to add, negative to deduct"
                 />
+                <div className="flex gap-2 mt-2">
+                  {[-10, -5, -1, 1, 5, 10, currentRound?.pointsPerQuestion || 10].filter((v, i, a) => a.indexOf(v) === i).map((preset) => (
+                    <button
+                      key={preset}
+                      onClick={() => setScoreDelta(String(preset))}
+                      className={`px-2 py-1 rounded text-[10px] font-label-caps tracking-wider border transition-colors ${
+                        parseInt(scoreDelta, 10) === preset
+                          ? 'bg-secondary/20 border-secondary text-secondary'
+                          : 'bg-surface-container-high border-outline/20 text-on-surface-variant hover:border-secondary/50'
+                      }`}
+                    >
+                      {preset > 0 ? '+' : ''}{preset}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -896,18 +921,14 @@ export default function LiveControl() {
                   value={scoreReason}
                   onChange={(e) => setScoreReason(e.target.value)}
                   className="w-full bg-surface-container border border-outline/30 rounded px-4 py-2 text-on-surface focus:outline-none focus:border-secondary"
-                  placeholder="e.g. Oxford buzzer error correction"
+                  placeholder="e.g. Buzzer error correction"
                 />
               </div>
             </div>
 
             <div className="flex justify-end gap-4">
               <button
-                onClick={() => {
-                  setAdjustScoreModal(null);
-                  setScoreDelta('10');
-                  setScoreReason('Manual correction');
-                }}
+                onClick={() => setAdjustScoreModal(null)}
                 className="px-6 py-2.5 rounded bg-surface-container-highest text-on-surface font-label-caps text-xs tracking-wider border border-outline/20 hover:bg-surface-container-highest/80 transition-colors"
               >
                 CANCEL
