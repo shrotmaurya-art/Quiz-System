@@ -92,7 +92,7 @@ export default function CandidateTablet() {
   // status === 'valid' — wrap content in the game context provider
   return (
     <CandidateGameProvider socket={socketRef.current} candidateId={candidateId}>
-      <CandidateContent />
+      <CandidateContent candidateId={candidateId} />
     </CandidateGameProvider>
   );
 }
@@ -102,7 +102,7 @@ export default function CandidateTablet() {
  * Placeholder for now; full phase-based views (MCQ options, lock-in, results,
  * etc.) will be built as sub-components in subsequent tasks.
  */
-function CandidateContent() {
+function CandidateContent({ candidateId }) {
   const { phase, gameState, timer, isLockedIn, gap } = useCandidateGame();
 
   // IDLE / QUIZ_ENDED — waiting shell (Task 5.6)
