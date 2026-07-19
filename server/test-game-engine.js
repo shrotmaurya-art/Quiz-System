@@ -4,7 +4,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
 const { run, get, all, getGlobalSettings } = require('./src/db/db');
 const {
-  getGameState, startQuiz, lockAnswer, handleTimeUp, computeWinner, revealResults, enterGap
+  PhaseError, assertPhase, getGameState, startQuiz, lockAnswer, handleTimeUp, computeWinner, revealResults, enterGap
 } = require('./src/sockets/gameEngine');
 
 let pass = 0;
@@ -99,9 +99,24 @@ console.log('\n--- Lock after TIME_UP rejection ---');
 run(`UPDATE game_state SET phase = 'QUESTION_SHOWN' WHERE id = 1`);
 // Now set phase to TIME_UP
 run(`UPDATE game_state SET phase = 'TIME_UP' WHERE id = 1`);
-const lateLock = lockAnswer(c1, 'C');
-assert('Lock after TIME_UP returns error', !!lateLock.error);
-assert('Error mentions wrong phase', lateLock.error.includes('QUESTION_SHOWN'));
+let lateLockError;
+try {
+  lockAnswer(c1, 'C');
+} catch (error) {
+  lateLockError = error;
+}
+assert('Lock after TIME_UP throws PhaseError', lateLockError instanceof PhaseError);
+assert('PhaseError identifies the current and allowed phases',
+  lateLockError && lateLockError.currentPhase === 'TIME_UP' && lateLockError.allowedPhases.includes('QUESTION_SHOWN'));
+
+console.log('\n--- assertPhase ---');
+let directPhaseError;
+try {
+  assertPhase('GAP', ['QUESTION_SHOWN']);
+} catch (error) {
+  directPhaseError = error;
+}
+assert('assertPhase throws PhaseError for a disallowed phase', directPhaseError instanceof PhaseError);
 
 // ── Test 6: computeWinner picks faster CORRECT, not faster overall ──
 console.log('\n--- computeWinner: faster-but-wrong loses ---');

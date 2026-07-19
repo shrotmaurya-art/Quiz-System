@@ -304,6 +304,16 @@ async function runTests() {
   assert('candidate Q2 correctOptionKey ABSENT',
     candQ2State && candQ2State.question && candQ2State.question.correctOptionKey === undefined);
 
+  console.log('\n=== Out-of-phase action rejection ===');
+  const phaseRejected = waitForEvent(adminClient, 'phase:rejected', 3000);
+  const outOfPhaseAck = await emitP(adminClient, 'admin:nextQuestion', {});
+  const phaseRejection = await phaseRejected;
+  assert('out-of-phase acknowledgement has INVALID_PHASE code',
+    outOfPhaseAck && outOfPhaseAck.code === 'INVALID_PHASE');
+  assert('sender receives phase:rejected with phase details',
+    phaseRejection && phaseRejection.currentPhase === 'QUESTION_SHOWN' && phaseRejection.allowedPhases.includes('RESULTS'));
+  assert('out-of-phase action leaves the game in QUESTION_SHOWN', gameEngine.getGameState().phase === 'QUESTION_SHOWN');
+
   // ───────────────────────────────────────────────────────────────────────
   // 7. Candidate lockAnswer → admin+display see candidate:locked
   // ───────────────────────────────────────────────────────────────────────

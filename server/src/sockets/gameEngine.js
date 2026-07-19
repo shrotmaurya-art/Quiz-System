@@ -1,6 +1,33 @@
 const crypto = require('crypto');
 const { get, run, all, getGlobalSettings } = require('../db/db');
 
+const ALL_GAME_PHASES = ['IDLE', 'QUESTION_SHOWN', 'TIME_UP', 'JUDGING', 'GAP', 'RESULTS', 'QUIZ_ENDED'];
+
+/**
+ * Raised when a state-machine action is requested from an invalid phase.
+ */
+class PhaseError extends Error {
+  constructor(currentPhase, allowedPhases) {
+    super(`Action is not allowed during ${currentPhase}. Allowed phases: ${allowedPhases.join(', ')}.`);
+    this.name = 'PhaseError';
+    this.code = 'INVALID_PHASE';
+    this.currentPhase = currentPhase;
+    this.allowedPhases = allowedPhases;
+  }
+}
+
+/**
+ * Ensures an action is legal in the current game phase.
+ * @param {string} currentPhase
+ * @param {string[]} allowedPhases
+ * @throws {PhaseError}
+ */
+function assertPhase(currentPhase, allowedPhases) {
+  if (!allowedPhases.includes(currentPhase)) {
+    throw new PhaseError(currentPhase, allowedPhases);
+  }
+}
+
 /**
  * Normalises an SQLite boolean (integer 1/0 or null) to a JavaScript boolean or null.
  * @param {any} val
@@ -110,7 +137,15 @@ function scheduleQuestionTimeout(timeLimitSeconds) {
   clearQuestionTimeout();
   if (typeof timeLimitSeconds === 'number' && timeLimitSeconds > 0) {
     activeQuestionTimeout = setTimeout(() => {
-      const res = handleTimeUp();
+      let res;
+      try {
+        res = handleTimeUp();
+      } catch (error) {
+        // A timer can become stale after navigation or test cleanup. Its phase
+        // violation is expected and must not crash the server process.
+        if (error instanceof PhaseError) return;
+        throw error;
+      }
       if (res.success && onTimeUpCallback) {
         onTimeUpCallback(res.state);
       }
@@ -138,9 +173,7 @@ function registerOnTimeUp(callback) {
  */
 function startQuiz() {
   const state = getGameState();
-  if (state.phase !== 'IDLE' && state.phase !== 'QUIZ_ENDED') {
-    return { error: `Cannot start quiz from current phase: ${state.phase}` };
-  }
+  assertPhase(state.phase, ['IDLE', 'QUIZ_ENDED']);
 
   const activeCandidates = all('SELECT id FROM candidates WHERE isActive = 1');
   if (activeCandidates.length === 0) {
@@ -189,9 +222,7 @@ function startQuiz() {
  */
 function nextQuestion() {
   const state = getGameState();
-  if (state.phase !== 'RESULTS' && state.phase !== 'IDLE') {
-    return { error: `Cannot advance to next question from current phase: ${state.phase}` };
-  }
+  assertPhase(state.phase, ['RESULTS', 'IDLE']);
 
   const currentRound = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
   const currentQuestion = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
@@ -268,9 +299,7 @@ function nextQuestion() {
  */
 function previousQuestion() {
   const state = getGameState();
-  if (state.phase === 'IDLE') {
-    return { error: 'Cannot go to previous question when the quiz has not started.' };
-  }
+  assertPhase(state.phase, ['QUESTION_SHOWN', 'TIME_UP', 'JUDGING', 'GAP', 'RESULTS', 'QUIZ_ENDED']);
 
   const currentRound = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
   const currentQuestion = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
@@ -341,9 +370,7 @@ function previousQuestion() {
  */
 function lockAnswer(candidateId, optionKey) {
   const state = getGameState();
-  if (state.phase !== 'QUESTION_SHOWN') {
-    return { error: `Answers can only be locked in during QUESTION_SHOWN phase. Current phase: ${state.phase}` };
-  }
+  assertPhase(state.phase, ['QUESTION_SHOWN']);
 
   const lock = state.locks[candidateId];
   if (!lock) {
@@ -371,11 +398,9 @@ function lockAnswer(candidateId, optionKey) {
  * @returns {Object} { success: true, state } or { error }
  */
 function handleTimeUp() {
-  clearQuestionTimeout();
   const state = getGameState();
-  if (state.phase !== 'QUESTION_SHOWN') {
-    return { error: `Cannot trigger time up outside of QUESTION_SHOWN phase. Current phase: ${state.phase}` };
-  }
+  assertPhase(state.phase, ['QUESTION_SHOWN']);
+  clearQuestionTimeout();
 
   // Mark all unanswered candidates as answered: false
   for (const cid in state.locks) {
@@ -420,6 +445,8 @@ function handleTimeUp() {
  * @returns {Object} { success: true, state } or { error }
  */
 function endTimerNow() {
+  const state = getGameState();
+  assertPhase(state.phase, ['QUESTION_SHOWN']);
   return handleTimeUp();
 }
 
@@ -432,9 +459,7 @@ function endTimerNow() {
  */
 function submitJudgement(candidateId, isCorrect) {
   const state = getGameState();
-  if (state.phase !== 'JUDGING') {
-    return { error: `Judgements can only be submitted during JUDGING phase. Current phase: ${state.phase}` };
-  }
+  assertPhase(state.phase, ['JUDGING']);
 
   const round = get('SELECT answerMode FROM rounds WHERE id = ?', [state.currentRoundId]);
   if (!round || round.answerMode !== 'OPEN') {
@@ -510,9 +535,7 @@ function computeWinner() {
  */
 function enterGap() {
   const state = getGameState();
-  if (state.phase !== 'TIME_UP' && state.phase !== 'JUDGING') {
-    return { error: `Cannot enter GAP phase from current phase: ${state.phase}` };
-  }
+  assertPhase(state.phase, ['TIME_UP', 'JUDGING']);
 
   if (state.gapEnabled) {
     state.phase = 'GAP';
@@ -531,9 +554,7 @@ function enterGap() {
  */
 function exitGap() {
   const state = getGameState();
-  if (state.phase !== 'GAP') {
-    return { error: `Cannot exit GAP phase as current phase is: ${state.phase}` };
-  }
+  assertPhase(state.phase, ['GAP']);
 
   return revealResults();
 }
@@ -545,9 +566,7 @@ function exitGap() {
  */
 function revealResults() {
   const state = getGameState();
-  if (state.phase !== 'TIME_UP' && state.phase !== 'JUDGING' && state.phase !== 'GAP') {
-    return { error: `Cannot reveal results from current phase: ${state.phase}` };
-  }
+  assertPhase(state.phase, ['TIME_UP', 'JUDGING', 'GAP']);
 
   state.phase = 'RESULTS';
   state.resultsRevealed = true;
@@ -599,13 +618,15 @@ function revealResults() {
  * @returns {Object} { success: true } or { error }
  */
 function adjustScoreManually(candidateId, delta, reason) {
+  const state = getGameState();
+  assertPhase(state.phase, ALL_GAME_PHASES);
+
   const candidate = get('SELECT id, score FROM candidates WHERE id = ?', [candidateId]);
   if (!candidate) {
     return { error: `Candidate "${candidateId}" not found.` };
   }
 
-  const state = getGameState();
-  let questionId = state ? state.currentQuestionId : null;
+  let questionId = state.currentQuestionId;
   if (!questionId) {
     const fallbackQ = get('SELECT id FROM questions LIMIT 1');
     if (fallbackQ) {
@@ -636,6 +657,8 @@ function adjustScoreManually(candidateId, delta, reason) {
 }
 
 module.exports = {
+  PhaseError,
+  assertPhase,
   getGameState,
   startQuiz,
   nextQuestion,

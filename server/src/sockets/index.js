@@ -410,19 +410,41 @@ function initSockets(server) {
       return true;
     }
 
+    /**
+     * Turns an engine phase violation into a sender-only Socket.IO rejection.
+     */
+    function runGameAction(action, ack) {
+      try {
+        return action();
+      } catch (error) {
+        if (error instanceof gameEngine.PhaseError) {
+          const rejection = {
+            code: error.code,
+            currentPhase: error.currentPhase,
+            allowedPhases: error.allowedPhases,
+            message: error.message
+          };
+          socket.emit('phase:rejected', rejection);
+          if (typeof ack === 'function') ack({ error: error.message, ...rejection });
+          return null;
+        }
+        throw error;
+      }
+    }
+
     // Client-to-server handlers
 
     socket.on('admin:nextQuestion', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
       
-      clearQuestionTick();
-      clearGapTimerCountdown();
-
-      const res = gameEngine.nextQuestion();
+      const res = runGameAction(() => gameEngine.nextQuestion(), ack);
+      if (!res) return;
       if (res.error) {
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
       } else {
+        clearQuestionTick();
+        clearGapTimerCountdown();
         if (typeof ack === 'function') ack({ success: true });
         broadcastGameState(io);
         if (res.state.phase === 'QUESTION_SHOWN') {
@@ -436,14 +458,14 @@ function initSockets(server) {
     socket.on('admin:prevQuestion', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
 
-      clearQuestionTick();
-      clearGapTimerCountdown();
-
-      const res = gameEngine.previousQuestion();
+      const res = runGameAction(() => gameEngine.previousQuestion(), ack);
+      if (!res) return;
       if (res.error) {
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
       } else {
+        clearQuestionTick();
+        clearGapTimerCountdown();
         if (typeof ack === 'function') ack({ success: true });
         broadcastGameState(io);
         if (res.state.phase === 'QUESTION_SHOWN') {
@@ -455,13 +477,13 @@ function initSockets(server) {
     socket.on('admin:endTimerNow', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
 
-      clearQuestionTick();
-
-      const res = gameEngine.endTimerNow();
+      const res = runGameAction(() => gameEngine.endTimerNow(), ack);
+      if (!res) return;
       if (res.error) {
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
       } else {
+        clearQuestionTick();
         if (typeof ack === 'function') ack({ success: true });
 
         const unanswered = [];
@@ -499,7 +521,8 @@ function initSockets(server) {
     socket.on('admin:submitJudgement', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
       const { candidateId, isCorrect } = data || {};
-      const res = gameEngine.submitJudgement(candidateId, isCorrect);
+      const res = runGameAction(() => gameEngine.submitJudgement(candidateId, isCorrect), ack);
+      if (!res) return;
       if (res.error) {
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
@@ -511,13 +534,13 @@ function initSockets(server) {
 
     socket.on('admin:advanceFromGap', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
-      clearGapTimerCountdown();
-
-      const res = gameEngine.revealResults(); // Exit gap manually goes directly to results
+      const res = runGameAction(() => gameEngine.revealResults(), ack); // Exit gap manually goes directly to results
+      if (!res) return;
       if (res.error) {
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
       } else {
+        clearGapTimerCountdown();
         if (typeof ack === 'function') ack({ success: true });
         broadcastGameState(io);
         broadcastResultsRevealed(io, res.state);
@@ -528,7 +551,8 @@ function initSockets(server) {
     socket.on('admin:adjustScore', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
       const { candidateId, delta, reason } = data || {};
-      const res = gameEngine.adjustScoreManually(candidateId, delta, reason);
+      const res = runGameAction(() => gameEngine.adjustScoreManually(candidateId, delta, reason), ack);
+      if (!res) return;
       if (res.error) {
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
@@ -543,7 +567,8 @@ function initSockets(server) {
       const { candidateId, optionKey } = data || {};
       if (!verifyIsCandidate(candidateId, ack)) return;
       
-      const res = gameEngine.lockAnswer(candidateId, optionKey);
+      const res = runGameAction(() => gameEngine.lockAnswer(candidateId, optionKey), ack);
+      if (!res) return;
       if (res.error) {
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
