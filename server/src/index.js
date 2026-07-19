@@ -1,6 +1,17 @@
 const express = require('express');
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+const roundsRouter = require('./routes/rounds.routes');
+const questionsRouter = require('./routes/questions.routes');
+const { handleAdminLogin } = require('./middleware/auth');
+
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.post('/api/admin/login', handleAdminLogin);
+app.use('/api/rounds', roundsRouter);
+app.use('/api/questions', questionsRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
