@@ -697,6 +697,22 @@ function initSockets(server) {
       }
     });
 
+    socket.on('candidate:requestState', (data, ack) => {
+      const { candidateId } = data || {};
+      if (!verifyIsCandidate(candidateId, ack)) return;
+
+      const state = gameEngine.getGameState();
+      const question = state && state.currentQuestionId
+        ? get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId])
+        : null;
+      const round = state && state.currentRoundId
+        ? get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId])
+        : null;
+      socket.emit('game:state:public', redactGameState(state, question, round));
+
+      if (typeof ack === 'function') ack({ success: true });
+    });
+
     socket.on('disconnect', () => {
       // Sockets clean up on disconnect silently
     });

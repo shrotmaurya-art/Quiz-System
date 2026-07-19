@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { createSocket } from '../shared/socket';
 import InvalidLinkScreen from './InvalidLinkScreen';
+import { CandidateGameProvider, useCandidateGame } from './CandidateGameContext';
 
 /**
  * Candidate tablet entry point — route /play/:candidateId?token=...
@@ -11,11 +12,18 @@ import InvalidLinkScreen from './InvalidLinkScreen';
  * the candidateId + joinToken pair matches an active candidate. We do NOT add a
  * second REST validation call — the socket layer is the single source of truth.
  *
- * - Missing token in the URL  -> show the friendly error screen immediately
- *   (no point attempting a connection we know will fail).
- * - Socket `connect_error`     -> server rejected the pair -> error screen.
- * - Socket `connect`           -> valid -> render the idle/waiting shell.
- *   (The real interactive idle screen is Task 5.6; this is a placeholder.)
+ * RECONNECT SAFETY (NFR5 / Section 15):
+ * Socket.IO fires 'connect' on every reconnect after a Wi-Fi blip. On the
+ * server side the connection handler re-sends `game:state:public` immediately,
+ * so the CandidateGameContext replaces ALL local state with the fresh snapshot.
+ * This means a tablet that drops Wi-Fi mid-question and reconnects 5 seconds
+ * later correctly shows: the current question, whether THIS candidate already
+ * locked in, and the correct remaining time — not stale data.
+ *
+ * SECURITY (Section 12 / AGENTS.md §4):
+ * This component and CandidateGameContext subscribe ONLY to:
+ *   game:state:public, timer:tick, time:up, gap:started, gap:tick, results:revealed
+ * They NEVER subscribe to game:state (unredacted) or candidates:updated.
  */
 export default function CandidateTablet() {
   const { candidateId } = useParams();
@@ -41,6 +49,9 @@ export default function CandidateTablet() {
     });
     socketRef.current = socket;
 
+    // Socket.IO fires 'connect' on initial connection AND on every reconnect.
+    // We use it solely for auth gating — actual game-state handling lives in
+    // CandidateGameContext which listens on the same socket.
     const onConnect = () => setStatus('valid');
     const onConnectError = () => setStatus('invalid');
 
@@ -74,17 +85,122 @@ export default function CandidateTablet() {
     );
   }
 
-  // status === 'valid' — placeholder idle/waiting shell (real idle screen: Task 5.6)
+  // status === 'valid' — wrap content in the game context provider
+  return (
+    <CandidateGameProvider socket={socketRef.current} candidateId={candidateId}>
+      <CandidateContent />
+    </CandidateGameProvider>
+  );
+}
+
+/**
+ * Inner component — consumes CandidateGameContext to render the correct phase.
+ * Placeholder for now; full phase-based views (MCQ options, lock-in, results,
+ * etc.) will be built as sub-components in subsequent tasks.
+ */
+function CandidateContent() {
+  const { phase, gameState, timer, isLockedIn, gap, results } = useCandidateGame();
+
+  // IDLE / QUIZ_ENDED — waiting shell
+  if (phase === 'IDLE' || phase === 'QUIZ_ENDED') {
+    return (
+      <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-center">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(circle at center, #1a2026 0%, #080f14 100%)' }}
+        />
+        <div className="glass-panel relative z-10 flex flex-col items-center rounded-2xl p-12">
+          <span className="material-symbols-outlined mb-6 block text-[64px] text-secondary">sports_esports</span>
+          <h1 className="mb-4 font-display-lg text-display-lg text-secondary">THE HOT SEAT</h1>
+          <p className="font-body-lg text-body-lg text-on-surface-variant">
+            {phase === 'QUIZ_ENDED' ? 'Quiz has ended — thanks for playing!' : 'Waiting for the quiz to start…'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // GAP phase — suspense screen
+  if (phase === 'GAP') {
+    return (
+      <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-center">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(circle at center, #1a2026 0%, #080f14 100%)' }}
+        />
+        <div className="glass-panel relative z-10 flex flex-col items-center rounded-2xl p-12">
+          <span className="material-symbols-outlined mb-4 block text-[48px] text-secondary animate-spin">hourglass_top</span>
+          <h2 className="mb-2 font-display-lg text-display-lg text-secondary">Calculating results…</h2>
+          {gap?.remainingSeconds != null && (
+            <p className="font-body-lg text-body-lg text-on-surface-variant">
+              {gap.remainingSeconds}s
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // RESULTS phase — show correct answer / winner (placeholder)
+  if (phase === 'RESULTS') {
+    return (
+      <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-center">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(circle at center, #1a2026 0%, #080f14 100%)' }}
+        />
+        <div className="glass-panel relative z-10 flex flex-col items-center rounded-2xl p-12">
+          <span className="material-symbols-outlined mb-4 block text-[48px] text-secondary">emoji_events</span>
+          <h2 className="mb-2 font-display-lg text-display-lg text-secondary">Results</h2>
+          {results && (
+            <p className="font-body-lg text-body-lg text-on-surface-variant">
+              Correct answer: {results.correctOptionKey ?? 'N/A'}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // QUESTION_SHOWN / TIME_UP / JUDGING — question + timer + lock status (placeholder)
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-center">
       <div
         className="pointer-events-none absolute inset-0"
         style={{ background: 'radial-gradient(circle at center, #1a2026 0%, #080f14 100%)' }}
       />
-      <div className="glass-panel relative z-10 flex flex-col items-center rounded-2xl p-12">
-        <span className="material-symbols-outlined mb-6 block text-[64px] text-secondary">sports_esports</span>
-        <h1 className="mb-4 font-display-lg text-display-lg text-secondary">THE HOT SEAT</h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant">Waiting for the quiz to start…</p>
+      <div className="glass-panel relative z-10 flex flex-col items-center rounded-2xl p-12 max-w-lg w-full">
+        {/* Timer */}
+        {timer && (
+          <div className="mb-4 text-center">
+            <span className="font-display-lg text-display-lg text-secondary">
+              {timer.remainingSeconds}s
+            </span>
+          </div>
+        )}
+
+        {/* Question text */}
+        {gameState?.question && (
+          <p className="mb-6 font-body-lg text-body-lg text-on-surface">
+            {gameState.question.text}
+          </p>
+        )}
+
+        {/* Lock status */}
+        {isLockedIn && (
+          <div className="mb-4 flex items-center gap-2 text-secondary">
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
+            <span className="font-label-caps text-label-caps tracking-[0.15em]">LOCKED IN</span>
+          </div>
+        )}
+
+        {/* Phase indicator for TIME_UP / JUDGING */}
+        {phase === 'TIME_UP' && (
+          <p className="font-label-caps text-label-caps text-on-surface-variant tracking-[0.15em]">TIME'S UP</p>
+        )}
+        {phase === 'JUDGING' && (
+          <p className="font-label-caps text-label-caps text-on-surface-variant tracking-[0.15em]">JUDGING…</p>
+        )}
       </div>
     </div>
   );
