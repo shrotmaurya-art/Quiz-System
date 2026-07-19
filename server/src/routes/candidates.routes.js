@@ -121,3 +121,4 @@ router.post('/:id/logo', upload.single('logo'), (req, res) => {
 });
 
 module.exports = router;
+module.exports.toPublicCandidate = toPublicCandidate;
