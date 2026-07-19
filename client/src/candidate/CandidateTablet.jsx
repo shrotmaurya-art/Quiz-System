@@ -4,6 +4,8 @@ import { createSocket } from '../shared/socket';
 import InvalidLinkScreen from './InvalidLinkScreen';
 import { CandidateGameProvider, useCandidateGame } from './CandidateGameContext';
 import McqQuestionView from './McqQuestionView';
+import OpenQuestionView from './OpenQuestionView';
+import ResultsView from './ResultsView';
 
 /**
  * Candidate tablet entry point — route /play/:candidateId?token=...
@@ -100,7 +102,7 @@ export default function CandidateTablet() {
  * etc.) will be built as sub-components in subsequent tasks.
  */
 function CandidateContent() {
-  const { phase, gameState, timer, isLockedIn, gap, results } = useCandidateGame();
+  const { phase, gameState, timer, isLockedIn, gap } = useCandidateGame();
 
   // IDLE / QUIZ_ENDED — waiting shell
   if (phase === 'IDLE' || phase === 'QUIZ_ENDED') {
@@ -126,6 +128,12 @@ function CandidateContent() {
     return <McqQuestionView />;
   }
 
+  // If OPEN (Rapid Fire), render OPEN question screen during active phases
+  // (including TIME_UP, JUDGING, and GAP — locked view stays on-screen; no separate Gap screen)
+  if (gameState?.answerMode === 'OPEN' && (phase === 'QUESTION_SHOWN' || phase === 'TIME_UP' || phase === 'JUDGING' || phase === 'GAP')) {
+    return <OpenQuestionView />;
+  }
+
   // GAP phase — suspense screen
   if (phase === 'GAP') {
     return (
@@ -147,25 +155,9 @@ function CandidateContent() {
     );
   }
 
-  // RESULTS phase — show correct answer / winner (placeholder)
+  // RESULTS phase — show this candidate's own results/feedback (Task 5.5)
   if (phase === 'RESULTS') {
-    return (
-      <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-center">
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(circle at center, #1a2026 0%, #080f14 100%)' }}
-        />
-        <div className="glass-panel relative z-10 flex flex-col items-center rounded-2xl p-12">
-          <span className="material-symbols-outlined mb-4 block text-[48px] text-secondary">emoji_events</span>
-          <h2 className="mb-2 font-display-lg text-display-lg text-secondary">Results</h2>
-          {results && (
-            <p className="font-body-lg text-body-lg text-on-surface-variant">
-              Correct answer: {results.correctOptionKey ?? 'N/A'}
-            </p>
-          )}
-        </div>
-      </div>
-    );
+    return <ResultsView />;
   }
 
   // QUESTION_SHOWN / TIME_UP / JUDGING — question + timer + lock status (placeholder)
