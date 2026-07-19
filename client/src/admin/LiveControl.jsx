@@ -204,6 +204,39 @@ export default function LiveControl() {
     });
   };
 
+  const handleEndRound = () => {
+    const nextRoundName = (() => {
+      if (!currentRound) return 'next round';
+      const idx = rounds.findIndex((r) => r.id === currentRound.id);
+      return idx < rounds.length - 1 ? rounds[idx + 1].name : null;
+    })();
+    setConfirmModal({
+      title: 'Skip to Next Round?',
+      message: nextRoundName
+        ? `All remaining questions in "${currentRound?.name}" will be skipped. The quiz will jump to "${nextRoundName}".`
+        : `This is the last round. Skipping will end the quiz immediately.`,
+      onConfirm: () => {
+        socket.emit('admin:endRound', {}, (ack) => {
+          if (ack?.error) alert(ack.error);
+        });
+        setConfirmModal(null);
+      },
+    });
+  };
+
+  const handleEndQuiz = () => {
+    setConfirmModal({
+      title: 'End Quiz Immediately?',
+      message: 'All remaining questions will be skipped and the quiz will end. The final leaderboard will be shown.',
+      onConfirm: () => {
+        socket.emit('admin:endQuiz', {}, (ack) => {
+          if (ack?.error) alert(ack.error);
+        });
+        setConfirmModal(null);
+      },
+    });
+  };
+
   const handleAdvanceFromGap = () => {
     socket.emit('admin:advanceFromGap', {}, (ack) => {
       if (ack?.error) alert(ack.error);
@@ -739,8 +772,8 @@ export default function LiveControl() {
             </button>
           </div>
 
-          {/* Center quick emergency stop action */}
-          <div className="flex-1 flex justify-center">
+          {/* Center: Timer + Round/Quiz controls */}
+          <div className="flex-1 flex justify-center items-center gap-3">
             {gameState.phase === 'QUESTION_SHOWN' && (
               <button
                 onClick={handleEndTimerNow}
@@ -749,6 +782,24 @@ export default function LiveControl() {
                 <span className="material-symbols-outlined text-[16px]">stop_circle</span>
                 End Timer Now
               </button>
+            )}
+            {gameState.phase !== 'QUIZ_ENDED' && (
+              <>
+                <button
+                  onClick={handleEndRound}
+                  className="px-5 py-2.5 rounded-full bg-surface-variant/30 border border-outline/20 hover:bg-tertiary-container/30 hover:border-tertiary/50 hover:text-tertiary text-on-surface-variant transition-colors font-label-caps text-[11px] tracking-widest flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">fast_forward</span>
+                  End Round
+                </button>
+                <button
+                  onClick={handleEndQuiz}
+                  className="px-5 py-2.5 rounded-full bg-surface-variant/30 border border-outline/20 hover:bg-error-container/30 hover:border-error/50 hover:text-error text-on-surface-variant transition-colors font-label-caps text-[11px] tracking-widest flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">stop</span>
+                  End Quiz
+                </button>
+              </>
             )}
           </div>
 
