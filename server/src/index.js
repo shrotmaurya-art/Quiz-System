@@ -76,9 +76,17 @@ function validateImportDocument(document) {
 }
 
 const restoreData = db.transaction((document) => {
+  run('DELETE FROM score_log');
+  run('DELETE FROM game_state');
   run('DELETE FROM questions');
   run('DELETE FROM rounds');
   run('DELETE FROM candidates');
+
+  // Re-insert default IDLE game state so getGameState() never returns null
+  run(
+    `INSERT INTO game_state (id, phase, locks, judgements, resultsRevealed)
+     VALUES (1, 'IDLE', '{}', '{}', 0)`
+  );
 
   for (const round of document.rounds) {
     run(

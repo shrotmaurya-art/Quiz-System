@@ -138,12 +138,13 @@ function broadcastCandidates(io) {
   io.to('display').emit('candidates:public-updated', candidates.map(toPublicCandidate));
 }
 
-/**
- * Broadcasts the current scoreboard.
- */
 function broadcastScoreboard(io) {
-  const candidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
-  io.to('admin').to('display').emit('scoreboard:update', candidates.map(toPublicCandidate));
+  try {
+    const candidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates ORDER BY score DESC, name ASC');
+    io.to('admin').to('display').emit('scoreboard:update', candidates.map(toPublicCandidate));
+  } catch (err) {
+    console.error('Error in broadcastScoreboard:', err);
+  }
 }
 
 /**
@@ -360,7 +361,9 @@ function initSockets(server) {
       socket.join('admin');
       
       const state = gameEngine.getGameState();
-      const question = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
+      const question = state && state.currentQuestionId
+        ? get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId])
+        : null;
       socket.emit('game:state', getUnredactedGameState(state, question));
 
       const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
@@ -370,8 +373,12 @@ function initSockets(server) {
       socket.join(`candidate:${auth.candidateId}`);
 
       const state = gameEngine.getGameState();
-      const question = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
-      const round = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
+      const question = state && state.currentQuestionId
+        ? get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId])
+        : null;
+      const round = state && state.currentRoundId
+        ? get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId])
+        : null;
       socket.emit('game:state:public', redactGameState(state, question, round));
 
       const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
@@ -381,8 +388,12 @@ function initSockets(server) {
       socket.join('display');
 
       const state = gameEngine.getGameState();
-      const question = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
-      const round = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
+      const question = state && state.currentQuestionId
+        ? get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId])
+        : null;
+      const round = state && state.currentRoundId
+        ? get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId])
+        : null;
       socket.emit('game:state:public', redactGameState(state, question, round));
 
       const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
@@ -433,6 +444,26 @@ function initSockets(server) {
     }
 
     // Client-to-server handlers
+
+    socket.on('admin:startQuiz', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+
+      const res = runGameAction(() => gameEngine.startQuiz(), ack);
+      if (!res) return;
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        clearQuestionTick();
+        clearGapTimerCountdown();
+        if (typeof ack === 'function') ack({ success: true });
+        broadcastGameState(io);
+        broadcastCandidates(io);
+        if (res.state.phase === 'QUESTION_SHOWN') {
+          startQuestionTick(io, res.state.timeLimitSeconds);
+        }
+      }
+    });
 
     socket.on('admin:nextQuestion', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
