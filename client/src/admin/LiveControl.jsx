@@ -117,6 +117,10 @@ export default function LiveControl() {
     socket.on('gap:tick', onGapTick);
     socket.on('results:revealed', onResultsRevealed);
 
+    // Request fresh state from server — the server's initial game:state emission
+    // on connection may have fired before these listeners were registered.
+    socket.emit('admin:requestState');
+
     return () => {
       socket.off('game:state', onGameState);
       socket.off('candidates:updated', onCandidatesUpdated);

@@ -76,6 +76,14 @@ router.post('/', (req, res) => {
   }
 
   const id = crypto.randomUUID();
+
+  // Auto-compute order if not provided (MAX(order)+1, or 1 if no rounds exist)
+  let order = round.order;
+  if (order === undefined || order === null) {
+    const maxRow = get('SELECT MAX("order") AS maxOrder FROM rounds');
+    order = (maxRow?.maxOrder ?? 0) + 1;
+  }
+
   run(
     `INSERT INTO rounds (
       id, name, "order", answerMode, pointsPerQuestion,
@@ -84,7 +92,7 @@ router.post('/', (req, res) => {
     [
       id,
       round.name,
-      round.order,
+      order,
       round.answerMode,
       round.pointsPerQuestion === undefined ? 10 : round.pointsPerQuestion,
       round.timeLimitSeconds === undefined ? null : round.timeLimitSeconds,
