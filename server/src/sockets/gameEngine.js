@@ -88,6 +88,47 @@ function resolveTiming(question, round, globalSettings) {
 }
 
 // ---------------------------------------------------------------------------
+// Real Timer Management for Answering Window
+// ---------------------------------------------------------------------------
+let activeQuestionTimeout = null;
+let onTimeUpCallback = null;
+
+/**
+ * Clears the active question timer if it is running.
+ */
+function clearQuestionTimeout() {
+  if (activeQuestionTimeout) {
+    clearTimeout(activeQuestionTimeout);
+    activeQuestionTimeout = null;
+  }
+}
+
+/**
+ * Schedules the handleTimeUp transition automatically after the configured seconds.
+ * @param {number} timeLimitSeconds
+ */
+function scheduleQuestionTimeout(timeLimitSeconds) {
+  clearQuestionTimeout();
+  if (typeof timeLimitSeconds === 'number' && timeLimitSeconds > 0) {
+    activeQuestionTimeout = setTimeout(() => {
+      const res = handleTimeUp();
+      if (res.success && onTimeUpCallback) {
+        onTimeUpCallback(res.state);
+      }
+    }, timeLimitSeconds * 1000);
+  }
+}
+
+/**
+ * Registers a callback to be notified when the auto-timer triggers handleTimeUp.
+ * Used by the Socket.IO layer to broadcast state updates.
+ * @param {Function} callback
+ */
+function registerOnTimeUp(callback) {
+  onTimeUpCallback = callback;
+}
+
+// ---------------------------------------------------------------------------
 // Game Engine Exported Functions
 // ---------------------------------------------------------------------------
 
@@ -138,6 +179,7 @@ function startQuiz() {
   state.resultsRevealed = false;
 
   saveGameState(state);
+  scheduleQuestionTimeout(timing.timeLimitSeconds);
   return { success: true, state };
 }
 
@@ -188,6 +230,7 @@ function nextQuestion() {
     state.winnerCandidateId = null;
     state.resultsRevealed = false;
     saveGameState(state);
+    clearQuestionTimeout();
     return { success: true, ended: true, state };
   }
 
@@ -215,6 +258,7 @@ function nextQuestion() {
   state.resultsRevealed = false;
 
   saveGameState(state);
+  scheduleQuestionTimeout(timing.timeLimitSeconds);
   return { success: true, state };
 }
 
@@ -285,6 +329,7 @@ function previousQuestion() {
   state.resultsRevealed = false;
 
   saveGameState(state);
+  scheduleQuestionTimeout(timing.timeLimitSeconds);
   return { success: true, state };
 }
 
@@ -327,6 +372,7 @@ function lockAnswer(candidateId, optionKey) {
  * @returns {Object} { success: true, state } or { error }
  */
 function handleTimeUp() {
+  clearQuestionTimeout();
   const state = getGameState();
   if (state.phase !== 'QUESTION_SHOWN') {
     return { error: `Cannot trigger time up outside of QUESTION_SHOWN phase. Current phase: ${state.phase}` };
@@ -526,5 +572,6 @@ module.exports = {
   computeWinner,
   enterGap,
   exitGap,
-  revealResults
+  revealResults,
+  registerOnTimeUp
 };
