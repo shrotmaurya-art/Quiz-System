@@ -131,30 +131,34 @@ export default function QuestionForm({ question, roundId, rounds, onSave, onCanc
                 <span className="text-xs text-outline-variant font-body-md">Mark correct answer</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {form.options.map((opt) => (
-                  <div key={opt.key} className="relative group">
-                    <input
-                      type="radio"
-                      name="correct_answer"
-                      checked={form.correctOptionKey === opt.key}
-                      onChange={() => set('correctOptionKey', opt.key)}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary bg-surface border-outline focus:ring-secondary focus:ring-offset-surface"
-                    />
-                    <input
-                      value={opt.text}
-                      onChange={(e) => setOption(opt.key, e.target.value)}
-                      placeholder={`Option ${opt.key}`}
-                      className={`w-full bg-surface-container border focus:border-secondary focus:ring-0 text-on-surface font-body-lg p-3 pl-12 clip-diamond shadow-[inset_0_0_10px_rgba(0,0,0,0.3)] hover:border-secondary/50 transition-colors ${
-                        form.correctOptionKey === opt.key
-                          ? 'border-secondary gold-glow'
-                          : 'border-outline/30'
-                      }`}
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 font-display-lg text-lg text-outline-variant opacity-50 pointer-events-none">
-                      {opt.key}
-                    </span>
-                  </div>
-                ))}
+                {form.options.map((opt) => {
+                  const isSelected = form.correctOptionKey === opt.key;
+                  return (
+                    <div key={opt.key} className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => set('correctOptionKey', isSelected ? '' : opt.key)}
+                        className={`shrink-0 w-10 h-10 rounded-lg border-2 flex items-center justify-center font-display-lg text-lg transition-all ${
+                          isSelected
+                            ? 'bg-secondary text-on-secondary border-secondary shadow-[0_0_12px_rgba(240,192,62,0.6)]'
+                            : 'bg-surface-container border-outline/40 text-outline-variant hover:border-secondary/60 hover:text-secondary'
+                        }`}
+                      >
+                        {opt.key}
+                      </button>
+                      <input
+                        value={opt.text}
+                        onChange={(e) => setOption(opt.key, e.target.value)}
+                        placeholder={`Option ${opt.key}`}
+                        className={`w-full bg-surface-container border-b-2 focus:ring-0 text-on-surface font-body-lg p-3 transition-colors ${
+                          isSelected
+                            ? 'border-b-secondary'
+                            : 'border-b-outline/30 focus:border-b-secondary'
+                        }`}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
