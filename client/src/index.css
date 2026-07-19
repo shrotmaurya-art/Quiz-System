@@ -1,1 +1,111 @@
 @import "tailwindcss";
+
+@theme {
+  /* ── Stitch-UI Color Palette ── */
+  --color-background: #0e141a;
+  --color-surface: #0e141a;
+  --color-surface-dim: #0e141a;
+  --color-surface-bright: #333a40;
+  --color-surface-container-lowest: #080f14;
+  --color-surface-container-low: #161c22;
+  --color-surface-container: #1a2026;
+  --color-surface-container-high: #242b31;
+  --color-surface-container-highest: #2f353c;
+  --color-surface-variant: #2f353c;
+  --color-on-surface: #dde3eb;
+  --color-on-surface-variant: #c7c5ce;
+  --color-on-background: #dde3eb;
+  --color-outline: #919098;
+  --color-outline-variant: #46464d;
+
+  --color-primary: #c1c4e8;
+  --color-primary-container: #0a0e29;
+  --color-on-primary: #2b2e4b;
+  --color-on-primary-container: #777a9b;
+
+  --color-secondary: #f0c03e;
+  --color-secondary-container: #ba9000;
+  --color-on-secondary: #3e2e00;
+  --color-on-secondary-container: #3c2c00;
+
+  --color-tertiary: #c4c0ff;
+  --color-tertiary-container: #0a0049;
+  --color-on-tertiary: #2300a3;
+  --color-on-tertiary-container: #7268f9;
+
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+  --color-on-error-container: #ffdad6;
+
+  --color-inverse-surface: #dde3eb;
+  --color-inverse-on-surface: #2b3137;
+  --color-inverse-primary: #595c7b;
+
+  /* ── Fonts ── */
+  --font-display-lg: "Playfair Display", serif;
+  --font-headline-md: "Playfair Display", serif;
+  --font-label-caps: "Space Grotesk", sans-serif;
+  --font-body-md: "Work Sans", sans-serif;
+  --font-body-lg: "Work Sans", sans-serif;
+
+  /* ── Font Sizes ── */
+  --text-display-lg: 48px;
+  --text-headline-md: 24px;
+  --text-label-caps: 14px;
+  --text-body-md: 16px;
+  --text-body-lg: 18px;
+
+  /* ── Spacing ── */
+  --spacing-margin-desktop: 64px;
+  --spacing-margin-mobile: 16px;
+  --spacing-gutter: 24px;
+  --spacing-stack-sm: 8px;
+  --spacing-stack-md: 16px;
+  --spacing-stack-lg: 32px;
+  --spacing-container-max: 1200px;
+}
+
+/* ── Utility Classes ── */
+@layer utilities {
+  .glass-panel {
+    background: rgba(14, 20, 26, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(240, 192, 62, 0.3);
+  }
+
+  .inner-glow-gold {
+    box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.3);
+  }
+
+  .bloom-gold {
+    box-shadow: 0 0 20px rgba(240, 192, 62, 0.25);
+  }
+
+  .hex-clip {
+    clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
+  }
+
+  .diamond-clip {
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+
+  .clip-diamond {
+    clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  }
+
+  .gold-glow {
+    box-shadow: inset 0 0 15px rgba(240, 192, 62, 0.4), 0 0 20px rgba(240, 192, 62, 0.1);
+  }
+
+  .btn-gold-pulse {
+    box-shadow: 0 0 15px rgba(240, 192, 62, 0.4);
+    animation: pulse-glow 2s infinite;
+  }
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 15px rgba(240, 192, 62, 0.4); }
+  50% { box-shadow: 0 0 25px rgba(240, 192, 62, 0.8); }
+  100% { box-shadow: 0 0 15px rgba(240, 192, 62, 0.4); }
+}
