@@ -60,6 +60,8 @@ function formatQuestion(question) {
 
 function toDatabaseValue(field, value) {
   if (field === 'gapEnabledOverride' && value !== null) {
+    if (value === 'true' || value === true) return 1;
+    if (value === 'false' || value === false) return 0;
     return Number(value);
   }
 
@@ -124,6 +126,12 @@ router.post('/', upload.single('media'), (req, res) => {
 
   const mediaUrl = req.file ? saveMedia(req.file) : null;
 
+  const maxOrder = get(
+    'SELECT MAX("order") AS maxOrder FROM questions WHERE roundId = ?',
+    [question.roundId]
+  );
+  const nextOrder = (maxOrder?.maxOrder ?? 0) + 1;
+
   const id = crypto.randomUUID();
   run(
     `INSERT INTO questions (
@@ -134,7 +142,7 @@ router.post('/', upload.single('media'), (req, res) => {
     [
       id,
       question.roundId,
-      question.order,
+      question.order != null ? question.order : nextOrder,
       question.text,
       mediaType,
       mediaUrl,
