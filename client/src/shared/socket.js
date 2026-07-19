@@ -12,7 +12,7 @@ import { io } from 'socket.io-client';
  * @returns {import('socket.io-client').Socket}
  */
 export function createSocket({ auth, query, url } = {}) {
-  const serverUrl = url || import.meta.env.VITE_API_URL || undefined;
+  const serverUrl = url || import.meta.env.VITE_API_URL || `http://${window.location.hostname}:4000`;
 
   return io(serverUrl, {
     auth: auth ?? {},

@@ -1,4 +1,4 @@
-const SCHOOL_NAME = "St. Jude's Academy";
+const SCHOOL_NAME = "SGBS School";
 
 const EVENT_TITLE = `${SCHOOL_NAME} Annual Quiz`;
 

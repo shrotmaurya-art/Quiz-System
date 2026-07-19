@@ -1,10 +1,9 @@
+import { useDisplayGame } from '../DisplayGameContext';
+
 export default function ScoreboardView() {
-  const teams = [
-    { name: 'Team Alpha', score: 120 },
-    { name: 'Team Beta', score: 90 },
-    { name: 'Team Gamma', score: 75 },
-    { name: 'Team Delta', score: 60 },
-  ];
+  const { scoreboard } = useDisplayGame();
+
+  const teams = scoreboard || [];
 
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-8 max-w-3xl mx-auto">
@@ -12,9 +11,12 @@ export default function ScoreboardView() {
         Scoreboard
       </p>
       <div className="w-full space-y-3">
+        {teams.length === 0 && (
+          <p className="font-body-lg text-body-lg text-on-surface-variant">No scores yet</p>
+        )}
         {teams.map((t, i) => (
           <div
-            key={t.name}
+            key={t.id}
             className={`glass-panel rounded-lg px-6 py-4 flex items-center justify-between ${
               i === 0 ? 'border-secondary/60 gold-glow' : ''
             }`}
