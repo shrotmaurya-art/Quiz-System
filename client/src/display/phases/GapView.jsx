@@ -50,7 +50,7 @@ export default function GapView() {
         CALCULATING RESULTS…
       </h2>
 
-      <p className="mt-4 font-body-lg text-body-lg text-on-surface-variant">
+      <p className="mt-4 font-body-xl text-body-xl text-on-surface-variant">
         Please wait while we tally the scores
       </p>
     </div>

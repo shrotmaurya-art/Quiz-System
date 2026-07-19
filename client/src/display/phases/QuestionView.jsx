@@ -36,7 +36,7 @@ export default function QuestionView() {
         </div>
       ) : (
         <div className="glass-panel-active rounded-xl p-12 w-full mb-10">
-          <h2 className="font-headline-md text-headline-md text-on-surface-variant animate-pulse">
+          <h2 className="font-headline-xl text-headline-xl text-on-surface-variant animate-pulse">
             Waiting for question…
           </h2>
         </div>
@@ -55,7 +55,7 @@ export default function QuestionView() {
           >
             lock
           </span>
-          <span className="font-label-caps text-label-caps text-on-surface-variant text-[18px]">
+          <span className="font-label-caps text-label-caps text-on-surface-variant text-[22px]">
             {lockedCount}/{totalCandidates} locked in
           </span>
         </div>

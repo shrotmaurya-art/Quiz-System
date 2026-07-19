@@ -97,7 +97,7 @@ export default function ResultsView() {
             {/* Info */}
             <div className="flex-grow min-w-0">
               <p className="font-label-caps text-label-caps text-secondary mb-1">Fastest Correct</p>
-              <h2 className="font-headline-md text-headline-md md:text-headline-xl text-on-surface truncate">
+              <h2 className="font-headline-xl text-headline-xl text-on-surface truncate">
                 {winnerRow.candidate?.name || 'Unknown'}
               </h2>
             </div>
@@ -137,11 +137,11 @@ export default function ResultsView() {
                   <span className="material-symbols-outlined text-outline-variant text-[28px]">person</span>
                 )}
               </div>
-              <div className="flex-grow font-headline-md text-[20px] text-on-surface truncate">
+              <div className="flex-grow font-headline-md text-[32px] text-on-surface truncate">
                 {r.candidate?.name || 'Unknown'}
               </div>
               <div
-                className={`font-body-lg text-body-lg font-bold flex-shrink-0 ${
+                className={`text-body-xl font-bold flex-shrink-0 ${
                   isNoAnswer
                     ? 'text-outline italic font-normal'
                     : isCorrect
@@ -174,7 +174,7 @@ export default function ResultsView() {
               <span className="font-label-caps text-label-caps text-on-surface-variant">
                 {i + 1}. {c.name}
               </span>
-              <span className="font-body-md text-body-md text-secondary font-bold">{c.score}</span>
+              <span className="text-body-xl text-secondary font-bold">{c.score}</span>
             </div>
           ))}
         </div>

@@ -12,7 +12,7 @@ export default function ScoreboardView() {
       </p>
       <div className="w-full space-y-4">
         {teams.length === 0 && (
-          <p className="font-body-lg text-body-lg text-on-surface-variant">No scores yet</p>
+          <p className="font-body-xl text-body-xl text-on-surface-variant">No scores yet</p>
         )}
         {teams.map((t, i) => {
           const isChampion = i === 0;
@@ -45,7 +45,7 @@ export default function ScoreboardView() {
                     {i + 1}
                   </span>
                   <span
-                    className={`font-headline-md text-[28px] ${
+                    className={`font-headline-md text-[36px] ${
                       isChampion ? 'text-on-surface font-bold' : 'text-on-surface'
                     }`}
                   >
