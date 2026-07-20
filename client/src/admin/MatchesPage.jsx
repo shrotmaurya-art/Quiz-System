@@ -169,6 +169,17 @@ export default function MatchesPage() {
     }
   }
 
+  async function handleReset(id, name) {
+    if (!confirm(`Reset "${name}"? All current scores for this match will be cleared to 0 and the match status will return to "Not Started". This cannot be undone.`)) return;
+    const res = await apiFetch(`/api/matches/${id}/reset`, { method: 'POST' });
+    if (res.ok) {
+      fetchMatches();
+    } else {
+      const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+      alert(err.error || `Error ${res.status}`);
+    }
+  }
+
   function handleFormSave() {
     setShowForm(false);
     setEditingMatch(null);
@@ -250,21 +261,28 @@ export default function MatchesPage() {
                     </div>
                     <div className="flex gap-2 shrink-0 ml-3">
                       {match.status === 'not_started' && (
-                        <>
-                          <button
-                            onClick={() => { setEditingMatch(match); setShowForm(true); }}
-                            className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary border border-secondary/30 hover:bg-secondary/20 transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(match.id, match.name)}
-                            className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-error border border-error/30 hover:bg-error/20 transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">delete</span>
-                          </button>
-                        </>
+                        <button
+                          onClick={() => { setEditingMatch(match); setShowForm(true); }}
+                          className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary border border-secondary/30 hover:bg-secondary/20 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">edit</span>
+                        </button>
                       )}
+                      {match.status === 'completed' && (
+                        <button
+                          onClick={() => handleReset(match.id, match.name)}
+                          className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary border border-secondary/30 hover:bg-secondary/20 transition-colors"
+                          title="Reset match to re-run"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">restart_alt</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(match.id, match.name)}
+                        className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-error border border-error/30 hover:bg-error/20 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
                     </div>
                   </div>
 

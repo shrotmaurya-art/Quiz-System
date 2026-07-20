@@ -169,4 +169,23 @@ router.delete('/:id', (req, res) => {
   return res.status(204).end();
 });
 
+// POST /api/matches/:id/reset — reset a completed match back to not_started
+router.post('/:id/reset', (req, res) => {
+  const match = get('SELECT * FROM matches WHERE id = ?', [req.params.id]);
+  if (!match) {
+    return res.status(404).json({ error: 'Match not found.' });
+  }
+  if (match.status !== 'completed') {
+    return res.status(400).json({ error: 'Only completed matches can be reset.' });
+  }
+
+  const resetMatch = db.transaction((matchId) => {
+    run("UPDATE matches SET status = 'not_started', winnerCandidateId = NULL WHERE id = ?", [matchId]);
+    run('UPDATE match_scores SET score = 0 WHERE matchId = ?', [matchId]);
+  });
+  resetMatch(req.params.id);
+
+  return res.json(formatMatch(get('SELECT * FROM matches WHERE id = ?', [req.params.id])));
+});
+
 module.exports = router;
