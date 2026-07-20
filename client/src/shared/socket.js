@@ -18,8 +18,9 @@ export function createSocket({ auth, query, url } = {}) {
     auth: auth ?? {},
     query: query ?? {},
     reconnection: true,
-    reconnectionAttempts: 10,
+    reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
     transports: ['websocket', 'polling'],
   });
 }
