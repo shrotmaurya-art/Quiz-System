@@ -898,6 +898,31 @@ function reverseScoringForQuestion(questionId, matchId) {
   }
 }
 
+/**
+ * Computes a single candidate's result status for a given question.
+ * Called by redactGameState() to populate status in revealed locks.
+ *
+ * @param {object} lock - candidate's lock { answered, optionKey, elapsedMs }
+ * @param {string} answerMode - 'MCQ' or 'OPEN'
+ * @param {string|null} correctOptionKey - the correct answer key
+ * @param {object} judgements - { [candidateId]: boolean } for OPEN questions
+ * @param {string} candidateId - the candidate's id
+ * @returns {'correct'|'incorrect'|'no_answer'|'not_judged'}
+ */
+function getResultStatus(lock, answerMode, correctOptionKey, judgements, candidateId) {
+  if (!lock || !lock.answered) return 'no_answer';
+
+  if (answerMode === 'MCQ') {
+    return lock.optionKey === correctOptionKey ? 'correct' : 'incorrect';
+  }
+
+  // OPEN mode: check judgements
+  const judgement = judgements?.[candidateId];
+  if (judgement === true) return 'correct';
+  if (judgement === false) return 'incorrect';
+  return 'not_judged';
+}
+
 module.exports = {
   PhaseError,
   assertPhase,
@@ -920,5 +945,6 @@ module.exports = {
   nextRound,
   endQuiz,
   resetQuiz,
-  reverseScoringForQuestion
+  reverseScoringForQuestion,
+  getResultStatus
 };
