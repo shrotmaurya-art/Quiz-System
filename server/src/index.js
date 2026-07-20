@@ -294,7 +294,13 @@ if (fs.existsSync(clientDistPath)) {
 }
 
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server listening on http://${getLanAddress()}:${PORT}`);
+  const lanUrl = `http://${getLanAddress()}:${PORT}`;
+  console.log('\n***************************************************************');
+  console.log(`* LAN QUIZ URL: ${lanUrl}`);
+  console.log(`* DISPLAY:      ${lanUrl}/display`);
+  console.log(`* ADMIN:        ${lanUrl}/admin`);
+  console.log('***************************************************************\n');
+  console.log(`Server listening on ${lanUrl}`);
   console.log(`Server running — try http://localhost:${PORT}/api/health`);
 });
 
