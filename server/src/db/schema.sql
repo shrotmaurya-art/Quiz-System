@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS game_state (
   currentRoundId TEXT,
   currentQuestionId TEXT,
   timerStartedAt INTEGER,
+  gapStartedAt INTEGER,
   timeLimitSeconds INTEGER NOT NULL DEFAULT 30,
   gapEnabled INTEGER NOT NULL DEFAULT 1,
   gapSeconds INTEGER NOT NULL DEFAULT 10,

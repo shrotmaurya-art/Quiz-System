@@ -37,6 +37,7 @@ function safeAddColumn(table, colDef) {
 safeAddColumn('rounds', 'matchId TEXT REFERENCES matches(id)');
 safeAddColumn('game_state', 'matchId TEXT');
 safeAddColumn('score_log', 'matchId TEXT');
+safeAddColumn('game_state', 'gapStartedAt INTEGER');
 
 // Check if score_log check constraint includes 'question_replay_reversal'
 const scoreLogSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='score_log'").get();

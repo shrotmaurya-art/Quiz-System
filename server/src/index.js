@@ -14,7 +14,7 @@ const candidatesRouter = require('./routes/candidates.routes');
 const adminRouter = require('./routes/admin.routes');
 const matchesRouter = require('./routes/matches.routes');
 const { handleAdminLogin, requireAdmin } = require('./middleware/auth');
-const initSockets = require('./sockets/index');
+const { initSockets, resumeGameStateOnBoot } = require('./sockets/index');
 const { toPublicCandidate } = candidatesRouter;
 
 app.use(express.json());
@@ -269,7 +269,8 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running — try http://localhost:${PORT}/api/health`);
 });
 
-initSockets(server);
+const io = initSockets(server);
+resumeGameStateOnBoot(io);
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {

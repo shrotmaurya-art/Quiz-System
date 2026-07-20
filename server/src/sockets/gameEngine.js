@@ -65,6 +65,7 @@ function saveGameState(state) {
       currentRoundId = ?,
       currentQuestionId = ?,
       timerStartedAt = ?,
+      gapStartedAt = ?,
       timeLimitSeconds = ?,
       gapEnabled = ?,
       gapSeconds = ?,
@@ -79,6 +80,7 @@ function saveGameState(state) {
       state.currentRoundId,
       state.currentQuestionId,
       state.timerStartedAt,
+      state.gapStartedAt !== undefined ? state.gapStartedAt : null,
       state.timeLimitSeconds,
       state.gapEnabled === null ? null : Number(state.gapEnabled),
       state.gapSeconds,
@@ -218,6 +220,7 @@ function startMatch(matchId) {
   state.currentRoundId = round.id;
   state.currentQuestionId = question.id;
   state.timerStartedAt = Date.now();
+  state.gapStartedAt = null;
   state.timeLimitSeconds = timing.timeLimitSeconds;
   state.gapEnabled = timing.gapEnabled;
   state.gapSeconds = timing.gapSeconds;
@@ -347,6 +350,7 @@ function nextQuestion() {
   state.currentRoundId = resolvedRound.id;
   state.currentQuestionId = nextQ.id;
   state.timerStartedAt = Date.now();
+  state.gapStartedAt = null;
   state.timeLimitSeconds = timing.timeLimitSeconds;
   state.gapEnabled = timing.gapEnabled;
   state.gapSeconds = timing.gapSeconds;
@@ -419,6 +423,7 @@ function previousQuestion() {
   state.currentRoundId = resolvedRound.id;
   state.currentQuestionId = prevQ.id;
   state.timerStartedAt = Date.now();
+  state.gapStartedAt = null;
   state.timeLimitSeconds = timing.timeLimitSeconds;
   state.gapEnabled = timing.gapEnabled;
   state.gapSeconds = timing.gapSeconds;
@@ -610,6 +615,7 @@ function enterGap() {
 
   if (state.gapEnabled) {
     state.phase = 'GAP';
+    state.gapStartedAt = Date.now();
     saveGameState(state);
     return { success: true, state };
   } else {
@@ -797,6 +803,7 @@ function nextRound() {
   state.currentRoundId = nextR.id;
   state.currentQuestionId = nextQ.id;
   state.timerStartedAt = Date.now();
+  state.gapStartedAt = null;
   state.timeLimitSeconds = timing.timeLimitSeconds;
   state.gapEnabled = timing.gapEnabled;
   state.gapSeconds = timing.gapSeconds;
@@ -898,6 +905,31 @@ function reverseScoringForQuestion(questionId, matchId) {
   }
 }
 
+/**
+ * Computes the result status for a candidate's lock.
+ * Status can be 'correct', 'incorrect', 'not_judged', or 'no_answer'.
+ * @param {Object} lock
+ * @param {string} answerMode
+ * @param {string} correctOptionKey
+ * @param {Object} judgements
+ * @param {string} candidateId
+ * @returns {string} status
+ */
+function getResultStatus(lock, answerMode, correctOptionKey, judgements, candidateId) {
+  if (!lock || !lock.answered) {
+    return 'no_answer';
+  }
+  if (answerMode === 'MCQ') {
+    return lock.optionKey === correctOptionKey ? 'correct' : 'incorrect';
+  } else {
+    // OPEN round
+    const judgement = judgements ? judgements[candidateId] : null;
+    if (judgement === true) return 'correct';
+    if (judgement === false) return 'incorrect';
+    return 'not_judged';
+  }
+}
+
 module.exports = {
   PhaseError,
   assertPhase,
@@ -920,5 +952,7 @@ module.exports = {
   nextRound,
   endQuiz,
   resetQuiz,
-  reverseScoringForQuestion
+  reverseScoringForQuestion,
+  scheduleQuestionTimeout,
+  getResultStatus
 };

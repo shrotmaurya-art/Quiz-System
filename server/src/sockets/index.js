@@ -188,16 +188,9 @@ function broadcastResultsRevealed(io, state) {
   const rankings = [];
   for (const cid in state.locks) {
     const lock = state.locks[cid];
-    let status = 'no_answer';
-    if (lock.answered) {
-      let isCorrect = false;
-      if (round && round.answerMode === 'MCQ') {
-        isCorrect = lock.optionKey === (question ? question.correctOptionKey : null);
-      } else {
-        isCorrect = state.judgements[cid] === true;
-      }
-      status = isCorrect ? 'correct' : 'incorrect';
-    }
+    const status = gameEngine.getResultStatus(
+      lock, round?.answerMode, question?.correctOptionKey, state.judgements, cid
+    );
     rankings.push({
       candidateId: cid,
       elapsedMs: lock.elapsedMs,
@@ -792,4 +785,139 @@ function initSockets(server) {
   return io;
 }
 
-module.exports = initSockets;
+/**
+ * Resumes a gap countdown from a fractional remaining duration (in ms).
+ * Works like startGapTimerCountdown but starts at an arbitrary remaining value.
+ * @param {Object} io - Socket.IO server
+ * @param {number} remainingMs - Milliseconds remaining on the gap timer
+ */
+function resumeGapTimerCountdown(io, remainingMs) {
+  clearGapTimerCountdown();
+  let remaining = Math.ceil(remainingMs / 1000); // convert to whole seconds
+
+  // Emit initial tick
+  io.to('admin').emit('gap:tick', { remainingSeconds: remaining });
+  io.to('display').emit('gap:tick', { remainingSeconds: remaining });
+  const state = gameEngine.getGameState();
+  for (const cid in state.locks) {
+    io.to(`candidate:${cid}`).emit('gap:tick', { remainingSeconds: remaining });
+  }
+
+  gapTickInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearGapTimerCountdown();
+    } else {
+      io.to('admin').emit('gap:tick', { remainingSeconds: remaining });
+      io.to('display').emit('gap:tick', { remainingSeconds: remaining });
+      const currentLocks = gameEngine.getGameState().locks;
+      for (const cid in currentLocks) {
+        io.to(`candidate:${cid}`).emit('gap:tick', { remainingSeconds: remaining });
+      }
+    }
+  }, 1000);
+
+  // Automatically transition to results when gap timer ends
+  gapTimeout = setTimeout(() => {
+    clearGapTimerCountdown();
+    const res = gameEngine.revealResults();
+    if (res.success) {
+      broadcastGameState(io);
+      broadcastResultsRevealed(io, res.state);
+      broadcastScoreboard(io);
+    }
+  }, remainingMs);
+}
+
+/**
+ * Called once on server boot (after initSockets) to resume any in-progress
+ * QUESTION_SHOWN or GAP timer that was lost during a server crash/restart.
+ *
+ * If the phase is RESULTS or any non-timed phase, we only broadcast state—
+ * no scoring logic is re-run, preventing double-scoring.
+ *
+ * @param {Object} io - Socket.IO server instance
+ */
+function resumeGameStateOnBoot(io) {
+  const state = gameEngine.getGameState();
+  if (!state || state.phase === 'IDLE') return;
+
+  const now = Date.now();
+
+  if (state.phase === 'QUESTION_SHOWN') {
+    // Resume or fire the question timer
+    const elapsed = now - (state.timerStartedAt || now);
+    const limitMs = (state.timeLimitSeconds || 30) * 1000;
+
+    if (elapsed >= limitMs) {
+      // Timer expired while server was down — fire handleTimeUp immediately
+      const res = gameEngine.handleTimeUp();
+      if (res.success && res.state) {
+        broadcastGameState(io);
+        // Mirror the same post-time-up logic as the onTimeUp callback
+        if (res.state.phase === 'JUDGING') {
+          const sortedKeys = Object.keys(res.state.locks)
+            .filter(cid => res.state.locks[cid].answered)
+            .sort((a, b) => res.state.locks[a].elapsedMs - res.state.locks[b].elapsedMs);
+          io.to('admin').emit('judging:started', {
+            rankedCandidateIds: sortedKeys,
+            rankedCandidates: sortedKeys.map(cid => ({
+              candidateId: cid,
+              elapsedMs: res.state.locks[cid].elapsedMs
+            }))
+          });
+        } else if (res.state.phase === 'GAP') {
+          io.to('admin').to('display').emit('gap:started', { gapSeconds: res.state.gapSeconds });
+          for (const cid in res.state.locks) {
+            io.to(`candidate:${cid}`).emit('gap:started', { gapSeconds: res.state.gapSeconds });
+          }
+          startGapTimerCountdown(io, res.state.gapSeconds);
+        } else if (res.state.phase === 'RESULTS') {
+          broadcastResultsRevealed(io, res.state);
+          broadcastScoreboard(io);
+        }
+      }
+    } else {
+      // Timer still running — resume with the remaining time
+      const remainingMs = limitMs - elapsed;
+      const remainingSec = Math.ceil(remainingMs / 1000);
+
+      // Schedule the engine-level timeout for the remaining time
+      gameEngine.scheduleQuestionTimeout(remainingSec);
+
+      // Start socket-layer tick broadcasts for the remaining time
+      startQuestionTick(io, remainingSec);
+
+      broadcastGameState(io);
+    }
+  } else if (state.phase === 'GAP') {
+    // Resume or fire the gap timer
+    const elapsed = now - (state.gapStartedAt || now);
+    const gapLimitMs = (state.gapSeconds || 10) * 1000;
+
+    if (elapsed >= gapLimitMs) {
+      // Gap expired while server was down — reveal results immediately
+      const res = gameEngine.revealResults();
+      if (res.success) {
+        broadcastGameState(io);
+        broadcastResultsRevealed(io, res.state);
+        broadcastScoreboard(io);
+      }
+    } else {
+      // Gap still running — resume with remaining time
+      const remainingMs = gapLimitMs - elapsed;
+      resumeGapTimerCountdown(io, remainingMs);
+      broadcastGameState(io);
+    }
+  } else {
+    // Any other phase (RESULTS, TIME_UP, JUDGING, QUIZ_ENDED, etc.)
+    // Just broadcast current state — no scoring or timer logic.
+    broadcastGameState(io);
+    if (state.phase === 'RESULTS' && state.resultsRevealed) {
+      broadcastResultsRevealed(io, state);
+      broadcastScoreboard(io);
+    }
+  }
+}
+
+module.exports = { initSockets, resumeGameStateOnBoot };

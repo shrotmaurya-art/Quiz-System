@@ -17,15 +17,16 @@ function getGameState() {
 function saveGameState(state) {
   run(
     `INSERT OR REPLACE INTO game_state (
-      id, phase, currentRoundId, currentQuestionId, timerStartedAt,
+      id, phase, currentRoundId, currentQuestionId, timerStartedAt, gapStartedAt,
       timeLimitSeconds, gapEnabled, gapSeconds, locks, judgements,
       winnerCandidateId, resultsRevealed, matchId
-    ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       state.phase,
       state.currentRoundId,
       state.currentQuestionId,
       state.timerStartedAt,
+      state.gapStartedAt !== undefined ? state.gapStartedAt : null,
       state.timeLimitSeconds,
       Number(state.gapEnabled),
       state.gapSeconds,
