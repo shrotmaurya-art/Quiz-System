@@ -1,5 +1,7 @@
 import { useDisplayGame } from '../DisplayGameContext';
 import { motion } from 'framer-motion';
+import { formatElapsed, formatTimeDisplay } from '../../shared/formatElapsed';
+import StatusBadge from '../../shared/StatusBadge';
 
 /**
  * Results / ranking screen for the Main Display (Section 13 / Task 4.5).
@@ -17,11 +19,6 @@ import { motion } from 'framer-motion';
  * All data is already redacted/public-safe upstream; the display never sees
  * correctOptionKey before reveal (Section 11/12).
  */
-
-function formatTime(ms) {
-  if (ms == null) return 'No Answer';
-  return (ms / 1000).toFixed(2) + 's';
-}
 
 const listVariants = {
   hidden: { opacity: 0 },
@@ -59,6 +56,9 @@ export default function ResultsView() {
   // Everyone except the winner, in the same fastest-first order.
   const otherRows = rankedRows.filter((r) => r.candidateId !== winnerId);
 
+  // Explicitly handle no-winner case (all incorrect or all no-answer)
+  const hasNoWinner = winnerId === null && rankings.length > 0;
+
   return (
     <div className="relative flex flex-col items-center h-full w-full overflow-y-auto px-4 py-10 md:px-margin-desktop">
       {/* ── Correct Answer banner ── */}
@@ -87,6 +87,33 @@ export default function ResultsView() {
           </h1>
         </div>
       </motion.div>
+
+      {/* ── No Winner This Round ── */}
+      {hasNoWinner && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 120, delay: 0.1 }}
+          className="w-full max-w-4xl mb-8 relative"
+        >
+          <div className="w-full bg-surface-container-low/95 backdrop-blur-[20px] border border-outline-variant/40 rounded-xl p-6 md:p-8 flex items-center gap-6 md:gap-8 overflow-hidden">
+            <div className="flex-shrink-0 flex flex-col items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-full bg-outline-variant/10 border border-outline-variant/30">
+              <span
+                className="material-symbols-outlined text-[30px] md:text-[32px] text-on-surface-variant"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                block
+              </span>
+            </div>
+            <div className="flex-grow min-w-0">
+              <p className="font-label-caps text-label-caps text-on-surface-variant mb-1">No Winner This Round</p>
+              <h2 className="font-headline-xl text-headline-xl text-on-surface-variant/80">
+                No candidate answered correctly
+              </h2>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Winner hero card (the dramatic moment) ── */}
       {winnerRow && (
@@ -135,7 +162,7 @@ export default function ResultsView() {
             {/* Time */}
             <div className="flex-shrink-0 text-right">
               <p className="font-display-lg text-[36px] md:text-[44px] text-secondary font-black drop-shadow-[0_0_10px_rgba(240,192,62,0.5)] leading-none">
-                {formatTime(winnerRow.elapsedMs)}
+                {formatTimeDisplay(winnerRow.elapsedMs)}
               </p>
             </div>
           </div>
@@ -177,6 +204,9 @@ export default function ResultsView() {
               <div className="flex-grow font-headline-md text-[32px] text-on-surface truncate">
                 {r.candidate?.name || 'Unknown'}
               </div>
+              <div className="flex-shrink-0">
+                <StatusBadge status={r.status} size="sm" />
+              </div>
               <div
                 className={`text-body-xl font-bold flex-shrink-0 ${
                   isNoAnswer
@@ -186,7 +216,7 @@ export default function ResultsView() {
                       : 'text-error/80'
                 }`}
               >
-                {formatTime(r.elapsedMs)}
+                {formatTimeDisplay(r.elapsedMs)}
               </div>
             </motion.div>
           );

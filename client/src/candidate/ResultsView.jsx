@@ -1,5 +1,7 @@
 import { useCandidateGame } from './CandidateGameContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatElapsed } from '../shared/formatElapsed';
+import StatusBadge from '../shared/StatusBadge';
 
 /**
  * ResultsView — candidate-tablet RESULTS / feedback screen (Task 5.5).
@@ -20,11 +22,6 @@ import { motion, AnimatePresence } from 'framer-motion';
  *   incorrect  → docs/stitch-ui/candidate_tablet_results_incorrect/
  *                (reused for the "no answer" case too, only the badge text changes)
  */
-
-function formatElapsed(ms) {
-  if (ms == null) return '—';
-  return (ms / 1000).toFixed(2) + 's';
-}
 
 export default function ResultsView() {
   const { gameState, results, candidateId, phase } = useCandidateGame();
@@ -53,28 +50,13 @@ export default function ResultsView() {
     correctAnswerLabel = 'Spoken answer (judged by Quiz Master)';
   }
 
-  // Status → copy + style (reuse incorrect layout for the no-answer case)
-  const STATUS_MAP = {
-    correct: {
-      badge: 'CORRECT',
-      tone: 'text-tertiary',
-      ring: 'border-tertiary',
-      glyph: 'check_circle',
-    },
-    incorrect: {
-      badge: 'INCORRECT',
-      tone: 'text-error',
-      ring: 'border-error',
-      glyph: 'cancel',
-    },
-    no_answer: {
-      badge: 'NO ANSWER',
-      tone: 'text-on-surface-variant',
-      ring: 'border-outline',
-      glyph: 'do_not_disturb',
-    },
+  // Status visual config (colors only — badge component handles rendering)
+  const STATUS_COLORS = {
+    correct: { tone: 'text-tertiary', ring: 'border-tertiary' },
+    incorrect: { tone: 'text-error', ring: 'border-error' },
+    no_answer: { tone: 'text-on-surface-variant', ring: 'border-outline' },
   };
-  const statusInfo = STATUS_MAP[myStatus] || STATUS_MAP.no_answer;
+  const statusInfo = STATUS_COLORS[myStatus] || STATUS_COLORS.no_answer;
 
   return (
     <div className="relative min-h-screen w-full overflow-y-auto flex flex-col font-body-md text-body-md text-on-surface bg-surface-container-lowest">
@@ -131,18 +113,10 @@ export default function ResultsView() {
               transition={{ type: 'spring', damping: 20, stiffness: 180 }}
               className="w-full max-w-xl z-30 rounded-3xl border border-outline bg-surface-container-high/80 p-8 md:p-12 text-center"
             >
-              <span
-                className={`material-symbols-outlined text-[64px] mb-2 ${statusInfo.tone}`}
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                {statusInfo.glyph}
-              </span>
-              <h1 className={`font-display-md text-display-md ${statusInfo.tone} leading-tight`}>
+              <StatusBadge status={myStatus} size="lg" />
+              <h1 className={`font-display-md text-display-md ${statusInfo.tone} leading-tight mt-3`}>
                 {myStatus === 'correct' ? "That's Correct!" : myStatus === 'incorrect' ? 'Not Quite' : "Time's Up"}
               </h1>
-              <p className={`mt-2 font-label-caps text-label-caps tracking-[0.2em] ${statusInfo.tone}`}>
-                {statusInfo.badge}
-              </p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -170,7 +144,7 @@ export default function ResultsView() {
               Your response time
             </span>
             <span className="font-display-sm text-display-sm text-on-surface">
-              {myStatus === 'no_answer' ? '—' : formatElapsed(myElapsed)}
+              {formatElapsed(myStatus === 'no_answer' ? null : myElapsed)}
             </span>
           </div>
 
@@ -179,9 +153,7 @@ export default function ResultsView() {
             <span className="font-body-lg text-body-lg text-on-surface-variant">
               Your result
             </span>
-            <span className={`font-label-caps text-label-caps tracking-[0.15em] ${statusInfo.tone}`}>
-              {statusInfo.badge}
-            </span>
+            <StatusBadge status={myStatus} size="sm" />
           </div>
         </motion.div>
       </main>

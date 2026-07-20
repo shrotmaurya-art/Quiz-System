@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAdminAuth } from './AdminAuth';
 import { apiFetch } from '../shared/api';
+import { formatElapsed } from '../shared/formatElapsed';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LiveControl() {
@@ -571,7 +572,7 @@ export default function LiveControl() {
                                       {getCandidateName(cid)}
                                     </p>
                                     <p className="text-xs text-on-surface-variant">
-                                      Response in {typeof elapsedMs === 'number' ? (elapsedMs / 1000).toFixed(2) : lock?.elapsedMs ? (lock.elapsedMs / 1000).toFixed(2) : '0.00'}s
+                                      Response in {formatElapsed(elapsedMs || lock?.elapsedMs)}
                                     </p>
                                   </div>
                                 </div>
@@ -779,7 +780,7 @@ export default function LiveControl() {
                                   </p>
                                   <p className="text-xs text-on-surface-variant">
                                     {r.status === 'correct' 
-                                      ? `Correct in ${r.elapsedMs ? (r.elapsedMs / 1000).toFixed(2) : '0.00'}s` 
+                                      ? `Correct in ${formatElapsed(r.elapsedMs)}` 
                                       : r.status === 'incorrect' 
                                       ? 'Incorrect answer' 
                                       : 'No answer'}
