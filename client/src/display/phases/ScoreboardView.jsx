@@ -1,5 +1,6 @@
 import { useDisplayGame } from '../DisplayGameContext';
 import { motion } from 'framer-motion';
+import { useBranding } from '../../shared/BrandingContext';
 
 const listVariants = {
   hidden: { opacity: 0 },
@@ -18,18 +19,22 @@ const itemVariants = {
 };
 
 export default function ScoreboardView() {
-  const { scoreboard } = useDisplayGame();
+  const { scoreboard, phase } = useDisplayGame();
+  const { schoolName, brandLogoUrl } = useBranding();
 
   const teams = scoreboard || [];
 
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-8 max-w-4xl mx-auto">
+      {phase === 'QUIZ_ENDED' && brandLogoUrl && (
+        <img src={brandLogoUrl} alt={`${schoolName} logo`} className="mb-4 h-16 w-16 object-contain" />
+      )}
       <motion.p 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="font-label-caps text-label-caps text-secondary tracking-[0.15em] uppercase mb-8"
       >
-        Scoreboard
+        {phase === 'QUIZ_ENDED' ? 'Final Standings' : 'Scoreboard'}
       </motion.p>
       <motion.div 
         variants={listVariants}
@@ -67,7 +72,7 @@ export default function ScoreboardView() {
               <div
                 className={`w-full glass-panel hex-clip flex items-center justify-between px-10 py-5 ${
                   isChampion
-                    ? 'border-secondary gold-glow animate-slow-pulse'
+                    ? 'border-secondary gold-glow'
                     : 'border-outline-variant/30'
                 }`}
               >

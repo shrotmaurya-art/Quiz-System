@@ -3,7 +3,7 @@ import { useBranding } from '../../shared/BrandingContext';
 
 export default function IdleView() {
   const { schoolName, brandLogoUrl } = useBranding();
-  const eventTitle = `${schoolName} Annual Quiz`;
+  const eventTitle = /quiz\s*$/i.test(schoolName) ? schoolName : `${schoolName} Annual Quiz`;
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
@@ -26,7 +26,7 @@ export default function IdleView() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-          className="font-display-lg text-display-lg md:text-[64px] text-secondary tracking-tight leading-[1.05] drop-shadow-[0_0_30px_rgba(240,192,62,0.8)]"
+          className="font-display-lg text-[clamp(2.8rem,5.2vw,5rem)] text-secondary tracking-tight leading-[1.05] drop-shadow-[0_0_30px_rgba(240,192,62,0.8)]"
         >
           {eventTitle}
         </motion.h1>

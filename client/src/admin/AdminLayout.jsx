@@ -88,7 +88,7 @@ export default function AdminLayout() {
       <header className="fixed top-0 left-64 right-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-secondary/30 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex justify-between items-center px-margin-desktop py-4 h-20">
           <div className="font-display-lg text-headline-md font-black tracking-tighter text-secondary drop-shadow-[0_0_10px_rgba(240,192,62,0.5)]">
-            THE HOT SEAT
+            {schoolName || 'QUIZ CONTROL'}
           </div>
           <div className="flex items-center gap-6">
             <button className="text-on-surface-variant hover:text-secondary transition-all duration-300 active:scale-95">
