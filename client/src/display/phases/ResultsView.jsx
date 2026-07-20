@@ -1,4 +1,5 @@
 import { useDisplayGame } from '../DisplayGameContext';
+import { motion } from 'framer-motion';
 
 /**
  * Results / ranking screen for the Main Display (Section 13 / Task 4.5).
@@ -21,6 +22,22 @@ function formatTime(ms) {
   if (ms == null) return 'No Answer';
   return (ms / 1000).toFixed(2) + 's';
 }
+
+const listVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.15
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 20 } }
+};
 
 export default function ResultsView() {
   const { results, candidates, scoreboard } = useDisplayGame();
@@ -45,11 +62,20 @@ export default function ResultsView() {
   return (
     <div className="relative flex flex-col items-center h-full w-full overflow-y-auto px-4 py-10 md:px-margin-desktop">
       {/* ── Correct Answer banner ── */}
-      <p className="font-label-caps text-label-caps text-secondary mb-4 tracking-[0.2em] uppercase">
+      <motion.p 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="font-label-caps text-label-caps text-secondary mb-4 tracking-[0.2em] uppercase"
+      >
         Correct Answer
-      </p>
-      <div className="relative w-full md:w-3/4 max-w-3xl h-24 md:h-32 p-[2px] bg-secondary diamond-clip shadow-[0_0_40px_rgba(240,192,62,0.4)] mb-12">
-        <div className="w-full h-full bg-surface-container-lowest/90 backdrop-blur-[20px] diamond-clip flex items-center justify-center gap-5 relative overflow-hidden gold-glow">
+      </motion.p>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 180 }}
+        className="relative w-full md:w-3/4 max-w-3xl h-24 md:h-32 p-[2px] bg-secondary hex-clip shadow-[0_0_40px_rgba(240,192,62,0.4)] mb-12"
+      >
+        <div className="w-full h-full bg-surface-container-lowest/90 backdrop-blur-[20px] hex-clip flex items-center justify-center gap-5 relative overflow-hidden gold-glow">
           <span
             className="material-symbols-outlined text-[44px] text-[#4ade80] drop-shadow-[0_0_15px_rgba(74,222,128,0.8)]"
             style={{ fontVariationSettings: "'FILL' 1" }}
@@ -60,11 +86,16 @@ export default function ResultsView() {
             {correctKey ? `${correctKey}` : 'Answer judged by Quiz Master'}
           </h1>
         </div>
-      </div>
+      </motion.div>
 
       {/* ── Winner hero card (the dramatic moment) ── */}
       {winnerRow && (
-        <div className="w-full max-w-4xl mb-8 relative group">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 20, stiffness: 100, delay: 0.1 }}
+          className="w-full max-w-4xl mb-8 relative group"
+        >
           <div className="absolute -inset-1 bg-gradient-to-r from-secondary/0 via-secondary to-secondary/0 rounded-xl blur-lg opacity-60 transition-opacity duration-1000" />
           <div
             className="relative w-full bg-surface-container-low/95 backdrop-blur-[20px] border border-secondary rounded-xl p-6 md:p-8 flex items-center gap-6 md:gap-8 shadow-[inset_0_0_30px_rgba(240,192,62,0.2)] overflow-hidden"
@@ -108,11 +139,16 @@ export default function ResultsView() {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Ranked list of the rest ── */}
-      <div className="w-full max-w-4xl flex flex-col gap-3 md:gap-4">
+      <motion.div 
+        variants={listVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-4xl flex flex-col gap-3 md:gap-4"
+      >
         {otherRows.map((r, i) => {
           const isCorrect = r.status === 'correct';
           const isNoAnswer = r.status === 'no_answer';
@@ -123,7 +159,8 @@ export default function ResultsView() {
               : 'bg-surface-container-lowest/80 border-outline-variant/30 opacity-70 grayscale-[50%]';
 
           return (
-            <div
+            <motion.div
+              variants={itemVariants}
               key={r.candidateId}
               className={`w-full ${rowClass} backdrop-blur-[10px] border rounded-lg p-4 flex items-center gap-4 md:gap-6`}
             >
@@ -151,16 +188,22 @@ export default function ResultsView() {
               >
                 {formatTime(r.elapsedMs)}
               </div>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* ── Scoreboard strip ── */}
       {scoreboard && scoreboard.length > 0 && (
-        <div className="w-full max-w-4xl mt-10 flex flex-wrap items-center justify-center gap-3 md:gap-4">
+        <motion.div 
+          variants={listVariants}
+          initial="hidden"
+          animate="visible"
+          className="w-full max-w-4xl mt-10 flex flex-wrap items-center justify-center gap-3 md:gap-4"
+        >
           {scoreboard.map((c, i) => (
-            <div
+            <motion.div
+              variants={itemVariants}
               key={c.id}
               className="flex items-center gap-2 glass-panel rounded-full pl-1 pr-4 py-1"
             >
@@ -175,9 +218,9 @@ export default function ResultsView() {
                 {i + 1}. {c.name}
               </span>
               <span className="text-body-xl text-secondary font-bold">{c.score}</span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

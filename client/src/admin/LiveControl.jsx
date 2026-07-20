@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAdminAuth } from './AdminAuth';
 import { apiFetch } from '../shared/api';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LiveControl() {
   const { socket } = useAdminAuth();
@@ -359,9 +360,18 @@ export default function LiveControl() {
               <div className="absolute inset-0 bg-gradient-to-b from-secondary/5 to-transparent pointer-events-none"></div>
               
               {/* Conditional Rendering by Phase */}
-              {/* A. QUESTION SHOWN & TIME UP & JUDGING */}
-              {(gameState.phase === 'QUESTION_SHOWN' || gameState.phase === 'TIME_UP' || gameState.phase === 'JUDGING') && (
-                <div className="w-full flex flex-col items-center">
+              <AnimatePresence mode="wait">
+                
+                {/* A. QUESTION SHOWN & TIME UP & JUDGING */}
+                {(gameState.phase === 'QUESTION_SHOWN' || gameState.phase === 'TIME_UP' || gameState.phase === 'JUDGING') && (
+                  <motion.div 
+                    key={gameState.phase}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-full flex flex-col items-center"
+                  >
                   <div className="w-full bg-surface/80 backdrop-blur-xl border-y-[3px] border-secondary p-10 text-center shadow-[0_0_50px_rgba(240,192,62,0.15)] relative mb-8">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-secondary shadow-[0_0_20px_#f0c03e]"></div>
                     <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-secondary shadow-[0_0_20px_#f0c03e]"></div>
@@ -488,12 +498,19 @@ export default function LiveControl() {
                       </div>
                     </div>
                   )}
-                </div>
+                </motion.div>
               )}
 
               {/* B. GAP INTERLUDE VIEW */}
               {gameState.phase === 'GAP' && (
-                <div className="text-center py-6 flex flex-col items-center">
+                <motion.div 
+                  key="gap"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-center py-6 flex flex-col items-center"
+                >
                   <span className="material-symbols-outlined text-[64px] text-tertiary mb-4 animate-spin">history_toggle_off</span>
                   <h3 className="font-display-lg text-headline-sm text-on-surface mb-2">Suspense Gap Interlude</h3>
                   <p className="text-on-surface-variant font-body-md mb-6 max-w-sm">
@@ -510,12 +527,19 @@ export default function LiveControl() {
                   >
                     SKIP INTERLUDE
                   </button>
-                </div>
+                </motion.div>
               )}
 
               {/* C. QUIZ ENDED VIEW */}
               {gameState.phase === 'QUIZ_ENDED' && (
-                <div className="text-center py-6 flex flex-col items-center">
+                <motion.div 
+                  key="quiz_ended"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-center py-6 flex flex-col items-center"
+                >
                   <span className="material-symbols-outlined text-[72px] text-secondary mb-4">emoji_events</span>
                   <h3 className="font-display-lg text-headline-md text-on-surface mb-2">Quiz Complete</h3>
                   <p className="text-on-surface-variant font-body-md mb-8 max-w-md">
@@ -587,12 +611,19 @@ export default function LiveControl() {
                       RESTART QUIZ
                     </button>
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* D. RESULTS VIEW */}
               {gameState.phase === 'RESULTS' && (
-                <div className="w-full max-w-xl">
+                <motion.div 
+                  key="results"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-full max-w-xl"
+                >
                   <div className="text-center mb-6">
                     <span className="font-label-caps text-[11px] text-secondary tracking-widest uppercase">QUESTION RESULTS</span>
                     <h3 className="font-headline-md text-headline-md font-bold text-on-surface">Leaderboard Updates</h3>
@@ -674,8 +705,9 @@ export default function LiveControl() {
                       <span className="material-symbols-outlined text-sm">skip_next</span>
                     </button>
                   </div>
-                </div>
+                </motion.div>
               )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -866,113 +898,139 @@ export default function LiveControl() {
       )}
 
       {/* ── CONFIRMATION MODAL OVERLAY ── */}
-      {confirmModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-background/85 backdrop-blur-md" onClick={() => setConfirmModal(null)}></div>
-          <div className="glass-panel max-w-md w-full rounded-xl p-8 z-10 border border-error/40 relative shadow-[0_0_50px_rgba(147,0,10,0.25)]">
-            <h3 className="font-headline-md text-headline-sm text-secondary mb-3 flex items-center gap-2">
-              <span className="material-symbols-outlined text-error">warning</span>
-              {confirmModal.title}
-            </h3>
-            <p className="text-on-surface-variant font-body-md mb-8 leading-relaxed">
-              {confirmModal.message}
-            </p>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setConfirmModal(null)}
-                className="px-6 py-2.5 rounded bg-surface-container-highest text-on-surface font-label-caps text-xs tracking-wider border border-outline/20 hover:bg-surface-container-highest/80 transition-colors"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={confirmModal.onConfirm}
-                className="px-6 py-2.5 rounded bg-error text-on-error font-label-caps text-xs tracking-wider hover:bg-error/90 transition-colors"
-              >
-                CONFIRM
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {confirmModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          >
+            <div className="fixed inset-0 bg-background/85 backdrop-blur-md" onClick={() => setConfirmModal(null)}></div>
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+              className="glass-panel max-w-md w-full rounded-xl p-8 z-10 border border-error/40 relative shadow-[0_0_50px_rgba(147,0,10,0.25)]"
+            >
+              <h3 className="font-headline-md text-headline-sm text-secondary mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-error">warning</span>
+                {confirmModal.title}
+              </h3>
+              <p className="text-on-surface-variant font-body-md mb-8 leading-relaxed">
+                {confirmModal.message}
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setConfirmModal(null)}
+                  className="px-6 py-2.5 rounded bg-surface-container-highest text-on-surface font-label-caps text-xs tracking-wider border border-outline/20 hover:bg-surface-container-highest/80 transition-colors"
+                >
+                  CANCEL
+                </button>
+                <button
+                  onClick={confirmModal.onConfirm}
+                  className="px-6 py-2.5 rounded bg-error text-on-error font-label-caps text-xs tracking-wider hover:bg-error/90 transition-colors"
+                >
+                  CONFIRM
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── SCORE ADJUSTMENT MODAL OVERLAY ── */}
-      {adjustScoreModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-background/85 backdrop-blur-md" onClick={() => setAdjustScoreModal(null)}></div>
-          <div className="glass-panel max-w-md w-full rounded-xl p-8 z-10 border border-secondary/40 relative shadow-[0_0_50px_rgba(240,192,62,0.15)]">
-            <h3 className="font-headline-md text-headline-sm text-secondary mb-3">
-              Manual Score Correction
-            </h3>
-            <p className="text-on-surface-variant font-body-md mb-2">
-              Adjust score for <strong className="text-on-surface">{adjustScoreModal.candidateName}</strong>.
-            </p>
-            <p className="text-on-surface-variant font-body-md mb-6 text-sm">
-              Current score: <strong className="text-secondary">{adjustScoreModal.currentScore ?? '?'}</strong>
-              {scoreDelta && !isNaN(parseInt(scoreDelta, 10)) && parseInt(scoreDelta, 10) !== 0 && (
-                <span> → New score: <strong className="text-secondary">{(adjustScoreModal.currentScore ?? 0) + parseInt(scoreDelta, 10)}</strong></span>
-              )}
-            </p>
+      <AnimatePresence>
+        {adjustScoreModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          >
+            <div className="fixed inset-0 bg-background/85 backdrop-blur-md" onClick={() => setAdjustScoreModal(null)}></div>
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+              className="glass-panel max-w-md w-full rounded-xl p-8 z-10 border border-secondary/40 relative shadow-[0_0_50px_rgba(240,192,62,0.15)]"
+            >
+              <h3 className="font-headline-md text-headline-sm text-secondary mb-3">
+                Manual Score Correction
+              </h3>
+              <p className="text-on-surface-variant font-body-md mb-2">
+                Adjust score for <strong className="text-on-surface">{adjustScoreModal.candidateName}</strong>.
+              </p>
+              <p className="text-on-surface-variant font-body-md mb-6 text-sm">
+                Current score: <strong className="text-secondary">{adjustScoreModal.currentScore ?? '?'}</strong>
+                {scoreDelta && !isNaN(parseInt(scoreDelta, 10)) && parseInt(scoreDelta, 10) !== 0 && (
+                  <span> → New score: <strong className="text-secondary">{(adjustScoreModal.currentScore ?? 0) + parseInt(scoreDelta, 10)}</strong></span>
+                )}
+              </p>
 
-            <div className="flex flex-col gap-4 mb-6">
-              <div>
-                <label className="block text-xs font-label-caps text-on-surface-variant uppercase tracking-wider mb-2">
-                  Points Change (Delta)
-                </label>
-                <input
-                  type="number"
-                  value={scoreDelta}
-                  onChange={(e) => setScoreDelta(e.target.value)}
-                  className="w-full bg-surface-container border border-outline/30 rounded px-4 py-2 text-on-surface focus:outline-none focus:border-secondary"
-                  placeholder="Positive to add, negative to deduct"
-                />
-                <div className="flex gap-2 mt-2">
-                  {[-10, -5, -1, 1, 5, 10, currentRound?.pointsPerQuestion || 10].filter((v, i, a) => a.indexOf(v) === i).map((preset) => (
-                    <button
-                      key={preset}
-                      onClick={() => setScoreDelta(String(preset))}
-                      className={`px-2 py-1 rounded text-[10px] font-label-caps tracking-wider border transition-colors ${
-                        parseInt(scoreDelta, 10) === preset
-                          ? 'bg-secondary/20 border-secondary text-secondary'
-                          : 'bg-surface-container-high border-outline/20 text-on-surface-variant hover:border-secondary/50'
-                      }`}
-                    >
-                      {preset > 0 ? '+' : ''}{preset}
-                    </button>
-                  ))}
+              <div className="flex flex-col gap-4 mb-6">
+                <div>
+                  <label className="block text-xs font-label-caps text-on-surface-variant uppercase tracking-wider mb-2">
+                    Points Change (Delta)
+                  </label>
+                  <input
+                    type="number"
+                    value={scoreDelta}
+                    onChange={(e) => setScoreDelta(e.target.value)}
+                    className="w-full bg-surface-container border border-outline/30 rounded px-4 py-2 text-on-surface focus:outline-none focus:border-secondary"
+                    placeholder="Positive to add, negative to deduct"
+                  />
+                  <div className="flex gap-2 mt-2">
+                    {[-10, -5, -1, 1, 5, 10, currentRound?.pointsPerQuestion || 10].filter((v, i, a) => a.indexOf(v) === i).map((preset) => (
+                      <button
+                        key={preset}
+                        onClick={() => setScoreDelta(String(preset))}
+                        className={`px-2 py-1 rounded text-[10px] font-label-caps tracking-wider border transition-colors ${
+                          parseInt(scoreDelta, 10) === preset
+                            ? 'bg-secondary/20 border-secondary text-secondary'
+                            : 'bg-surface-container-high border-outline/20 text-on-surface-variant hover:border-secondary/50'
+                        }`}
+                      >
+                        {preset > 0 ? '+' : ''}{preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-label-caps text-on-surface-variant uppercase tracking-wider mb-2">
+                    Reason for Adjustment
+                  </label>
+                  <input
+                    type="text"
+                    value={scoreReason}
+                    onChange={(e) => setScoreReason(e.target.value)}
+                    className="w-full bg-surface-container border border-outline/30 rounded px-4 py-2 text-on-surface focus:outline-none focus:border-secondary"
+                    placeholder="e.g. Buzzer error correction"
+                  />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-label-caps text-on-surface-variant uppercase tracking-wider mb-2">
-                  Reason for Adjustment
-                </label>
-                <input
-                  type="text"
-                  value={scoreReason}
-                  onChange={(e) => setScoreReason(e.target.value)}
-                  className="w-full bg-surface-container border border-outline/30 rounded px-4 py-2 text-on-surface focus:outline-none focus:border-secondary"
-                  placeholder="e.g. Buzzer error correction"
-                />
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setAdjustScoreModal(null)}
+                  className="px-6 py-2.5 rounded bg-surface-container-highest text-on-surface font-label-caps text-xs tracking-wider border border-outline/20 hover:bg-surface-container-highest/80 transition-colors"
+                >
+                  CANCEL
+                </button>
+                <button
+                  onClick={handleAdjustScoreSubmit}
+                  className="px-6 py-2.5 rounded bg-secondary text-on-secondary font-label-caps text-xs tracking-wider hover:brightness-110 transition-all"
+                >
+                  APPLY CORRECTION
+                </button>
               </div>
-            </div>
-
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setAdjustScoreModal(null)}
-                className="px-6 py-2.5 rounded bg-surface-container-highest text-on-surface font-label-caps text-xs tracking-wider border border-outline/20 hover:bg-surface-container-highest/80 transition-colors"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={handleAdjustScoreSubmit}
-                className="px-6 py-2.5 rounded bg-secondary text-on-secondary font-label-caps text-xs tracking-wider hover:brightness-110 transition-all"
-              >
-                APPLY CORRECTION
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

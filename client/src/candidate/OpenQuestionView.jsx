@@ -1,4 +1,5 @@
 import { useCandidateGame } from './CandidateGameContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /**
  * OpenQuestionView — OPEN / Rapid Fire answer screen.
@@ -21,6 +22,7 @@ export default function OpenQuestionView() {
   const { gameState, timer, isLockedIn, lockAnswer, phase } = useCandidateGame();
 
   const question = gameState?.question;
+  const questionId = question?.id;
 
   // Timer values — mirror McqQuestionView logic exactly
   const totalTime = gameState?.timeLimitSeconds || 30;
@@ -101,7 +103,13 @@ export default function OpenQuestionView() {
       {/* Main Content Area */}
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-28 pb-32 px-4 md:px-16 max-w-5xl mx-auto w-full">
         {/* Question Text Area */}
-        <div className="text-center mb-8 relative z-20 max-w-3xl">
+        <motion.div 
+          key={questionId || 'no-question'}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 180 }}
+          className="text-center mb-8 relative z-20 max-w-3xl w-full"
+        >
           <h2 className={isLockedIn
             ? "font-headline-md text-headline-md md:text-display-lg-mobile text-on-surface leading-tight select-none"
             : "font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-secondary drop-shadow-[0_4px_20px_rgba(240,192,62,0.6)] leading-tight select-none"
@@ -124,10 +132,15 @@ export default function OpenQuestionView() {
               className="mt-6 mx-auto max-h-[30vh] rounded-lg border border-secondary/25 shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
             />
           )}
-        </div>
+        </motion.div>
 
         {/* Timer Ring */}
-        <div className="relative w-32 h-32 mb-8 flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', damping: 20 }}
+          className="relative w-32 h-32 mb-8 flex items-center justify-center"
+        >
           <svg className="w-full h-full transform -rotate-90 timer-ring" viewBox="0 0 100 100">
             <circle cx="50" cy="50" fill="none" r="45" stroke="rgba(240,192,62,0.2)" strokeWidth="4" />
             <circle
@@ -149,49 +162,64 @@ export default function OpenQuestionView() {
               {remaining}
             </span>
           </div>
-        </div>
+        </motion.div>
 
         {/* Lock Button Area */}
-        {!isLockedIn ? (
-          /* Pre-lock: Large glowing "LOCK ANSWER" button */
-          <div className="relative w-64 h-64 md:w-80 md:h-80 flex items-center justify-center z-30">
-            {/* Glow underlay */}
-            <div className="absolute inset-0 bg-secondary/20 rounded-full blur-2xl pointer-events-none" />
-            <button
-              id="open-lock-answer-btn"
-              onClick={handleLockAnswer}
-              className="relative w-full h-full bg-gradient-to-br from-secondary to-secondary-container rounded-full flex flex-col items-center justify-center shadow-[inset_0_0_40px_rgba(255,255,255,0.4),0_10px_50px_rgba(240,192,62,0.6)] border-4 border-secondary lock-btn-pulse active:scale-95 transition-transform duration-200"
+        <AnimatePresence mode="wait">
+          {!isLockedIn ? (
+            /* Pre-lock: Large glowing "LOCK ANSWER" button */
+            <motion.div 
+              key="lock-active"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 180 }}
+              className="relative w-64 h-64 md:w-80 md:h-80 flex items-center justify-center z-30"
             >
-              <span
-                className="material-symbols-outlined text-[64px] text-on-secondary mb-2 drop-shadow-md"
-                style={{ fontVariationSettings: "'FILL' 1" }}
+              {/* Glow underlay */}
+              <div className="absolute inset-0 bg-secondary/20 rounded-full blur-2xl pointer-events-none" />
+              <button
+                id="open-lock-answer-btn"
+                onClick={handleLockAnswer}
+                className="relative w-full h-full bg-gradient-to-br from-secondary to-secondary-container rounded-full flex flex-col items-center justify-center shadow-[inset_0_0_40px_rgba(255,255,255,0.4),0_10px_50px_rgba(240,192,62,0.6)] border-4 border-secondary lock-btn-pulse active:scale-95 transition-transform duration-200"
               >
-                bolt
-              </span>
-              <span className="font-label-caps text-label-caps text-on-secondary text-xl font-bold tracking-widest drop-shadow-md">
-                LOCK ANSWER
-              </span>
-            </button>
-          </div>
-        ) : (
-          /* Post-lock: Disabled hexagonal "LOCKED ✔" badge */
-          <div className="w-full max-w-xl z-30">
-            <button
-              id="open-locked-badge"
-              className="w-full relative hex-clip bg-secondary text-on-secondary-fixed font-headline-md text-headline-md py-6 px-12 transition-all duration-300 scale-95 opacity-100 flex items-center justify-center gap-4 locked-glow cursor-not-allowed"
-              disabled
+                <span
+                  className="material-symbols-outlined text-[64px] text-on-secondary mb-2 drop-shadow-md"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  bolt
+                </span>
+                <span className="font-label-caps text-label-caps text-on-secondary text-xl font-bold tracking-widest drop-shadow-md">
+                  LOCK ANSWER
+                </span>
+              </button>
+            </motion.div>
+          ) : (
+            /* Post-lock: Disabled hexagonal "LOCKED ✔" badge */
+            <motion.div 
+              key="locked-badge"
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 180 }}
+              className="w-full max-w-xl z-30"
             >
-              <span
-                className="material-symbols-outlined text-3xl"
-                style={{ fontVariationSettings: "'FILL' 1" }}
+              <button
+                id="open-locked-badge"
+                className="w-full relative hex-clip bg-secondary text-on-secondary-fixed font-headline-md text-headline-md py-6 px-12 transition-all duration-300 scale-95 opacity-100 flex items-center justify-center gap-4 locked-glow cursor-not-allowed"
+                disabled
               >
-                lock
-              </span>
-              LOCKED
-              <span className="material-symbols-outlined font-bold text-3xl">check</span>
-            </button>
-          </div>
-        )}
+                <span
+                  className="material-symbols-outlined text-3xl"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  lock
+                </span>
+                LOCKED
+                <span className="material-symbols-outlined font-bold text-3xl">check</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Bottom Navigation Bar (mobile) — decorative, matches mockup layout */}

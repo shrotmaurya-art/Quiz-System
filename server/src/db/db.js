@@ -21,6 +21,50 @@ if (!settings) {
   ).run();
 }
 
+// ---------------------------------------------------------------------------
+// Schema migrations — add matchId columns to existing tables.
+// SQLite errors on duplicate ADD COLUMN; we swallow that specific error.
+// ---------------------------------------------------------------------------
+function safeAddColumn(table, colDef) {
+  try {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${colDef}`);
+  } catch (err) {
+    // "duplicate column name" is expected on re-run — anything else should propagate.
+    if (!err.message.includes('duplicate column')) throw err;
+  }
+}
+
+safeAddColumn('rounds', 'matchId TEXT REFERENCES matches(id)');
+safeAddColumn('game_state', 'matchId TEXT');
+safeAddColumn('score_log', 'matchId TEXT');
+
+// ---------------------------------------------------------------------------
+// Orphaned-round migration: any round without a matchId gets assigned to an
+// auto-created "Match 1" so the system never has dangling rounds.
+// ---------------------------------------------------------------------------
+const crypto = require('crypto');
+
+const orphanedRounds = db.prepare('SELECT id FROM rounds WHERE matchId IS NULL').all();
+if (orphanedRounds.length > 0) {
+  const matchId = crypto.randomUUID();
+  const activeCandidates = db.prepare('SELECT id FROM candidates WHERE isActive = 1').all();
+  const candidateIds = activeCandidates.map((c) => c.id);
+
+  db.prepare(
+    `INSERT OR IGNORE INTO matches (id, name, "order", candidateIds, status) VALUES (?, ?, ?, ?, ?)`
+  ).run(matchId, 'Match 1', 1, JSON.stringify(candidateIds), 'not_started');
+
+  // Create match_scores rows
+  for (const cid of candidateIds) {
+    db.prepare(
+      'INSERT OR IGNORE INTO match_scores (matchId, candidateId, score) VALUES (?, ?, 0)'
+    ).run(matchId, cid);
+  }
+
+  // Assign orphaned rounds
+  db.prepare('UPDATE rounds SET matchId = ? WHERE matchId IS NULL').run(matchId);
+}
+
 function run(sql, params = []) {
   return db.prepare(sql).run(params);
 }

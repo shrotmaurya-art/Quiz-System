@@ -1,4 +1,5 @@
 import { useDisplayGame } from '../DisplayGameContext';
+import { motion } from 'framer-motion';
 
 /**
  * GAP-phase suspense screen for the Main Display (Section 10 / FR25).
@@ -27,7 +28,10 @@ export default function GapView() {
       />
 
       {/* Ornate filled padlock */}
-      <span
+      <motion.span
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', damping: 15, stiffness: 120 }}
         className="material-symbols-outlined mb-6 text-[120px] leading-none text-secondary"
         style={{
           fontVariationSettings: "'FILL' 1, 'wght' 400, 'opsz' 48, 'GRAD' 0",
@@ -35,24 +39,37 @@ export default function GapView() {
         }}
       >
         lock
-      </span>
+      </motion.span>
 
       {/* Live countdown */}
-      <div
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', damping: 20, stiffness: 150, delay: 0.1 }}
         className="luminous-text mb-4 font-display-xl text-[120px] leading-none"
         aria-live="polite"
       >
         {remaining}
-      </div>
+      </motion.div>
 
       {/* Pulsing headline */}
-      <h2 className="luminous-text animate-suspense-pulse font-display-lg text-display-lg tracking-wide">
+      <motion.h2 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="luminous-text animate-suspense-pulse font-display-lg text-display-lg tracking-wide"
+      >
         CALCULATING RESULTS…
-      </h2>
+      </motion.h2>
 
-      <p className="mt-4 font-body-xl text-body-xl text-on-surface-variant">
+      <motion.p 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.3 }}
+        className="mt-4 font-body-xl text-body-xl text-on-surface-variant"
+      >
         Please wait while we tally the scores
-      </p>
+      </motion.p>
     </div>
   );
 }

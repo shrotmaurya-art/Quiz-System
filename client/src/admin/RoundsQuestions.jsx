@@ -4,6 +4,7 @@ import { apiFetch } from '../shared/api';
 import RoundForm from './RoundForm';
 import QuestionList from './QuestionList';
 import QuestionForm from './QuestionForm';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function RoundsQuestions() {
   const { token } = useAdminAuth();
@@ -18,8 +19,14 @@ export default function RoundsQuestions() {
 
   const fetchRounds = useCallback(async () => {
     const res = await apiFetch('/api/rounds');
-    if (res.ok) setRounds(await res.json());
-  }, []);
+    if (res.ok) {
+      const data = await res.json();
+      setRounds(data);
+      if (data.length > 0 && expandedRoundId === null) {
+        setExpandedRoundId(data[0].id);
+      }
+    }
+  }, [expandedRoundId]);
 
   useEffect(() => { fetchRounds(); }, [fetchRounds]);
 
@@ -146,68 +153,84 @@ export default function RoundsQuestions() {
               <p className="text-on-surface-variant font-body-lg">No rounds yet. Click "Add Round" to get started.</p>
             </div>
           )}
-          {expandedRound && (
-            <div className="glass-panel-active rounded-lg flex flex-col overflow-hidden">
-              <div className="p-6 border-b border-secondary/30 bg-primary-container/40 flex justify-between items-center">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-headline-md text-headline-md text-secondary">{expandedRound.name}</h3>
-                    <span className="bg-primary-container text-primary text-xs px-2 py-1 rounded border border-primary/30 font-label-caps tracking-widest">
-                      {expandedRound.answerMode} MODE
-                    </span>
+          <AnimatePresence mode="wait">
+            {expandedRound && (
+              <motion.div 
+                key={expandedRound.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="glass-panel-active rounded-lg flex flex-col overflow-hidden"
+              >
+                <div className="p-6 border-b border-secondary/30 bg-primary-container/40 flex justify-between items-center">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-headline-md text-headline-md text-secondary">{expandedRound.name}</h3>
+                      <span className="bg-primary-container text-primary text-xs px-2 py-1 rounded border border-primary/30 font-label-caps tracking-widest">
+                        {expandedRound.answerMode} MODE
+                      </span>
+                    </div>
+                    <p className="text-on-surface-variant text-sm font-body-md">
+                      Round {expandedRound.order} · {expandedRound.questionCount} Question{expandedRound.questionCount !== 1 ? 's' : ''}
+                    </p>
                   </div>
-                  <p className="text-on-surface-variant text-sm font-body-md">
-                    Round {expandedRound.order} · {expandedRound.questionCount} Question{expandedRound.questionCount !== 1 ? 's' : ''}
-                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setEditingRound(expandedRound); setShowRoundForm(true); }}
+                      className="p-2 text-secondary hover:bg-secondary/10 rounded transition-colors"
+                    >
+                      <span className="material-symbols-outlined">edit</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => { setEditingRound(expandedRound); setShowRoundForm(true); }}
-                    className="p-2 text-secondary hover:bg-secondary/10 rounded transition-colors"
-                  >
-                    <span className="material-symbols-outlined">edit</span>
-                  </button>
-                </div>
-              </div>
-              <QuestionList
-                roundId={expandedRound.id}
-                answerMode={expandedRound.answerMode}
-                refreshKey={questionRefreshKey}
-                onEdit={(q) => { setEditingQuestion(q); setShowQuestionForm(true); }}
-                onDelete={(qId) => handleDeleteQuestion(qId, expandedRound.id)}
-                onAddQuestion={() => { setEditingQuestion(null); setQuestionFormRoundId(expandedRound.id); setShowQuestionForm(true); }}
-              />
-            </div>
-          )}
+                <QuestionList
+                  roundId={expandedRound.id}
+                  answerMode={expandedRound.answerMode}
+                  refreshKey={questionRefreshKey}
+                  onEdit={(q) => { setEditingQuestion(q); setShowQuestionForm(true); }}
+                  onDelete={(qId) => handleDeleteQuestion(qId, expandedRound.id)}
+                  onAddQuestion={() => { setEditingQuestion(null); setQuestionFormRoundId(expandedRound.id); setShowQuestionForm(true); }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Side column: round cards */}
         <div className="flex flex-col gap-stack-md">
-          {rounds.filter((r) => r.id !== expandedRoundId).map((round) => (
-            <div
-              key={round.id}
-              onClick={() => setExpandedRoundId(round.id)}
-              className="glass-panel rounded-lg p-5 flex flex-col gap-4 hover:border-secondary/50 transition-colors cursor-pointer group"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-headline-md text-lg text-on-surface group-hover:text-secondary transition-colors">{round.name}</h3>
-                  <p className="text-on-surface-variant text-sm mt-1">Round {round.order} · {round.questionCount} Question{round.questionCount !== 1 ? 's' : ''}</p>
+          <AnimatePresence>
+            {rounds.filter((r) => r.id !== expandedRoundId).map((round) => (
+              <motion.div
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ type: 'spring', damping: 22, stiffness: 200 }}
+                key={round.id}
+                onClick={() => setExpandedRoundId(round.id)}
+                className="glass-panel rounded-lg p-5 flex flex-col gap-4 hover:border-secondary/50 transition-colors cursor-pointer group"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-headline-md text-lg text-on-surface group-hover:text-secondary transition-colors">{round.name}</h3>
+                    <p className="text-on-surface-variant text-sm mt-1">Round {round.order} · {round.questionCount} Question{round.questionCount !== 1 ? 's' : ''}</p>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteRound(round.id); }}
+                    className="text-outline hover:text-error transition-colors"
+                  >
+                    <span className="material-symbols-outlined">delete</span>
+                  </button>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDeleteRound(round.id); }}
-                  className="text-outline hover:text-error transition-colors"
-                >
-                  <span className="material-symbols-outlined">delete</span>
-                </button>
-              </div>
-              <div className="flex items-center gap-2 mt-2">
-                <span className={`${round.answerMode === 'MCQ' ? 'bg-primary-container text-primary border-primary/30' : 'bg-tertiary-container/50 text-tertiary border-tertiary/30'} text-[10px] px-2 py-1 rounded border font-label-caps tracking-widest`}>
-                  {round.answerMode === 'MCQ' ? 'MCQ MODE' : 'OPEN ENDED'}
-                </span>
-              </div>
-            </div>
-          ))}
+                <div className="flex items-center gap-2 mt-2">
+                  <span className={`${round.answerMode === 'MCQ' ? 'bg-primary-container text-primary border-primary/30' : 'bg-tertiary-container/50 text-tertiary border-tertiary/30'} text-[10px] px-2 py-1 rounded border font-label-caps tracking-widest`}>
+                    {round.answerMode === 'MCQ' ? 'MCQ MODE' : 'OPEN ENDED'}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
 
           {/* Add round card */}
           <div

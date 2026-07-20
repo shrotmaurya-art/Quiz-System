@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../shared/api';
+import { motion } from 'framer-motion';
 
 export default function SettingsBackup() {
   const [settings, setSettings] = useState({
@@ -113,7 +114,12 @@ export default function SettingsBackup() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
         {/* General Settings Card */}
-        <section className="glass-panel bg-primary-container/40 rounded-xl border border-tertiary-fixed-dim/30 p-8 relative overflow-hidden clip-diamond">
+        <motion.section
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="glass-panel bg-primary-container/40 rounded-xl border border-tertiary-fixed-dim/30 p-8 relative overflow-hidden clip-diamond"
+        >
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-tertiary/20 rounded-full blur-3xl"></div>
           <h3 className="font-headline-md text-headline-md text-tertiary mb-6 flex items-center gap-3">
             <span className="material-symbols-outlined">tune</span>
@@ -190,10 +196,14 @@ export default function SettingsBackup() {
               </p>
             )}
           </div>
-        </section>
+        </motion.section>
 
-        {/* Backup & Restore Card */}
-        <section className="glass-panel bg-surface-container-highest/40 rounded-xl border border-secondary/30 p-8 relative overflow-hidden">
+        <motion.section
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="glass-panel bg-surface-container-highest/40 rounded-xl border border-secondary/30 p-8 relative overflow-hidden"
+        >
           <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl"></div>
           <h3 className="font-headline-md text-headline-md text-secondary mb-6 flex items-center gap-3 font-display-lg text-2xl tracking-normal">
             <span className="material-symbols-outlined">database</span>
@@ -235,7 +245,7 @@ export default function SettingsBackup() {
               <strong className="font-bold">Warning:</strong> Importing a backup will overwrite all current rounds, questions, and candidate data.
             </p>
           </div>
-        </section>
+        </motion.section>
       </div>
     </div>
   );

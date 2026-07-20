@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { useAdminAuth } from './AdminAuth';
 import { apiFetch } from '../shared/api';
+import { motion } from 'framer-motion';
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || '';
 
@@ -33,7 +34,12 @@ function CandidateCard({ candidate, onEdit, onDelete }) {
   }
 
   return (
-    <div className="relative bg-surface-container-high/60 backdrop-blur-xl border border-secondary/20 rounded-xl p-6 shadow-[inset_0_0_20px_rgba(196,192,255,0.02)] hover:border-secondary/50 transition-colors duration-300 overflow-hidden group">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="relative bg-surface-container-high/60 backdrop-blur-xl border border-secondary/20 rounded-xl p-6 shadow-[inset_0_0_20px_rgba(196,192,255,0.02)] hover:border-secondary/50 transition-colors duration-300 overflow-hidden group"
+    >
       {/* Controls */}
       <div className="absolute top-4 right-4 flex gap-2">
         <button
@@ -52,18 +58,20 @@ function CandidateCard({ candidate, onEdit, onDelete }) {
 
       {/* Header: logo + name + status */}
       <div className="flex items-center gap-6 mb-6">
-        <div className={`w-20 h-20 rounded-full border-2 p-1 shrink-0 ${isActive ? 'border-secondary shadow-[0_0_15px_rgba(240,192,62,0.4)]' : 'border-outline-variant opacity-60'}`}>
-          {candidate.logoUrl ? (
-            <img
-              alt={candidate.name}
-              className={`w-full h-full rounded-full object-cover ${!isActive ? 'grayscale' : ''}`}
-              src={`${apiBaseUrl}${candidate.logoUrl}`}
-            />
-          ) : (
-            <div className={`w-full h-full rounded-full flex items-center justify-center text-3xl font-headline-md ${isActive ? 'bg-secondary/10 text-secondary' : 'bg-surface-container text-outline'}`}>
-              {candidate.name?.charAt(0)?.toUpperCase()}
-            </div>
-          )}
+        <div className={`w-20 h-20 hex-clip p-0.5 shrink-0 flex items-center justify-center ${isActive ? 'bg-secondary shadow-[0_0_15px_rgba(240,192,62,0.4)]' : 'bg-outline-variant opacity-60'}`}>
+          <div className="w-full h-full hex-clip bg-surface-dim flex items-center justify-center">
+            {candidate.logoUrl ? (
+              <img
+                alt={candidate.name}
+                className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`}
+                src={`${apiBaseUrl}${candidate.logoUrl}`}
+              />
+            ) : (
+              <div className={`w-full h-full flex items-center justify-center text-3xl font-headline-md ${isActive ? 'text-secondary' : 'text-outline'}`}>
+                {candidate.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+          </div>
         </div>
         <div>
           <h3 className={`font-headline-md text-headline-md font-bold tracking-tight uppercase ${isActive ? 'text-on-surface' : 'text-on-surface-variant'}`}>
@@ -109,7 +117,7 @@ function CandidateCard({ candidate, onEdit, onDelete }) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -167,8 +175,17 @@ function CandidateForm({ candidate, onSave, onCancel }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-      <div className="bg-surface-container-high border border-secondary/30 rounded-xl w-full max-w-md overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+        className="bg-surface-container-high border border-secondary/30 rounded-xl w-full max-w-md overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+      >
         <div className="px-6 py-4 border-b border-outline/20">
           <h3 className="font-headline-md text-headline-md text-secondary">
             {candidate ? 'Edit Candidate' : 'Add Candidate'}
@@ -210,8 +227,8 @@ function CandidateForm({ candidate, onSave, onCancel }) {
             {candidate ? 'SAVE' : 'ADD CANDIDATE'}
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

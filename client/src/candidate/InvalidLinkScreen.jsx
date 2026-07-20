@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+
 /**
  * Friendly error screen shown when a candidate's /play/:candidateId?token= link
  * is invalid (missing token, or the server rejected the candidateId+token pair
@@ -24,7 +26,12 @@ export default function InvalidLinkScreen() {
         aria-labelledby="error-headline"
         className="relative z-10 flex w-full max-w-md flex-col items-center justify-center px-4 md:px-0"
       >
-        <article className="glass-panel relative w-full overflow-hidden rounded-xl p-8 flex flex-col items-center text-center transition-all duration-500 hover:shadow-[0_0_40px_rgba(240,192,62,0.25)]">
+        <motion.article 
+          initial={{ opacity: 0, scale: 0.96, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          className="glass-panel relative w-full overflow-hidden rounded-xl p-8 flex flex-col items-center text-center transition-all duration-500 hover:shadow-[0_0_40px_rgba(240,192,62,0.25)]"
+        >
           {/* Subtle top light reflection */}
           <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-secondary/50 to-transparent opacity-70" />
 
@@ -61,13 +68,18 @@ export default function InvalidLinkScreen() {
           <div className="absolute bottom-0 left-0 flex w-full translate-y-1/2 justify-center">
             <div className="h-2 w-2 bg-secondary opacity-50 shadow-[0_0_10px_#f0c03e] clip-diamond" />
           </div>
-        </article>
+        </motion.article>
 
-        <footer className="mt-8 text-center opacity-50">
+        <motion.footer 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8 text-center"
+        >
           <p className="font-label-caps text-label-caps text-outline tracking-[0.2em]">
             CINEMATIC BROADCAST SYSTEMS
           </p>
-        </footer>
+        </motion.footer>
       </main>
     </div>
   );

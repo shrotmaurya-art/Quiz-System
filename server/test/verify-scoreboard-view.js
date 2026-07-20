@@ -76,6 +76,7 @@ async function importSeed(token, doc) {
     body: JSON.stringify(doc),
   });
   if (!res.ok) throw new Error(`Import failed (${res.status}): ${await res.text()}`);
+  return res.json();
 }
 
 async function main() {
@@ -107,7 +108,7 @@ async function main() {
       { id: 'sb-b', name: 'Bob', joinToken: 'sb-tok-b', logoUrl: null },
       { id: 'sb-c', name: 'Cara', joinToken: 'sb-tok-c', logoUrl: null },
     ];
-    await importSeed(token, {
+    const importRes = await importSeed(token, {
       rounds: [{
         id: 'sb-r', name: 'SB Round', order: 1, answerMode: 'MCQ',
         pointsPerQuestion: 10, timeLimitSeconds: 8, gapEnabled: 0, gapSeconds: 0, instructions: '',
@@ -122,6 +123,8 @@ async function main() {
       candidates: C.map((c) => ({ ...c, score: 0, isActive: 1 })),
     });
 
+    const matchId = importRes.matches[0].id;
+
     const { client: admin, events: adminEv } = await createClient({ auth: { token } }, ['game:state', 'scoreboard:update']);
     await adminEv['game:state'];
 
@@ -132,9 +135,9 @@ async function main() {
     // Drain the initial scoreboard:update so the next one we await is post-change.
     await displayEv['scoreboard:update'].catch(() => {});
 
-    // Start the quiz so endQuiz is a legal transition (IDLE -> startQuiz -> ... -> endQuiz).
-    const startAck = await emitP(admin, 'admin:startQuiz', {});
-    assert('startQuiz acknowledged', startAck && startAck.success === true);
+    // Start the match so endQuiz is a legal transition (IDLE -> startMatch -> ... -> endQuiz).
+    const startAck = await emitP(admin, 'admin:startMatch', { matchId });
+    assert('startMatch acknowledged', startAck && startAck.success === true);
 
     // ── 1. Live admin score change ──
     // Give Alice +10 directly (simulates the Admin +/- buttons → admin:adjustScore)

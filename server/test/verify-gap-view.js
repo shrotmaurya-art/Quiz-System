@@ -85,6 +85,7 @@ async function importSeed(token, doc) {
     body: JSON.stringify(doc),
   });
   if (!res.ok) throw new Error(`Import failed (${res.status}): ${await res.text()}`);
+  return res.json();
 }
 
 // Records every event of interest on the display socket into an ordered log.
@@ -119,7 +120,8 @@ async function runCase(label, gapEnabled, gapSeconds) {
       { id: 'vg-cand', name: 'Vee', joinToken: 'vg-tok', logoUrl: null, score: 0, isActive: 1 },
     ],
   };
-  await importSeed(token, doc);
+  const importRes = await importSeed(token, doc);
+  const matchId = importRes.matches[0].id;
 
   const { client: admin, events: adminEv } = await createClient(
     { auth: { token } }, ['game:state']
@@ -134,9 +136,9 @@ async function runCase(label, gapEnabled, gapSeconds) {
   const displayLog = [];
   attachDisplayRecorder(display, displayLog);
 
-  // Start quiz
-  const startAck = await emitP(admin, 'admin:startQuiz', {});
-  assert('startQuiz acknowledged', startAck && startAck.success === true);
+  // Start match
+  const startAck = await emitP(admin, 'admin:startMatch', { matchId });
+  assert('startMatch acknowledged', startAck && startAck.success === true);
 
   // Candidate answers correctly
   const { client: cand } = await createClient(

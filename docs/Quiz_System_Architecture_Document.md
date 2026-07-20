@@ -176,6 +176,7 @@ Single **monolithic Node.js application** (not microservices — unnecessary at 
 | Database | **SQLite** via `better-sqlite3` | Zero-install, single file, no separate DB server to run on event day, fully free |
 | Frontend framework | **React (Vite)** | Fast dev/build, component reuse across Admin/Display/Candidate views, huge free ecosystem |
 | Styling | **Tailwind CSS** | Fast to build clean, distinct-looking screens (important for a projector display) |
+| Animations | **Framer Motion** | GPU-composited, lightweight, declarative, fits React 19 + Tailwind and supports fluid entry transitions |
 | Media storage | Local filesystem `/uploads` folder | No cloud storage needed; served statically by Express |
 | QR code generation | `qrcode` (npm) | Free, for quick candidate tablet setup |
 | Process management (optional) | `pm2` or a simple shell/batch script | Keep the server auto-restarting if it crashes on event day |

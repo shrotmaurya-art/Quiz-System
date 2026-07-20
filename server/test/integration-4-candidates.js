@@ -70,17 +70,34 @@ const CANDIDATES = [
   { id: 'int-dana',    name: 'Dana',    joinToken: 'int-tok-dana' },
 ];
 
+const MATCH_ID = 'int-match-1';
+
 const SEED_DOCUMENT = {
+  matches: [
+    {
+      id: MATCH_ID,
+      name: 'Integration Match',
+      order: 1,
+      candidateIds: ['int-alice', 'int-bob', 'int-charlie', 'int-dana'],
+      status: 'not_started'
+    }
+  ],
+  match_scores: [
+    { matchId: MATCH_ID, candidateId: 'int-alice', score: 0 },
+    { matchId: MATCH_ID, candidateId: 'int-bob', score: 0 },
+    { matchId: MATCH_ID, candidateId: 'int-charlie', score: 0 },
+    { matchId: MATCH_ID, candidateId: 'int-dana', score: 0 },
+  ],
   rounds: [
     {
       id: 'int-r-mcq', name: 'MCQ Round', order: 1, answerMode: 'MCQ',
       pointsPerQuestion: 10, timeLimitSeconds: 10, gapEnabled: 0, gapSeconds: 0,
-      instructions: 'Integration test MCQ',
+      instructions: 'Integration test MCQ', matchId: MATCH_ID,
     },
     {
       id: 'int-r-open', name: 'Rapid Fire', order: 2, answerMode: 'OPEN',
       pointsPerQuestion: 10, timeLimitSeconds: 10, gapEnabled: 0, gapSeconds: 0,
-      instructions: 'Integration test OPEN',
+      instructions: 'Integration test OPEN', matchId: MATCH_ID,
     },
   ],
   questions: [
@@ -199,19 +216,20 @@ async function runTests() {
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n=== QUESTION 1: MCQ ===');
 
-  // Pre-register results:revealed and scoreboard:update listeners before starting
+  // Pre-register results:revealed listeners before starting
   const adminResults1P = waitForEvent(admin, 'results:revealed', 30000);
-  const adminScoreboard1P = waitForEvent(admin, 'scoreboard:update', 30000);
   const displayResults1P = waitForEvent(display, 'results:revealed', 30000);
   const candResults1 = {};
   for (const cand of CANDIDATES) {
     candResults1[cand.id] = waitForEvent(candClients[cand.id].client, 'results:revealed', 30000);
   }
 
-  // Start quiz
-  const startAck = await emitP(admin, 'admin:startQuiz', {});
-  assert('admin:startQuiz acknowledged', startAck && startAck.success === true);
-  console.log('  Quiz started — MCQ question shown');
+  // Start match
+  const startAck = await emitP(admin, 'admin:startMatch', { matchId: MATCH_ID });
+  assert('admin:startMatch acknowledged', startAck && startAck.success === true);
+  console.log('  Match started — MCQ question shown');
+
+  const adminScoreboard1P = waitForEvent(admin, 'scoreboard:update', 30000);
 
   // Staggered lock-ins
   setTimeout(() => {

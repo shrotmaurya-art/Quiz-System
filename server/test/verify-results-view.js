@@ -75,6 +75,7 @@ async function importSeed(token, doc) {
     body: JSON.stringify(doc),
   });
   if (!res.ok) throw new Error(`Import failed (${res.status}): ${await res.text()}`);
+  return res.json();
 }
 
 async function main() {
@@ -108,7 +109,7 @@ async function main() {
       { id: 'rs-cara', name: 'Cara', joinToken: 'rs-tok-cara', logoUrl: 'https://example.com/c.png' },
       { id: 'rs-dev', name: 'Dev', joinToken: 'rs-tok-dev', logoUrl: null },
     ];
-    await importSeed(token, {
+    const importRes = await importSeed(token, {
       rounds: [{
         id: 'rs-r', name: 'Results Round', order: 1, answerMode: 'MCQ',
         pointsPerQuestion: 10, timeLimitSeconds: 8, gapEnabled: 0, gapSeconds: 0, instructions: '',
@@ -126,6 +127,8 @@ async function main() {
       candidates: C.map((c) => ({ ...c, score: 0, isActive: 1 })),
     });
 
+    const matchId = importRes.matches[0].id;
+
     const { client: admin, events: adminEv } = await createClient({ auth: { token } }, ['game:state']);
     await adminEv['game:state'];
 
@@ -136,8 +139,8 @@ async function main() {
     const publicCands = await displayEv['candidates:public-updated'];
     console.log('  Display received candidates:public-updated:', publicCands.map((c) => c.name).join(', '));
 
-    const startAck = await emitP(admin, 'admin:startQuiz', {});
-    assert('startQuiz acknowledged', startAck && startAck.success === true);
+    const startAck = await emitP(admin, 'admin:startMatch', { matchId });
+    assert('startMatch acknowledged', startAck && startAck.success === true);
 
     // Staggered answers: Alice B (correct, fastest), Cara B (correct, slower), Bob A (wrong), Dev none
     const candCli = {};

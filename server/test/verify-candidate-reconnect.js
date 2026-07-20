@@ -84,13 +84,15 @@ async function main() {
   };
   const imp = await fetch(`${BASE}/api/import`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(seed) });
   if (!imp.ok) throw new Error(`seed failed ${imp.status}`);
+  const importRes = await imp.json();
+  const matchId = importRes.matches[0].id;
 
   const cand = get('SELECT id, joinToken FROM candidates WHERE isActive = 1 LIMIT 1');
   assert('seeded an active candidate', !!cand);
 
   const admin = Client(BASE, { query: { role: 'admin', adminToken: token }, transports: ['websocket'], reconnection: false });
   await new Promise((res) => admin.on('connect', res));
-  await new Promise((res, rej) => admin.emit('admin:startQuiz', {}, (a) => (a && a.error ? rej(new Error(a.error)) : res(a))));
+  await new Promise((res, rej) => admin.emit('admin:startMatch', { matchId }, (a) => (a && a.error ? rej(new Error(a.error)) : res(a))));
 
   // ── Scenario A: NOT locked in, drop Wi-Fi, reconnect ──
   const a = makeCandidate(cand);

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 /**
  * WaitingRoom — candidate-tablet idle/waiting screen (Task 5.6).
@@ -45,7 +46,12 @@ export default function WaitingRoom({ candidateId }) {
       <div className="absolute inset-0 waiting-spotlight z-0 pointer-events-none" />
 
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center px-4 md:px-16 py-16 max-w-2xl mx-auto w-full text-center">
-        <div className="mb-8">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 20, stiffness: 150 }}
+          className="mb-8"
+        >
           {logoUrl ? (
             <img src={logoUrl} alt={`${name} logo`} className="w-28 h-28 md:w-36 md:h-36 rounded-2xl object-contain bg-surface-container-high logo-ring" />
           ) : (
@@ -53,16 +59,26 @@ export default function WaitingRoom({ candidateId }) {
               <span className="material-symbols-outlined text-[56px] md:text-[72px] text-secondary">person</span>
             </div>
           )}
-        </div>
+        </motion.div>
 
-        <h1 className="mb-3 font-display-md text-display-md md:font-display-lg md:text-display-lg text-secondary drop-shadow-[0_0_12px_rgba(240,192,62,0.5)]">
+        <motion.h1 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', delay: 0.1, damping: 20, stiffness: 150 }}
+          className="mb-3 font-display-md text-display-md md:font-display-lg md:text-display-lg text-secondary drop-shadow-[0_0_12px_rgba(240,192,62,0.5)]"
+        >
           {name}
-        </h1>
+        </motion.h1>
 
-        <div className="mt-6 flex items-center gap-3 text-on-surface-variant">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="mt-6 flex items-center gap-3 text-on-surface-variant"
+        >
           <span className="material-symbols-outlined text-[28px] text-secondary waiting-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>hourglass_top</span>
           <p className="font-label-caps text-label-caps tracking-[0.2em]">WAITING FOR THE QUIZ TO START…</p>
-        </div>
+        </motion.div>
 
         {errored && (
           <p className="mt-6 font-body-sm text-body-sm text-on-surface-variant">(Could not load your profile — but you're connected.)</p>

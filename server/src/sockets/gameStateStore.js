@@ -19,8 +19,8 @@ function saveGameState(state) {
     `INSERT OR REPLACE INTO game_state (
       id, phase, currentRoundId, currentQuestionId, timerStartedAt,
       timeLimitSeconds, gapEnabled, gapSeconds, locks, judgements,
-      winnerCandidateId, resultsRevealed
-    ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      winnerCandidateId, resultsRevealed, matchId
+    ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       state.phase,
       state.currentRoundId,
@@ -33,6 +33,7 @@ function saveGameState(state) {
       JSON.stringify(state.judgements),
       state.winnerCandidateId,
       Number(state.resultsRevealed),
+      state.matchId || null,
     ]
   );
 }

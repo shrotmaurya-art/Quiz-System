@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 const DEFAULT_OPTIONS = [
   { key: 'A', text: '' },
@@ -71,8 +72,17 @@ export default function QuestionForm({ question, roundId, rounds, onSave, onCanc
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-      <div className="glass-panel rounded-xl w-full max-w-3xl flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-secondary/50 overflow-hidden relative">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+        className="glass-panel rounded-xl w-full max-w-3xl flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-secondary/50 overflow-hidden relative"
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-secondary/30 bg-surface-container/50 flex justify-between items-center">
           <h3 className="font-headline-md text-secondary flex items-center gap-2">
@@ -275,7 +285,7 @@ export default function QuestionForm({ question, roundId, rounds, onSave, onCanc
             {question ? 'SAVE QUESTION' : 'ADD QUESTION'}
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

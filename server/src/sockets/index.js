@@ -42,10 +42,13 @@ function getUnredactedGameState(state, question, round) {
   if (fullQuestion) {
     fullQuestion.options = JSON.parse(fullQuestion.options || '[]');
   }
+  const match = state.matchId ? get('SELECT candidateIds FROM matches WHERE id = ?', [state.matchId]) : null;
+  const matchCandidateIds = match ? JSON.parse(match.candidateIds || '[]') : [];
   return {
     ...state,
     question: fullQuestion,
-    roundName: round?.name || null
+    roundName: round?.name || null,
+    matchCandidateIds
   };
 }
 
@@ -93,6 +96,9 @@ function redactGameState(state, question, round) {
     }
   }
 
+  const match = state.matchId ? get('SELECT candidateIds FROM matches WHERE id = ?', [state.matchId]) : null;
+  const matchCandidateIds = match ? JSON.parse(match.candidateIds || '[]') : [];
+
   return {
     phase: state.phase,
     currentRoundId: state.currentRoundId,
@@ -106,7 +112,9 @@ function redactGameState(state, question, round) {
     winnerCandidateId: state.resultsRevealed ? state.winnerCandidateId : null,
     resultsRevealed: Boolean(state.resultsRevealed),
     question: redactedQuestion,
-    answerMode: round?.answerMode || null
+    answerMode: round?.answerMode || null,
+    matchId: state.matchId,
+    matchCandidateIds
   };
 }
 
@@ -120,7 +128,7 @@ function broadcastGameState(io) {
   const question = get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId]);
   const round = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
 
-  const unredacted = getUnredactedGameState(state, question);
+  const unredacted = getUnredactedGameState(state, question, round);
   const publicState = redactGameState(state, question, round);
 
   io.to('admin').emit('game:state', unredacted);
@@ -141,10 +149,28 @@ function broadcastCandidates(io) {
   io.to('display').emit('candidates:public-updated', activeCandidates.map(toPublicCandidate));
 }
 
+function getScoreboard(matchId) {
+  if (!matchId) return [];
+  try {
+    return all(
+      `SELECT ms.candidateId AS id, c.name, c.logoUrl, ms.score, c.isActive
+       FROM match_scores ms
+       JOIN candidates c ON c.id = ms.candidateId
+       WHERE ms.matchId = ? AND c.isActive = 1
+       ORDER BY ms.score DESC, c.name ASC`,
+      [matchId]
+    ).map(toPublicCandidate);
+  } catch (err) {
+    console.error('Error in getScoreboard:', err);
+    return [];
+  }
+}
+
 function broadcastScoreboard(io) {
   try {
-    const candidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
-    io.to('admin').to('display').emit('scoreboard:update', candidates.map(toPublicCandidate));
+    const state = gameEngine.getGameState();
+    const scoreboard = getScoreboard(state?.matchId);
+    io.to('admin').to('display').emit('scoreboard:update', scoreboard);
   } catch (err) {
     console.error('Error in broadcastScoreboard:', err);
   }
@@ -343,10 +369,15 @@ function initSockets(server) {
     broadcastGameState(io);
 
     if (state.phase === 'JUDGING') {
+      const sortedKeys = Object.keys(state.locks)
+        .filter(cid => state.locks[cid].answered)
+        .sort((a, b) => state.locks[a].elapsedMs - state.locks[b].elapsedMs);
       io.to('admin').emit('judging:started', {
-        rankedCandidateIds: Object.keys(state.locks)
-          .filter(cid => state.locks[cid].answered)
-          .sort((a, b) => state.locks[a].elapsedMs - state.locks[b].elapsedMs)
+        rankedCandidateIds: sortedKeys,
+        rankedCandidates: sortedKeys.map(cid => ({
+          candidateId: cid,
+          elapsedMs: state.locks[cid].elapsedMs
+        }))
       });
     } else if (state.phase === 'GAP') {
       io.to('admin').to('display').emit('gap:started', { gapSeconds: state.gapSeconds });
@@ -371,14 +402,16 @@ function initSockets(server) {
       const question = state && state.currentQuestionId
         ? get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId])
         : null;
-      socket.emit('game:state', getUnredactedGameState(state, question));
+      const round = state && state.currentRoundId
+        ? get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId])
+        : null;
+      socket.emit('game:state', getUnredactedGameState(state, question, round));
 
       const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
       socket.emit('candidates:updated', candidates.map(toAdminCandidate));
 
       // Send initial scoreboard so the bottom-bar widget isn't empty
-      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
-      socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
+      socket.emit('scoreboard:update', getScoreboard(state?.matchId));
     } 
     else if (auth.role === 'candidate') {
       socket.join(`candidate:${auth.candidateId}`);
@@ -396,8 +429,7 @@ function initSockets(server) {
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
 
       // Send initial scoreboard
-      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
-      socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
+      socket.emit('scoreboard:update', getScoreboard(state?.matchId));
     } 
     else if (auth.role === 'display') {
       socket.join('display');
@@ -415,8 +447,7 @@ function initSockets(server) {
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
 
       // Send initial scoreboard
-      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
-      socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
+      socket.emit('scoreboard:update', getScoreboard(state?.matchId));
     }
 
     // Role-verification helpers for event execution
@@ -468,23 +499,26 @@ function initSockets(server) {
       const question = state && state.currentQuestionId
         ? get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId])
         : null;
-      socket.emit('game:state', getUnredactedGameState(state, question));
+      const round = state && state.currentRoundId
+        ? get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId])
+        : null;
+      socket.emit('game:state', getUnredactedGameState(state, question, round));
 
       // Also push candidates and scoreboard for a complete state refresh
       const candidates = all('SELECT * FROM candidates ORDER BY name ASC');
       socket.emit('candidates:updated', candidates.map(toAdminCandidate));
-      const scoreboardCandidates = all('SELECT id, name, logoUrl, score, isActive FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
-      socket.emit('scoreboard:update', scoreboardCandidates.map(toPublicCandidate));
+      socket.emit('scoreboard:update', getScoreboard(state?.matchId));
 
       if (typeof ack === 'function') ack({ success: true });
     });
 
     // Client-to-server handlers
 
-    socket.on('admin:startQuiz', (data, ack) => {
+    socket.on('admin:startMatch', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
+      const { matchId } = data || {};
 
-      const res = runGameAction(() => gameEngine.startQuiz(), ack);
+      const res = runGameAction(() => gameEngine.startMatch(matchId), ack);
       if (!res) return;
       if (res.error) {
         if (typeof ack === 'function') ack({ error: res.error });
@@ -495,9 +529,29 @@ function initSockets(server) {
         if (typeof ack === 'function') ack({ success: true });
         broadcastGameState(io);
         broadcastCandidates(io);
+        broadcastScoreboard(io);
         if (res.state.phase === 'QUESTION_SHOWN') {
           startQuestionTick(io, res.state.timeLimitSeconds);
         }
+      }
+    });
+
+    socket.on('admin:endMatch', (data, ack) => {
+      if (!verifyIsAdmin(ack)) return;
+      const { matchId } = data || {};
+
+      const res = runGameAction(() => gameEngine.endMatch(matchId), ack);
+      if (!res) return;
+      if (res.error) {
+        if (typeof ack === 'function') ack({ error: res.error });
+        else socket.emit('error', res.error);
+      } else {
+        clearQuestionTick();
+        clearGapTimerCountdown();
+        if (typeof ack === 'function') ack({ success: true, winnerCandidateId: res.winnerCandidateId, hasTie: res.hasTie });
+        broadcastGameState(io);
+        broadcastCandidates(io);
+        broadcastScoreboard(io);
       }
     });
 
@@ -567,10 +621,15 @@ function initSockets(server) {
         broadcastGameState(io);
 
         if (res.state.phase === 'JUDGING') {
+          const sortedKeys = Object.keys(res.state.locks)
+            .filter(cid => res.state.locks[cid].answered)
+            .sort((a, b) => res.state.locks[a].elapsedMs - res.state.locks[b].elapsedMs);
           io.to('admin').emit('judging:started', {
-            rankedCandidateIds: Object.keys(res.state.locks)
-              .filter(cid => res.state.locks[cid].answered)
-              .sort((a, b) => res.state.locks[a].elapsedMs - res.state.locks[b].elapsedMs)
+            rankedCandidateIds: sortedKeys,
+            rankedCandidates: sortedKeys.map(cid => ({
+              candidateId: cid,
+              elapsedMs: res.state.locks[cid].elapsedMs
+            }))
           });
         } else if (res.state.phase === 'GAP') {
           io.to('admin').to('display').emit('gap:started', { gapSeconds: res.state.gapSeconds });

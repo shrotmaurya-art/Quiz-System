@@ -1,5 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useCandidateGame } from './CandidateGameContext';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const optionListVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06
+    }
+  }
+};
+
+const optionItemVariants = {
+  hidden: { opacity: 0, scale: 0.96, y: 10 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 18 } }
+};
 
 export default function McqQuestionView() {
   const { gameState, timer, isLockedIn, myLock, lockAnswer, phase } = useCandidateGame();
@@ -102,7 +118,12 @@ export default function McqQuestionView() {
       {/* Main Content Area */}
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-28 pb-32 px-4 md:px-16 max-w-5xl mx-auto w-full">
         {/* Timer & Meta Header */}
-        <div className="flex flex-col items-center mb-6 relative">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', damping: 20 }}
+          className="flex flex-col items-center mb-6 relative"
+        >
           <div className="relative w-24 h-24 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90 timer-ring" viewBox="0 0 100 100">
               <circle cx="50" cy="50" fill="none" r="45" stroke="rgba(240,192,62,0.1)" strokeWidth="6" />
@@ -130,10 +151,16 @@ export default function McqQuestionView() {
               <span className="font-label-caps text-label-caps text-on-surface-variant">Q. {question.order}</span>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Question Card */}
-        <div className="w-full max-w-3xl mb-6 relative">
+        <motion.div 
+          key={questionId || 'no-question'}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 180 }}
+          className="w-full max-w-3xl mb-6 relative"
+        >
           <div className="absolute inset-0 bg-secondary/5 blur-xl rounded-xl pointer-events-none" />
           <div className="bg-surface-dim/90 backdrop-blur-2xl border-t-4 border-b-4 border-secondary rounded-xl p-8 text-center shadow-[inset_0_0_30px_rgba(240,192,62,0.1),0_10px_40px_rgba(0,0,0,0.6)] relative overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[1px] bg-gradient-to-r from-transparent via-secondary to-transparent" />
@@ -152,73 +179,97 @@ export default function McqQuestionView() {
               />
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Options Stack (Transition Layout on Lock) */}
-        {!isPendingOrLocked ? (
-          /* Active pre-lock state: 2x2 grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
-            {options.map((opt) => (
-              <button
-                key={opt.key}
-                onClick={() => handleSelectOption(opt.key)}
-                className="group relative w-full min-h-[76px] py-6 px-8 hex-clip bg-tertiary-container/80 backdrop-blur-md border border-white/20 transition-all duration-300 hover:border-secondary hover:bg-tertiary-container option-hover-bloom active:scale-[0.98]"
-              >
-                <div className="flex items-center">
-                  <span className="font-display-lg-mobile text-display-lg-mobile text-secondary mr-4 group-hover:drop-shadow-[0_0_10px_rgba(240,192,62,0.8)] select-none">
-                    {opt.key}:
-                  </span>
-                  <span className="font-headline-md text-headline-md text-on-surface group-hover:text-white transition-colors text-left truncate flex-1 select-none">
-                    {opt.text}
-                  </span>
-                </div>
-                {/* Inner Glow hover highlight */}
-                <div className="absolute inset-0 hex-clip pointer-events-none group-hover:option-glow transition-all duration-300" />
-              </button>
-            ))}
-          </div>
-        ) : (
-          /* Locked/countdown pre-lock over: 1-column list */
-          <div className="w-full max-w-2xl flex flex-col gap-4">
-            {options.map((opt) => {
-              const isSelected = opt.key === activeSelection;
-              if (isSelected) {
-                return (
-                  <div key={opt.key} className="relative w-full transform scale-[1.02] transition-transform duration-300">
-                    <div className="hex-clip bg-secondary border-2 border-secondary locked-glow min-h-[76px] py-5 px-8 flex items-center shadow-[0_10px_30px_rgba(240,192,62,0.3)]">
-                      <span className="font-headline-md text-headline-md text-on-secondary w-12 text-left select-none">
-                        {opt.key}:
-                      </span>
-                      <span className="font-body-lg text-body-lg text-on-secondary flex-1 text-center font-bold select-none truncate">
-                        {opt.text}
-                      </span>
-                      <div className="w-12 flex justify-end items-center gap-1">
-                        <span className="material-symbols-outlined text-on-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                          lock
-                        </span>
-                        <span className="font-label-caps text-[10px] text-on-secondary font-bold select-none">LOCKED</span>
-                      </div>
-                    </div>
+        <AnimatePresence mode="wait">
+          {!isPendingOrLocked ? (
+            /* Active pre-lock state: 2x2 grid */
+            <motion.div 
+              key="active-grid"
+              variants={optionListVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl"
+            >
+              {options.map((opt) => (
+                <motion.button
+                  variants={optionItemVariants}
+                  key={opt.key}
+                  onClick={() => handleSelectOption(opt.key)}
+                  className="group relative w-full min-h-[76px] py-6 px-8 hex-clip bg-tertiary-container/80 backdrop-blur-md border border-white/20 transition-all duration-300 hover:border-secondary hover:bg-tertiary-container option-hover-bloom active:scale-[0.98]"
+                >
+                  <div className="flex items-center">
+                    <span className="font-display-lg-mobile text-display-lg-mobile text-secondary mr-4 group-hover:drop-shadow-[0_0_10px_rgba(240,192,62,0.8)] select-none">
+                      {opt.key}:
+                    </span>
+                    <span className="font-headline-md text-headline-md text-on-surface group-hover:text-white transition-colors text-left truncate flex-1 select-none">
+                      {opt.text}
+                    </span>
                   </div>
-                );
-              } else {
+                  {/* Inner Glow hover highlight */}
+                  <div className="absolute inset-0 hex-clip pointer-events-none group-hover:option-glow transition-all duration-300" />
+                </motion.button>
+              ))}
+            </motion.div>
+          ) : (
+            /* Locked/countdown pre-lock over: 1-column list */
+            <motion.div 
+              key="locked-list"
+              variants={optionListVariants}
+              initial="hidden"
+              animate="visible"
+              className="w-full max-w-2xl flex flex-col gap-4"
+            >
+              {options.map((opt) => {
+                const isSelected = opt.key === activeSelection;
+                if (isSelected) {
                   return (
-                  <div key={opt.key} className="relative w-full opacity-40 filter grayscale cursor-not-allowed">
-                    <div className="hex-clip bg-primary-container/40 border border-outline/30 min-h-[76px] py-5 px-8 flex items-center backdrop-blur-sm">
-                      <span className="font-headline-md text-headline-md text-on-surface-variant w-12 text-left select-none">
-                        {opt.key}:
-                      </span>
-                      <span className="font-body-lg text-body-lg text-on-surface-variant flex-1 text-center select-none truncate">
-                        {opt.text}
-                      </span>
-                      <div className="w-12" />
-                    </div>
-                  </div>
-                );
-              }
-            })}
-          </div>
-        )}
+                    <motion.div 
+                      variants={optionItemVariants}
+                      key={opt.key} 
+                      className="relative w-full transform scale-[1.02] transition-transform duration-300"
+                    >
+                      <div className="hex-clip bg-secondary border-2 border-secondary locked-glow min-h-[76px] py-5 px-8 flex items-center shadow-[0_10px_30px_rgba(240,192,62,0.3)]">
+                        <span className="font-headline-md text-headline-md text-on-secondary w-12 text-left select-none">
+                          {opt.key}:
+                        </span>
+                        <span className="font-body-lg text-body-lg text-on-secondary flex-1 text-center font-bold select-none truncate">
+                          {opt.text}
+                        </span>
+                        <div className="w-12 flex justify-end items-center gap-1">
+                          <span className="material-symbols-outlined text-on-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                            lock
+                          </span>
+                          <span className="font-label-caps text-[10px] text-on-secondary font-bold select-none">LOCKED</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                } else {
+                    return (
+                    <motion.div 
+                      variants={optionItemVariants}
+                      key={opt.key} 
+                      className="relative w-full opacity-40 filter grayscale cursor-not-allowed"
+                    >
+                      <div className="hex-clip bg-primary-container/40 border border-outline/30 min-h-[76px] py-5 px-8 flex items-center backdrop-blur-sm">
+                        <span className="font-headline-md text-headline-md text-on-surface-variant w-12 text-left select-none">
+                          {opt.key}:
+                        </span>
+                        <span className="font-body-lg text-body-lg text-on-surface-variant flex-1 text-center select-none truncate">
+                          {opt.text}
+                        </span>
+                        <div className="w-12" />
+                      </div>
+                    </motion.div>
+                  );
+                }
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Decorative Bottom Navigation Bar (matches mockups layout) */}

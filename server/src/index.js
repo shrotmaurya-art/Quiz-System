@@ -12,6 +12,7 @@ const roundsRouter = require('./routes/rounds.routes');
 const questionsRouter = require('./routes/questions.routes');
 const candidatesRouter = require('./routes/candidates.routes');
 const adminRouter = require('./routes/admin.routes');
+const matchesRouter = require('./routes/matches.routes');
 const { handleAdminLogin, requireAdmin } = require('./middleware/auth');
 const initSockets = require('./sockets/index');
 const { toPublicCandidate } = candidatesRouter;
@@ -24,10 +25,32 @@ app.use('/api/admin', adminRouter);
 app.use('/api/rounds', roundsRouter);
 app.use('/api/questions', questionsRouter);
 app.use('/api/candidates', candidatesRouter);
+app.use('/api/matches', matchesRouter);
 
 app.get('/api/scoreboard', (req, res) => {
-  const candidates = all('SELECT * FROM candidates WHERE isActive = 1 ORDER BY score DESC, name ASC');
-  return res.json(candidates.map(toPublicCandidate));
+  const { matchId } = req.query;
+  if (!matchId) {
+    return res.status(400).json({ error: 'matchId query parameter is required.' });
+  }
+  const match = all('SELECT id FROM matches WHERE id = ?', [matchId]);
+  if (match.length === 0) {
+    return res.status(404).json({ error: 'Match not found.' });
+  }
+  const rows = all(
+    `SELECT ms.candidateId AS id, c.name, c.logoUrl, ms.score, c.isActive
+     FROM match_scores ms
+     JOIN candidates c ON c.id = ms.candidateId
+     WHERE ms.matchId = ?
+     ORDER BY ms.score DESC, c.name ASC`,
+    [matchId]
+  );
+  return res.json(rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    logoUrl: r.logoUrl,
+    score: r.score,
+    isActive: Boolean(r.isActive),
+  })));
 });
 
 function formatRound(round) {
@@ -50,6 +73,8 @@ function formatQuestion(question) {
 
 function getExportDocument() {
   return {
+    matches: all('SELECT * FROM matches ORDER BY "order"').map((m) => ({ ...m, candidateIds: JSON.parse(m.candidateIds || '[]') })),
+    match_scores: all('SELECT * FROM match_scores'),
     rounds: all('SELECT * FROM rounds ORDER BY "order"').map(formatRound),
     questions: all('SELECT * FROM questions ORDER BY roundId, "order"').map(formatQuestion),
     candidates: all('SELECT * FROM candidates ORDER BY name'),
@@ -82,6 +107,8 @@ const restoreData = db.transaction((document) => {
   run('DELETE FROM game_state');
   run('DELETE FROM questions');
   run('DELETE FROM rounds');
+  run('DELETE FROM match_scores');
+  run('DELETE FROM matches');
   run('DELETE FROM candidates');
 
   // Re-insert default IDLE game state so getGameState() never returns null
@@ -90,12 +117,80 @@ const restoreData = db.transaction((document) => {
      VALUES (1, 'IDLE', '{}', '{}', 0)`
   );
 
+  for (const candidate of document.candidates) {
+    run(
+      'INSERT INTO candidates (id, name, logoUrl, score, isActive, joinToken) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        candidate.id,
+        candidate.name,
+        candidate.logoUrl,
+        candidate.score,
+        toDatabaseBoolean(candidate.isActive),
+        candidate.joinToken,
+      ]
+    );
+  }
+
+  const hasMatches = document.matches && Array.isArray(document.matches) && document.matches.length > 0;
+  let autoMatchId = null;
+
+  if (hasMatches) {
+    for (const m of document.matches) {
+      run(
+        `INSERT INTO matches (id, name, "order", candidateIds, status, winnerCandidateId)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          m.id,
+          m.name,
+          m.order,
+          JSON.stringify(m.candidateIds || []),
+          m.status || 'not_started',
+          m.winnerCandidateId || null
+        ]
+      );
+    }
+  } else {
+    autoMatchId = crypto.randomUUID();
+    const candidateIds = document.candidates.map(c => c.id);
+    run(
+      `INSERT INTO matches (id, name, "order", candidateIds, status, winnerCandidateId)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        autoMatchId,
+        'Match 1',
+        1,
+        JSON.stringify(candidateIds),
+        'not_started',
+        null
+      ]
+    );
+  }
+
+  const hasScores = document.match_scores && Array.isArray(document.match_scores) && document.match_scores.length > 0;
+  if (hasScores) {
+    for (const ms of document.match_scores) {
+      run(
+        `INSERT INTO match_scores (matchId, candidateId, score)
+         VALUES (?, ?, ?)`,
+        [ms.matchId, ms.candidateId, ms.score]
+      );
+    }
+  } else if (autoMatchId) {
+    for (const c of document.candidates) {
+      run(
+        `INSERT INTO match_scores (matchId, candidateId, score)
+         VALUES (?, ?, ?)`,
+        [autoMatchId, c.id, c.score || 0]
+      );
+    }
+  }
+
   for (const round of document.rounds) {
     run(
       `INSERT INTO rounds (
         id, name, "order", answerMode, pointsPerQuestion,
-        timeLimitSeconds, gapEnabled, gapSeconds, instructions
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        timeLimitSeconds, gapEnabled, gapSeconds, instructions, matchId
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         round.id,
         round.name,
@@ -106,6 +201,7 @@ const restoreData = db.transaction((document) => {
         toDatabaseBoolean(round.gapEnabled),
         round.gapSeconds,
         round.instructions,
+        round.matchId || autoMatchId || null,
       ]
     );
   }
@@ -130,20 +226,6 @@ const restoreData = db.transaction((document) => {
         question.timeLimitOverrideSeconds,
         toDatabaseBoolean(question.gapEnabledOverride),
         question.gapSecondsOverride,
-      ]
-    );
-  }
-
-  for (const candidate of document.candidates) {
-    run(
-      'INSERT INTO candidates (id, name, logoUrl, score, isActive, joinToken) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        candidate.id,
-        candidate.name,
-        candidate.logoUrl,
-        candidate.score,
-        toDatabaseBoolean(candidate.isActive),
-        candidate.joinToken,
       ]
     );
   }

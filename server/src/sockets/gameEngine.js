@@ -71,7 +71,8 @@ function saveGameState(state) {
       locks = ?,
       judgements = ?,
       winnerCandidateId = ?,
-      resultsRevealed = ?
+      resultsRevealed = ?,
+      matchId = ?
     WHERE id = 1`,
     [
       state.phase,
@@ -84,7 +85,8 @@ function saveGameState(state) {
       JSON.stringify(state.locks),
       JSON.stringify(state.judgements),
       state.winnerCandidateId,
-      Number(state.resultsRevealed)
+      Number(state.resultsRevealed),
+      state.matchId || null
     ]
   );
 }
@@ -167,36 +169,50 @@ function registerOnTimeUp(callback) {
 // ---------------------------------------------------------------------------
 
 /**
- * Sets the phase to QUESTION_SHOWN on Round 1, Question 1.
+ * Sets the phase to QUESTION_SHOWN on the first round and question of the match.
  * Valid from IDLE or QUIZ_ENDED.
+ * @param {string} matchId
  * @returns {Object} { success: true, state } or { error }
  */
-function startQuiz() {
+function startMatch(matchId) {
   const state = getGameState();
   assertPhase(state.phase, ['IDLE', 'QUIZ_ENDED']);
 
-  const activeCandidates = all('SELECT id FROM candidates WHERE isActive = 1');
-  if (activeCandidates.length === 0) {
-    return { error: 'Cannot start quiz: no active candidates configured.' };
+  const match = get('SELECT * FROM matches WHERE id = ?', [matchId]);
+  if (!match) {
+    return { error: `Match with ID "${matchId}" not found.` };
   }
 
-  const round = get('SELECT * FROM rounds ORDER BY "order" ASC LIMIT 1');
+  const inProgressMatch = get("SELECT id, name FROM matches WHERE status = 'in_progress'");
+  if (inProgressMatch && inProgressMatch.id !== matchId) {
+    return { error: `Cannot start match: "${inProgressMatch.name}" is currently in progress. End it first.` };
+  }
+
+  const candidateIds = JSON.parse(match.candidateIds || '[]');
+  if (candidateIds.length === 0) {
+    return { error: `Cannot start match "${match.name}": no candidates assigned.` };
+  }
+
+  const round = get('SELECT * FROM rounds WHERE matchId = ? ORDER BY "order" ASC LIMIT 1', [matchId]);
   if (!round) {
-    return { error: 'Cannot start quiz: no rounds configured.' };
+    return { error: `Cannot start match "${match.name}": no rounds configured for this match.` };
   }
 
   const question = get('SELECT * FROM questions WHERE roundId = ? ORDER BY "order" ASC LIMIT 1', [round.id]);
   if (!question) {
-    return { error: `Cannot start quiz: round "${round.name}" has no questions.` };
+    return { error: `Cannot start match: round "${round.name}" has no questions.` };
   }
 
   const globalSettings = getGlobalSettings();
   const timing = resolveTiming(question, round, globalSettings);
 
   const locks = {};
-  for (const c of activeCandidates) {
-    locks[c.id] = { optionKey: null, elapsedMs: null, answered: false };
+  for (const cid of candidateIds) {
+    locks[cid] = { optionKey: null, elapsedMs: null, answered: false };
   }
+
+  // Update match status to in_progress
+  run("UPDATE matches SET status = 'in_progress' WHERE id = ?", [matchId]);
 
   state.phase = 'QUESTION_SHOWN';
   state.currentRoundId = round.id;
@@ -209,10 +225,59 @@ function startQuiz() {
   state.judgements = {};
   state.winnerCandidateId = null;
   state.resultsRevealed = false;
+  state.matchId = matchId;
 
   saveGameState(state);
   scheduleQuestionTimeout(timing.timeLimitSeconds);
   return { success: true, state };
+}
+
+/**
+ * Sets status to 'completed', computes winnerCandidateId, and resets game state.
+ * @param {string} matchId
+ * @returns {Object} { success: true, winnerCandidateId, hasTie, state } or { error }
+ */
+function endMatch(matchId) {
+  const state = getGameState();
+  const match = get('SELECT * FROM matches WHERE id = ?', [matchId]);
+  if (!match) {
+    return { error: `Match with ID "${matchId}" not found.` };
+  }
+
+  clearQuestionTimeout();
+
+  const scores = all('SELECT candidateId, score FROM match_scores WHERE matchId = ? ORDER BY score DESC, candidateId ASC', [matchId]);
+  let winnerCandidateId = null;
+  let hasTie = false;
+
+  if (scores.length > 0) {
+    const highestScore = scores[0].score;
+    const topScorers = scores.filter(s => s.score === highestScore);
+    if (topScorers.length > 1) {
+      hasTie = true;
+    } else {
+      winnerCandidateId = topScorers[0].candidateId;
+    }
+  }
+
+  run("UPDATE matches SET status = 'completed', winnerCandidateId = ? WHERE id = ?", [winnerCandidateId, matchId]);
+
+  state.phase = 'IDLE';
+  state.currentRoundId = null;
+  state.currentQuestionId = null;
+  state.timerStartedAt = null;
+  state.timeLimitSeconds = 30;
+  state.gapEnabled = 1;
+  state.gapSeconds = 10;
+  state.locks = {};
+  state.judgements = {};
+  state.winnerCandidateId = null;
+  state.resultsRevealed = false;
+  state.matchId = null;
+
+  saveGameState(state);
+
+  return { success: true, winnerCandidateId, hasTie, state };
 }
 
 /**
@@ -239,10 +304,10 @@ function nextQuestion() {
   let nextR = null;
 
   if (!nextQ) {
-    // Find next round
+    // Find next round belonging to the active match
     nextR = get(
-      'SELECT * FROM rounds WHERE "order" > ? ORDER BY "order" ASC LIMIT 1',
-      [currentRound.order]
+      'SELECT * FROM rounds WHERE matchId = ? AND "order" > ? ORDER BY "order" ASC LIMIT 1',
+      [state.matchId, currentRound.order]
     );
     if (nextR) {
       nextQ = get(
@@ -269,10 +334,11 @@ function nextQuestion() {
   const globalSettings = getGlobalSettings();
   const timing = resolveTiming(nextQ, resolvedRound, globalSettings);
 
-  const activeCandidates = all('SELECT id FROM candidates WHERE isActive = 1');
+  const match = get('SELECT candidateIds FROM matches WHERE id = ?', [state.matchId]);
+  const candidateIds = match ? JSON.parse(match.candidateIds || '[]') : [];
   const locks = {};
-  for (const c of activeCandidates) {
-    locks[c.id] = { optionKey: null, elapsedMs: null, answered: false };
+  for (const cid of candidateIds) {
+    locks[cid] = { optionKey: null, elapsedMs: null, answered: false };
   }
 
   state.phase = 'QUESTION_SHOWN';
@@ -316,10 +382,10 @@ function previousQuestion() {
   let prevR = null;
 
   if (!prevQ) {
-    // Find previous round
+    // Find previous round belonging to the active match
     prevR = get(
-      'SELECT * FROM rounds WHERE "order" < ? ORDER BY "order" DESC LIMIT 1',
-      [currentRound.order]
+      'SELECT * FROM rounds WHERE matchId = ? AND "order" < ? ORDER BY "order" DESC LIMIT 1',
+      [state.matchId, currentRound.order]
     );
     if (prevR) {
       prevQ = get(
@@ -338,10 +404,11 @@ function previousQuestion() {
   const globalSettings = getGlobalSettings();
   const timing = resolveTiming(prevQ, resolvedRound, globalSettings);
 
-  const activeCandidates = all('SELECT id FROM candidates WHERE isActive = 1');
+  const match = get('SELECT candidateIds FROM matches WHERE id = ?', [state.matchId]);
+  const candidateIds = match ? JSON.parse(match.candidateIds || '[]') : [];
   const locks = {};
-  for (const c of activeCandidates) {
-    locks[c.id] = { optionKey: null, elapsedMs: null, answered: false };
+  for (const cid of candidateIds) {
+    locks[cid] = { optionKey: null, elapsedMs: null, answered: false };
   }
 
   state.phase = 'QUESTION_SHOWN';
@@ -586,20 +653,21 @@ function revealResults() {
         ? question.pointsOverride 
         : round.pointsPerQuestion;
 
-      // 1. Update candidate score
-      run('UPDATE candidates SET score = score + ? WHERE id = ?', [points, winnerCandidateId]);
+      // 1. Update candidate match score
+      run('UPDATE match_scores SET score = score + ? WHERE matchId = ? AND candidateId = ?', [points, state.matchId, winnerCandidateId]);
 
       // 2. Insert into score_log
       const logId = crypto.randomUUID();
       run(
-        'INSERT INTO score_log (id, questionId, candidateId, pointsChange, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO score_log (id, questionId, candidateId, pointsChange, reason, timestamp, matchId) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
           logId,
           state.currentQuestionId,
           winnerCandidateId,
           points,
           'timed_ranking_win',
-          Date.now()
+          Date.now(),
+          state.matchId
         ]
       );
     }
@@ -621,9 +689,17 @@ function adjustScoreManually(candidateId, delta, reason) {
   const state = getGameState();
   assertPhase(state.phase, ALL_GAME_PHASES);
 
-  const candidate = get('SELECT id, score FROM candidates WHERE id = ?', [candidateId]);
-  if (!candidate) {
-    return { error: `Candidate "${candidateId}" not found.` };
+  if (!state.matchId) {
+    return { error: 'Cannot manually adjust score: no active match.' };
+  }
+
+  const match = get('SELECT candidateIds FROM matches WHERE id = ?', [state.matchId]);
+  if (!match) {
+    return { error: `Active match not found.` };
+  }
+  const candidateIds = JSON.parse(match.candidateIds || '[]');
+  if (!candidateIds.includes(candidateId)) {
+    return { error: `Candidate "${candidateId}" is not assigned to the active match.` };
   }
 
   let questionId = state.currentQuestionId;
@@ -636,32 +712,27 @@ function adjustScoreManually(candidateId, delta, reason) {
     }
   }
 
-  // 1. Update candidate score
-  run('UPDATE candidates SET score = score + ? WHERE id = ?', [delta, candidateId]);
+  // 1. Update candidate match score
+  run('UPDATE match_scores SET score = score + ? WHERE matchId = ? AND candidateId = ?', [delta, state.matchId, candidateId]);
 
   // 2. Insert into score_log
   const logId = crypto.randomUUID();
   run(
-    'INSERT INTO score_log (id, questionId, candidateId, pointsChange, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO score_log (id, questionId, candidateId, pointsChange, reason, timestamp, matchId) VALUES (?, ?, ?, ?, ?, ?, ?)',
     [
       logId,
       questionId,
       candidateId,
       delta,
       'manual_adjustment',
-      Date.now()
+      Date.now(),
+      state.matchId
     ]
   );
 
   return { success: true };
 }
 
-/**
- * Skips remaining questions in the current round and advances to the first
- * question of the next round. If this is the last round, ends the quiz.
- * Valid from any active phase.
- * @returns {Object} { success: true, state, ended: boolean } or { error }
- */
 function nextRound() {
   const state = getGameState();
   assertPhase(state.phase, ['QUESTION_SHOWN', 'TIME_UP', 'JUDGING', 'GAP', 'RESULTS', 'QUIZ_ENDED']);
@@ -673,10 +744,10 @@ function nextRound() {
 
   clearQuestionTimeout();
 
-  // Find next round
+  // Find next round belonging to the active match
   const nextR = get(
-    'SELECT * FROM rounds WHERE "order" > ? ORDER BY "order" ASC LIMIT 1',
-    [currentRound.order]
+    'SELECT * FROM rounds WHERE matchId = ? AND "order" > ? ORDER BY "order" ASC LIMIT 1',
+    [state.matchId, currentRound.order]
   );
 
   if (!nextR) {
@@ -711,10 +782,11 @@ function nextRound() {
   const globalSettings = getGlobalSettings();
   const timing = resolveTiming(nextQ, nextR, globalSettings);
 
-  const activeCandidates = all('SELECT id FROM candidates WHERE isActive = 1');
+  const match = get('SELECT candidateIds FROM matches WHERE id = ?', [state.matchId]);
+  const candidateIds = match ? JSON.parse(match.candidateIds || '[]') : [];
   const locks = {};
-  for (const c of activeCandidates) {
-    locks[c.id] = { optionKey: null, elapsedMs: null, answered: false };
+  for (const cid of candidateIds) {
+    locks[cid] = { optionKey: null, elapsedMs: null, answered: false };
   }
 
   state.phase = 'QUESTION_SHOWN';
@@ -770,6 +842,7 @@ function resetQuiz() {
   state.judgements = {};
   state.winnerCandidateId = null;
   state.resultsRevealed = false;
+  state.matchId = null;
   saveGameState(state);
   return { success: true, state };
 }
@@ -778,7 +851,8 @@ module.exports = {
   PhaseError,
   assertPhase,
   getGameState,
-  startQuiz,
+  startMatch,
+  endMatch,
   nextQuestion,
   previousQuestion,
   lockAnswer,

@@ -1,4 +1,5 @@
 import { useCandidateGame } from './CandidateGameContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /**
  * ResultsView — candidate-tablet RESULTS / feedback screen (Task 5.5).
@@ -10,7 +11,7 @@ import { useCandidateGame } from './CandidateGameContext';
  *     - whether THIS candidate was correct / incorrect / no-answer
  *       (status derived from results.rankings, filtered to this candidate id)
  *     - their own response time (elapsedMs, formatted to 2 decimals)
- *     - a clear "You won this round! 🏆" state if winnerCandidateId
+ *       - a clear "You won this round! 🏆" state if winnerCandidateId
  *       matches this candidate's id
  *
  * Visual references:
@@ -98,40 +99,61 @@ export default function ResultsView() {
       <div className="absolute inset-0 results-spotlight z-0 pointer-events-none" />
 
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-28 pb-16 px-4 md:px-16 max-w-2xl mx-auto w-full">
-        {isWinner ? (
-          <div className="w-full max-w-xl z-30 rounded-3xl border-4 border-secondary bg-surface-container-high/80 p-8 md:p-12 text-center winner-glow">
-            <span
-              className="material-symbols-outlined text-[72px] text-secondary mb-2 drop-shadow-[0_0_20px_rgba(240,192,62,0.8)]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
+        <AnimatePresence mode="wait">
+          {isWinner ? (
+            <motion.div 
+              key="winner-card"
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 150 }}
+              className="w-full max-w-xl z-30 rounded-3xl border-4 border-secondary bg-surface-container-high/80 p-8 md:p-12 text-center winner-glow"
             >
-              emoji_events
-            </span>
-            <h1 className="font-display-lg text-display-lg md:text-display-lg text-secondary drop-shadow-[0_0_12px_rgba(240,192,62,0.6)] leading-tight">
-              YOU WON THIS ROUND! 🏆
-            </h1>
-            <p className="mt-3 font-body-lg text-body-lg text-on-surface-variant">
-              Fastest correct answer — points secured.
-            </p>
-          </div>
-        ) : (
-          <div className="w-full max-w-xl z-30 rounded-3xl border border-outline bg-surface-container-high/80 p-8 md:p-12 text-center">
-            <span
-              className={`material-symbols-outlined text-[64px] mb-2 ${statusInfo.tone}`}
-              style={{ fontVariationSettings: "'FILL' 1" }}
+              <span
+                className="material-symbols-outlined text-[72px] text-secondary mb-2 drop-shadow-[0_0_20px_rgba(240,192,62,0.8)]"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                emoji_events
+              </span>
+              <h1 className="font-display-lg text-display-lg md:text-display-lg text-secondary drop-shadow-[0_0_12px_rgba(240,192,62,0.6)] leading-tight">
+                YOU WON THIS ROUND! 🏆
+              </h1>
+              <p className="mt-3 font-body-lg text-body-lg text-on-surface-variant">
+                Fastest correct answer — points secured.
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="status-card"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 180 }}
+              className="w-full max-w-xl z-30 rounded-3xl border border-outline bg-surface-container-high/80 p-8 md:p-12 text-center"
             >
-              {statusInfo.glyph}
-            </span>
-            <h1 className={`font-display-md text-display-md ${statusInfo.tone} leading-tight`}>
-              {myStatus === 'correct' ? "That's Correct!" : myStatus === 'incorrect' ? 'Not Quite' : "Time's Up"}
-            </h1>
-            <p className={`mt-2 font-label-caps text-label-caps tracking-[0.2em] ${statusInfo.tone}`}>
-              {statusInfo.badge}
-            </p>
-          </div>
-        )}
+              <span
+                className={`material-symbols-outlined text-[64px] mb-2 ${statusInfo.tone}`}
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                {statusInfo.glyph}
+              </span>
+              <h1 className={`font-display-md text-display-md ${statusInfo.tone} leading-tight`}>
+                {myStatus === 'correct' ? "That's Correct!" : myStatus === 'incorrect' ? 'Not Quite' : "Time's Up"}
+              </h1>
+              <p className={`mt-2 font-label-caps text-label-caps tracking-[0.2em] ${statusInfo.tone}`}>
+                {statusInfo.badge}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Feedback detail card */}
-        <div className="w-full max-w-xl mt-8 z-30 rounded-2xl border border-secondary/30 bg-surface-container/70 p-6 md:p-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 150, delay: 0.2 }}
+          className="w-full max-w-xl mt-8 z-30 rounded-2xl border border-secondary/30 bg-surface-container/70 p-6 md:p-8"
+        >
           {/* Correct answer */}
           <div className="flex flex-col gap-1 mb-5">
             <span className="font-label-caps text-label-caps text-on-surface-variant tracking-[0.15em]">
@@ -161,7 +183,7 @@ export default function ResultsView() {
               {statusInfo.badge}
             </span>
           </div>
-        </div>
+        </motion.div>
       </main>
     </div>
   );
