@@ -9,6 +9,8 @@ export default function LiveControl() {
   // Core data states
   const [gameState, setGameState] = useState(null);
   const [candidates, setCandidates] = useState([]);
+  const [matches, setMatches] = useState([]);
+  const [selectedMatchId, setSelectedMatchId] = useState('');
   const [rounds, setRounds] = useState([]);
   const [currentRoundQuestions, setCurrentRoundQuestions] = useState([]);
   const [scoreboard, setScoreboard] = useState([]);
@@ -38,15 +40,32 @@ export default function LiveControl() {
     if (res.ok) {
       const data = await res.json();
       setCandidates(data);
-      // Initialize scoreboard if not loaded yet
-      setScoreboard(data.slice().sort((a, b) => b.score - a.score));
     }
+  }, []);
+
+  const fetchMatches = useCallback(async () => {
+    const res = await apiFetch('/api/matches');
+    if (res.ok) setMatches(await res.json());
+  }, []);
+
+  const fetchMatchScoreboard = useCallback(async (matchId) => {
+    if (!matchId) {
+      setScoreboard([]);
+      return;
+    }
+    const res = await apiFetch(`/api/matches/${matchId}/scoreboard`);
+    if (res.ok) setScoreboard(await res.json());
   }, []);
 
   useEffect(() => {
     fetchRounds();
     fetchCandidates();
-  }, [fetchRounds, fetchCandidates]);
+    fetchMatches();
+  }, [fetchRounds, fetchCandidates, fetchMatches]);
+
+  useEffect(() => {
+    fetchMatchScoreboard(gameState?.matchId);
+  }, [gameState?.matchId, fetchMatchScoreboard]);
 
   // Fetch questions of the current round when currentRoundId changes
   useEffect(() => {
@@ -91,8 +110,8 @@ export default function LiveControl() {
       setTimeRemaining(0);
     }
 
-    function onJudgingStarted({ rankedCandidateIds }) {
-      setJudgingOrder(rankedCandidateIds || []);
+    function onJudgingStarted({ rankedCandidates, rankedCandidateIds }) {
+      setJudgingOrder(rankedCandidates || (rankedCandidateIds || []).map((candidateId) => ({ candidateId, elapsedMs: null })));
     }
 
     function onGapStarted({ gapSeconds }) {
@@ -141,15 +160,44 @@ export default function LiveControl() {
   const currentQIndex = currentRoundQuestions.findIndex((q) => q.id === gameState?.currentQuestionId);
 
   // Live count locks (X/N locked in)
-  const totalActiveCount = candidates.filter((c) => c.isActive).length;
+  const activeMatch = matches.find((match) => match.status === 'in_progress')
+    || matches.find((match) => match.id === gameState?.matchId);
+  const activeCandidateIds = activeMatch?.candidateIds || [];
+  const matchCandidates = activeMatch
+    ? candidates.filter((candidate) => activeCandidateIds.includes(candidate.id))
+    : [];
+  const totalActiveCount = matchCandidates.length;
   const locksCount = gameState?.locks
     ? Object.values(gameState.locks).filter((l) => l.answered).length
     : 0;
 
   // Actions with confirmations
-  const handleStartQuiz = () => {
-    socket.emit('admin:startQuiz', {}, (ack) => {
-      if (ack?.error) alert(ack.error);
+  const handleStartMatch = () => {
+    if (!selectedMatchId) return;
+    socket.emit('admin:startMatch', { matchId: selectedMatchId }, (ack) => {
+      if (ack?.error) {
+        alert(ack.error);
+      } else {
+        fetchMatches();
+      }
+    });
+  };
+
+  const handleEndMatch = () => {
+    if (!activeMatch) return;
+    setConfirmModal({
+      title: 'End Match?',
+      message: `End "${activeMatch.name}" and record its final standings?`,
+      onConfirm: () => {
+        socket.emit('admin:endMatch', { matchId: activeMatch.id }, (ack) => {
+          if (ack?.error) {
+            alert(ack.error);
+          } else {
+            fetchMatches();
+          }
+        });
+        setConfirmModal(null);
+      },
     });
   };
 
@@ -292,6 +340,9 @@ export default function LiveControl() {
     return cand ? cand.logoUrl : null;
   };
 
+  const availableMatches = matches.filter((match) => match.status === 'not_started' || match.status === 'in_progress');
+  const selectedMatch = matches.find((match) => match.id === selectedMatchId);
+
   // Helper to format countdown duration in SVG dash offset
   const maxTime = gameState?.timeLimitSeconds || 20;
   const pctRemaining = timeRemaining !== null ? timeRemaining / maxTime : 1;
@@ -317,6 +368,21 @@ export default function LiveControl() {
           </div>
         </div>
 
+        {activeMatch && (
+          <div className="flex items-center gap-3">
+            <div className="hidden xl:block text-right">
+              <p className="font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant">Active Match</p>
+              <p className="text-sm text-on-surface font-semibold">{activeMatch.name}</p>
+            </div>
+            <button
+              onClick={handleEndMatch}
+              className="px-4 py-2 rounded border border-error/60 text-error hover:bg-error/10 font-label-caps text-xs tracking-wider"
+            >
+              END MATCH
+            </button>
+          </div>
+        )}
+
         {/* Phase Badges */}
         <div className="flex items-center gap-3 bg-surface-container-high/80 backdrop-blur-md px-6 py-3 rounded-full border border-secondary/30 shadow-[inset_0_0_10px_rgba(240,192,62,0.1)]">
           <div className={`w-3 h-3 rounded-full ${gameState?.phase === 'QUESTION_SHOWN' ? 'bg-error animate-pulse' : 'bg-outline-variant'}`}></div>
@@ -331,16 +397,58 @@ export default function LiveControl() {
         <div className="glass-panel rounded-xl p-16 text-center max-w-2xl mx-auto mt-8 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-secondary/5 to-transparent pointer-events-none"></div>
           <span className="material-symbols-outlined text-[72px] text-secondary mb-6 block animate-pulse">sensors</span>
-          <h3 className="font-display-lg text-headline-md text-on-surface mb-4">Quiz Broadcast Ready</h3>
-          <p className="text-on-surface-variant font-body-lg mb-8 max-w-md mx-auto">
-            The database contains active questions. Click below to initialize the live control system and start the quiz.
-          </p>
-          <button
-            onClick={handleStartQuiz}
-            className="btn-gold-pulse hex-clip px-12 py-4 bg-secondary text-on-secondary font-label-caps text-label-caps font-black tracking-widest hover:brightness-110 active:scale-95 transition-all"
-          >
-            START LIVE QUIZ
-          </button>
+          {activeMatch ? (
+            <>
+              <h3 className="font-display-lg text-headline-md text-on-surface mb-4">{activeMatch.name} Is Active</h3>
+              <p className="text-on-surface-variant font-body-lg mb-8 max-w-md mx-auto">
+                This match is still in progress. End it to record its final result before starting another match.
+              </p>
+              <button
+                onClick={handleEndMatch}
+                className="px-12 py-4 bg-error text-on-error font-label-caps text-label-caps font-black tracking-widest hover:bg-error/90 active:scale-95 transition-all rounded"
+              >
+                END MATCH
+              </button>
+            </>
+          ) : (
+            <>
+              <h3 className="font-display-lg text-headline-md text-on-surface mb-4">Choose a Match</h3>
+              <p className="text-on-surface-variant font-body-lg mb-6 max-w-md mx-auto">
+                Select the competitors and question set to run. Only one match can be active at a time.
+              </p>
+              {availableMatches.length > 0 ? (
+                <div className="max-w-md mx-auto text-left flex flex-col gap-5">
+                  <label className="flex flex-col gap-2 text-sm text-on-surface-variant">
+                    Match
+                    <select
+                      value={selectedMatchId}
+                      onChange={(event) => setSelectedMatchId(event.target.value)}
+                      className="bg-surface-container border border-outline/30 rounded px-4 py-3 text-on-surface focus:outline-none focus:border-secondary"
+                    >
+                      <option value="">Select a match</option>
+                      {availableMatches.map((match) => (
+                        <option key={match.id} value={match.id}>{match.name} ({match.status.replace('_', ' ')})</option>
+                      ))}
+                    </select>
+                  </label>
+                  {selectedMatch && (
+                    <p className="text-sm text-on-surface-variant">
+                      Candidates: {selectedMatch.candidateIds.map(getCandidateName).join(', ')}
+                    </p>
+                  )}
+                  <button
+                    onClick={handleStartMatch}
+                    disabled={!selectedMatchId}
+                    className="btn-gold-pulse hex-clip px-12 py-4 bg-secondary text-on-secondary font-label-caps text-label-caps font-black tracking-widest hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    START SELECTED MATCH
+                  </button>
+                </div>
+              ) : (
+                <p className="text-on-surface-variant font-body-lg">No unstarted matches are available. Create one in the Matches tab first.</p>
+              )}
+            </>
+          )}
         </div>
       )}
 
@@ -433,7 +541,8 @@ export default function LiveControl() {
                         </h4>
                         
                         <div className="flex flex-col gap-3">
-                          {judgingOrder.map((cid, idx) => {
+                          {judgingOrder.map(({ candidateId, elapsedMs }, idx) => {
+                            const cid = candidateId;
                             const lock = gameState.locks?.[cid];
                             const currentJudgement = gameState.judgements?.[cid];
                             return (
@@ -456,7 +565,7 @@ export default function LiveControl() {
                                       {getCandidateName(cid)}
                                     </p>
                                     <p className="text-xs text-on-surface-variant">
-                                      Response in {lock?.elapsedMs ? (lock.elapsedMs / 1000).toFixed(2) : '0.00'}s
+                                      Response in {typeof elapsedMs === 'number' ? (elapsedMs / 1000).toFixed(2) : lock?.elapsedMs ? (lock.elapsedMs / 1000).toFixed(2) : '0.00'}s
                                     </p>
                                   </div>
                                 </div>
@@ -765,7 +874,7 @@ export default function LiveControl() {
               </div>
 
               <div className="grid grid-cols-2 gap-4 flex-1">
-                {candidates.map((cand) => {
+                {matchCandidates.map((cand) => {
                   const lock = gameState?.locks?.[cand.id];
                   const hasLocked = lock?.answered === true;
 
