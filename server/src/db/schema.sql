@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS score_log (
   questionId TEXT NOT NULL,
   candidateId TEXT NOT NULL,
   pointsChange INTEGER NOT NULL,
-  reason TEXT NOT NULL CHECK (reason IN ('timed_ranking_win', 'manual_adjustment')),
+  reason TEXT NOT NULL CHECK (reason IN ('timed_ranking_win', 'manual_adjustment', 'question_replay_reversal')),
   timestamp INTEGER NOT NULL,
   matchId TEXT,
   FOREIGN KEY (questionId) REFERENCES questions(id),

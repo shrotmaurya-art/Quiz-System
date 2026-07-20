@@ -38,6 +38,46 @@ safeAddColumn('rounds', 'matchId TEXT REFERENCES matches(id)');
 safeAddColumn('game_state', 'matchId TEXT');
 safeAddColumn('score_log', 'matchId TEXT');
 
+// Check if score_log check constraint includes 'question_replay_reversal'
+const scoreLogSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='score_log'").get();
+if (scoreLogSql && !scoreLogSql.sql.includes('question_replay_reversal')) {
+  db.pragma('foreign_keys = OFF');
+  try {
+    db.transaction(() => {
+      // 1. Rename existing table
+      db.prepare('ALTER TABLE score_log RENAME TO score_log_old').run();
+
+      // 2. Create the new score_log table with updated check constraint
+      db.prepare(`
+        CREATE TABLE score_log (
+          id TEXT PRIMARY KEY,
+          questionId TEXT NOT NULL,
+          candidateId TEXT NOT NULL,
+          pointsChange INTEGER NOT NULL,
+          reason TEXT NOT NULL CHECK (reason IN ('timed_ranking_win', 'manual_adjustment', 'question_replay_reversal')),
+          timestamp INTEGER NOT NULL,
+          matchId TEXT,
+          FOREIGN KEY (questionId) REFERENCES questions(id),
+          FOREIGN KEY (candidateId) REFERENCES candidates(id),
+          FOREIGN KEY (matchId) REFERENCES matches(id) ON DELETE CASCADE
+        )
+      `).run();
+
+      // 3. Copy rows from old to new
+      db.prepare(`
+        INSERT INTO score_log (id, questionId, candidateId, pointsChange, reason, timestamp, matchId)
+        SELECT id, questionId, candidateId, pointsChange, reason, timestamp, matchId
+        FROM score_log_old
+      `).run();
+
+      // 4. Drop the old table
+      db.prepare('DROP TABLE score_log_old').run();
+    })();
+  } finally {
+    db.pragma('foreign_keys = ON');
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Orphaned-round migration: any round without a matchId gets assigned to an
 // auto-created "Match 1" so the system never has dangling rounds.

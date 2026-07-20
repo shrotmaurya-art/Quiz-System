@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function RoundsQuestions() {
   const { token } = useAdminAuth();
   const [rounds, setRounds] = useState([]);
+  const [matches, setMatches] = useState([]);
   const [expandedRoundId, setExpandedRoundId] = useState(null);
   const [editingRound, setEditingRound] = useState(null);
   const [showRoundForm, setShowRoundForm] = useState(false);
@@ -16,9 +17,11 @@ export default function RoundsQuestions() {
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [questionFormRoundId, setQuestionFormRoundId] = useState(null);
   const [questionRefreshKey, setQuestionRefreshKey] = useState(0);
+  const [filterMatchId, setFilterMatchId] = useState('');
 
   const fetchRounds = useCallback(async () => {
-    const res = await apiFetch('/api/rounds');
+    const url = filterMatchId ? `/api/rounds?matchId=${encodeURIComponent(filterMatchId)}` : '/api/rounds';
+    const res = await apiFetch(url);
     if (res.ok) {
       const data = await res.json();
       setRounds(data);
@@ -26,9 +29,15 @@ export default function RoundsQuestions() {
         setExpandedRoundId(data[0].id);
       }
     }
-  }, [expandedRoundId]);
+  }, [expandedRoundId, filterMatchId]);
+
+  const fetchMatches = useCallback(async () => {
+    const res = await apiFetch('/api/matches');
+    if (res.ok) setMatches(await res.json());
+  }, []);
 
   useEffect(() => { fetchRounds(); }, [fetchRounds]);
+  useEffect(() => { fetchMatches(); }, [fetchMatches]);
 
   async function handleDeleteRound(id) {
     if (!confirm('Delete this round and all its questions?')) return;
@@ -108,25 +117,51 @@ export default function RoundsQuestions() {
 
   const expandedRound = rounds.find((r) => r.id === expandedRoundId);
 
+  const getMatchName = (matchId) => {
+    if (!matchId) return null;
+    const m = matches.find((m) => m.id === matchId);
+    return m ? m.name : null;
+  };
+
   return (
     <div className="flex flex-col gap-stack-lg">
-      <header className="flex justify-between items-end pb-4 border-b border-secondary/20">
-        <h2 className="font-display-lg text-display-lg text-secondary drop-shadow-[0_0_15px_rgba(240,192,62,0.4)]">
-          ROUNDS &amp; QUESTIONS
-        </h2>
-        <button
-          onClick={() => { setEditingRound(null); setShowRoundForm(true); }}
-          className="clip-diamond bg-secondary/10 border border-secondary text-secondary px-8 py-3 font-label-caps text-label-caps flex items-center gap-2 hover:bg-secondary/20 transition-all"
-        >
-          <span className="material-symbols-outlined text-lg">add</span>
-          ADD ROUND
-        </button>
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-4 border-b border-secondary/20">
+        <div>
+          <h2 className="font-display-lg text-display-lg text-secondary drop-shadow-[0_0_15px_rgba(240,192,62,0.4)]">
+            ROUNDS &amp; QUESTIONS
+          </h2>
+        </div>
+        <div className="flex items-center gap-4">
+          {matches.length > 0 && (
+            <label className="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span className="font-label-caps text-xs tracking-widest">FILTER</span>
+              <select
+                value={filterMatchId}
+                onChange={(e) => { setFilterMatchId(e.target.value); setExpandedRoundId(null); }}
+                className="bg-surface-container-highest border border-outline/30 text-on-surface p-2 rounded text-sm focus:border-secondary focus:ring-0"
+              >
+                <option value="">All Matches</option>
+                {matches.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
+            </label>
+          )}
+          <button
+            onClick={() => { setEditingRound(null); setShowRoundForm(true); }}
+            className="clip-diamond bg-secondary/10 border border-secondary text-secondary px-8 py-3 font-label-caps text-label-caps flex items-center gap-2 hover:bg-secondary/20 transition-all"
+          >
+            <span className="material-symbols-outlined text-lg">add</span>
+            ADD ROUND
+          </button>
+        </div>
       </header>
 
       {/* Round form modal */}
       {showRoundForm && (
         <RoundForm
           round={editingRound}
+          matches={matches}
           onSave={handleSaveRound}
           onCancel={() => { setShowRoundForm(false); setEditingRound(null); }}
         />
@@ -172,6 +207,10 @@ export default function RoundsQuestions() {
                       </span>
                     </div>
                     <p className="text-on-surface-variant text-sm font-body-md">
+                      {getMatchName(expandedRound.matchId) && (
+                        <span className="text-secondary">{getMatchName(expandedRound.matchId)}</span>
+                      )}
+                      {getMatchName(expandedRound.matchId) && ' · '}
                       Round {expandedRound.order} · {expandedRound.questionCount} Question{expandedRound.questionCount !== 1 ? 's' : ''}
                     </p>
                   </div>
@@ -214,7 +253,13 @@ export default function RoundsQuestions() {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-headline-md text-lg text-on-surface group-hover:text-secondary transition-colors">{round.name}</h3>
-                    <p className="text-on-surface-variant text-sm mt-1">Round {round.order} · {round.questionCount} Question{round.questionCount !== 1 ? 's' : ''}</p>
+                    <p className="text-on-surface-variant text-sm mt-1">
+                      {getMatchName(round.matchId) && (
+                        <span className="text-secondary">{getMatchName(round.matchId)}</span>
+                      )}
+                      {getMatchName(round.matchId) && ' · '}
+                      Round {round.order} · {round.questionCount} Question{round.questionCount !== 1 ? 's' : ''}
+                    </p>
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDeleteRound(round.id); }}

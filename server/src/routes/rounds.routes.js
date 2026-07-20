@@ -8,6 +8,7 @@ const { requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 const ROUND_FIELDS = [
+  'matchId',
   'name',
   'order',
   'answerMode',
@@ -54,6 +55,20 @@ router.use(requireAdmin);
 
 // GET /api/rounds
 router.get('/', (req, res) => {
+  const { matchId } = req.query;
+
+  if (matchId) {
+    const rounds = all(`
+      SELECT rounds.*, COUNT(questions.id) AS questionCount
+      FROM rounds
+      LEFT JOIN questions ON questions.roundId = rounds.id
+      WHERE rounds.matchId = ?
+      GROUP BY rounds.id
+      ORDER BY rounds."order"
+    `, [matchId]);
+    return res.json(rounds.map(formatRound));
+  }
+
   const rounds = all(`
     SELECT rounds.*, COUNT(questions.id) AS questionCount
     FROM rounds
@@ -69,6 +84,19 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   const round = req.body || {};
 
+  if (!round.matchId || typeof round.matchId !== 'string') {
+    return res
+      .status(400)
+      .json({ error: 'matchId is required and must be a string.' });
+  }
+
+  const match = get('SELECT id FROM matches WHERE id = ?', [round.matchId]);
+  if (!match) {
+    return res
+      .status(400)
+      .json({ error: 'Match not found.' });
+  }
+
   if (!isValidAnswerMode(round.answerMode)) {
     return res
       .status(400)
@@ -80,17 +108,18 @@ router.post('/', (req, res) => {
   // Auto-compute order if not provided (MAX(order)+1, or 1 if no rounds exist)
   let order = round.order;
   if (order === undefined || order === null) {
-    const maxRow = get('SELECT MAX("order") AS maxOrder FROM rounds');
+    const maxRow = get('SELECT MAX("order") AS maxOrder FROM rounds WHERE matchId = ?', [round.matchId]);
     order = (maxRow?.maxOrder ?? 0) + 1;
   }
 
   run(
     `INSERT INTO rounds (
-      id, name, "order", answerMode, pointsPerQuestion,
+      id, matchId, name, "order", answerMode, pointsPerQuestion,
       timeLimitSeconds, gapEnabled, gapSeconds, instructions
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
+      round.matchId,
       round.name,
       order,
       round.answerMode,
@@ -117,6 +146,16 @@ router.put('/:id', (req, res) => {
     return res
       .status(400)
       .json({ error: "answerMode must be either 'MCQ' or 'OPEN'." });
+  }
+
+  if (patch.matchId !== undefined) {
+    if (typeof patch.matchId !== 'string') {
+      return res.status(400).json({ error: 'matchId must be a string.' });
+    }
+    const match = get('SELECT id FROM matches WHERE id = ?', [patch.matchId]);
+    if (!match) {
+      return res.status(400).json({ error: 'Match not found.' });
+    }
   }
 
   const fields = ROUND_FIELDS.filter((field) => patch[field] !== undefined);

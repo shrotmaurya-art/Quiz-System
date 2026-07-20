@@ -568,10 +568,9 @@ function initSockets(server) {
         clearGapTimerCountdown();
         if (typeof ack === 'function') ack({ success: true });
         broadcastGameState(io);
+        broadcastScoreboard(io);
         if (res.state.phase === 'QUESTION_SHOWN') {
           startQuestionTick(io, res.state.timeLimitSeconds);
-        } else if (res.ended) {
-          broadcastScoreboard(io);
         }
       }
     });
@@ -589,6 +588,7 @@ function initSockets(server) {
         clearGapTimerCountdown();
         if (typeof ack === 'function') ack({ success: true });
         broadcastGameState(io);
+        broadcastScoreboard(io);
         if (res.state.phase === 'QUESTION_SHOWN') {
           startQuestionTick(io, res.state.timeLimitSeconds);
         }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { NavLink } from 'react-router-dom';
 import { useAdminAuth } from './AdminAuth';
 import { apiFetch } from '../shared/api';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -445,7 +446,12 @@ export default function LiveControl() {
                   </button>
                 </div>
               ) : (
-                <p className="text-on-surface-variant font-body-lg">No unstarted matches are available. Create one in the Matches tab first.</p>
+                <p className="text-on-surface-variant font-body-lg">
+                  No unstarted matches are available.{' '}
+                  <NavLink to="/admin/matches" className="text-secondary underline hover:text-secondary/80 transition-colors">
+                    Create one in the Matches tab
+                  </NavLink>.
+                </p>
               )}
             </>
           )}

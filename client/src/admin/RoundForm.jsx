@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const DEFAULTS = {
+  matchId: '',
   name: '',
   order: 1,
   answerMode: 'MCQ',
@@ -12,10 +13,11 @@ const DEFAULTS = {
   instructions: '',
 };
 
-export default function RoundForm({ round, onSave, onCancel }) {
+export default function RoundForm({ round, matches, onSave, onCancel }) {
   const [form, setForm] = useState(() =>
     round
       ? {
+          matchId: round.matchId ?? '',
           name: round.name,
           order: round.order,
           answerMode: round.answerMode,
@@ -36,6 +38,7 @@ export default function RoundForm({ round, onSave, onCancel }) {
     e.preventDefault();
     onSave({
       ...form,
+      matchId: form.matchId || null,
       timeLimitSeconds: form.timeLimitSeconds === '' ? null : Number(form.timeLimitSeconds),
       gapSeconds: Number(form.gapSeconds),
       pointsPerQuestion: Number(form.pointsPerQuestion),
@@ -66,6 +69,21 @@ export default function RoundForm({ round, onSave, onCancel }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5 overflow-y-auto max-h-[70vh]">
+          <div className="flex flex-col gap-2">
+            <label className="font-label-caps text-xs text-secondary tracking-widest">MATCH</label>
+            <select
+              required
+              value={form.matchId}
+              onChange={(e) => set('matchId', e.target.value)}
+              className="bg-surface-container-highest border border-outline/30 text-on-surface p-3 rounded focus:border-secondary focus:ring-0"
+            >
+              <option value="">Select a match</option>
+              {matches.map((m) => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex flex-col gap-2">
             <label className="font-label-caps text-xs text-secondary tracking-widest">ROUND NAME</label>
             <input

@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 const NAV_ITEMS = [
   { to: '/admin/live',      label: 'Live Control',      icon: 'sensors' },
+  { to: '/admin/matches',   label: 'Matches',           icon: 'emoji_events' },
   { to: '/admin/rounds',    label: 'Rounds & Questions', icon: 'quiz' },
   { to: '/admin/candidates', label: 'Candidates',        icon: 'groups' },
   { to: '/admin/settings',  label: 'Settings / Backup',  icon: 'settings' },
