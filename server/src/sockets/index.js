@@ -494,6 +494,27 @@ function initSockets(server) {
       return true;
     }
 
+    // Navigation events change question state immediately. Guard duplicate
+    // clicks from the same authenticated admin socket before a client can
+    // disable its controls, without blocking a different navigation action.
+    const adminNavigationActionAt = new Map();
+    const ADMIN_NAVIGATION_DEBOUNCE_MS = 300;
+
+    function isDuplicateAdminNavigation(action, ack) {
+      const now = Date.now();
+      const previous = adminNavigationActionAt.get(action);
+      if (previous !== undefined && now - previous < ADMIN_NAVIGATION_DEBOUNCE_MS) {
+        if (typeof ack === 'function') ack({ success: true, ignored: true });
+        return true;
+      }
+      adminNavigationActionAt.set(action, now);
+      return false;
+    }
+
+    function clearAdminNavigationDebounce(action) {
+      adminNavigationActionAt.delete(action);
+    }
+
     /**
      * Turns an engine phase violation into a sender-only Socket.IO rejection.
      */
@@ -580,10 +601,15 @@ function initSockets(server) {
 
     socket.on('admin:nextQuestion', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
+      if (isDuplicateAdminNavigation('nextQuestion', ack)) return;
       
       const res = runGameAction(() => gameEngine.nextQuestion(), ack);
-      if (!res) return;
+      if (!res) {
+        clearAdminNavigationDebounce('nextQuestion');
+        return;
+      }
       if (res.error) {
+        clearAdminNavigationDebounce('nextQuestion');
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
       } else {
@@ -600,10 +626,15 @@ function initSockets(server) {
 
     socket.on('admin:prevQuestion', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
+      if (isDuplicateAdminNavigation('prevQuestion', ack)) return;
 
       const res = runGameAction(() => gameEngine.previousQuestion(), ack);
-      if (!res) return;
+      if (!res) {
+        clearAdminNavigationDebounce('prevQuestion');
+        return;
+      }
       if (res.error) {
+        clearAdminNavigationDebounce('prevQuestion');
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
       } else {
@@ -683,9 +714,14 @@ function initSockets(server) {
 
     socket.on('admin:advanceFromGap', (data, ack) => {
       if (!verifyIsAdmin(ack)) return;
+      if (isDuplicateAdminNavigation('advanceFromGap', ack)) return;
       const res = runGameAction(() => gameEngine.revealResults(), ack); // Exit gap manually goes directly to results
-      if (!res) return;
+      if (!res) {
+        clearAdminNavigationDebounce('advanceFromGap');
+        return;
+      }
       if (res.error) {
+        clearAdminNavigationDebounce('advanceFromGap');
         if (typeof ack === 'function') ack({ error: res.error });
         else socket.emit('error', res.error);
       } else {

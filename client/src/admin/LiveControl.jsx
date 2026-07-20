@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAdminAuth } from './AdminAuth';
 import { apiFetch } from '../shared/api';
@@ -29,6 +29,8 @@ export default function LiveControl() {
   const [adjustScoreModal, setAdjustScoreModal] = useState(null); // { candidateId, candidateName, currentScore }
   const [scoreDelta, setScoreDelta] = useState('10');
   const [scoreReason, setScoreReason] = useState('');
+  const [navigationDisabled, setNavigationDisabled] = useState({ next: false, prev: false, advanceFromGap: false });
+  const navigationCooldowns = useRef({ next: false, prev: false, advanceFromGap: false });
 
   // Load initial static lists
   const fetchRounds = useCallback(async () => {
@@ -202,16 +204,27 @@ export default function LiveControl() {
     });
   };
 
-  const triggerNextQuestion = () => {
-    socket.emit('admin:nextQuestion', {}, (ack) => {
+  const emitNavigationAction = (action, event) => {
+    if (!socket || navigationCooldowns.current[action]) return;
+
+    navigationCooldowns.current[action] = true;
+    setNavigationDisabled((disabled) => ({ ...disabled, [action]: true }));
+    window.setTimeout(() => {
+      navigationCooldowns.current[action] = false;
+      setNavigationDisabled((disabled) => ({ ...disabled, [action]: false }));
+    }, 300);
+
+    socket.emit(event, {}, (ack) => {
       if (ack?.error) alert(ack.error);
     });
   };
 
+  const triggerNextQuestion = () => {
+    emitNavigationAction('next', 'admin:nextQuestion');
+  };
+
   const triggerPrevQuestion = () => {
-    socket.emit('admin:prevQuestion', {}, (ack) => {
-      if (ack?.error) alert(ack.error);
-    });
+    emitNavigationAction('prev', 'admin:prevQuestion');
   };
 
   const handleNext = () => {
@@ -292,9 +305,7 @@ export default function LiveControl() {
   };
 
   const handleAdvanceFromGap = () => {
-    socket.emit('admin:advanceFromGap', {}, (ack) => {
-      if (ack?.error) alert(ack.error);
-    });
+    emitNavigationAction('advanceFromGap', 'admin:advanceFromGap');
   };
 
   const handleSubmitJudgement = (candidateId, isCorrect) => {
@@ -638,6 +649,7 @@ export default function LiveControl() {
                   )}
                   <button
                     onClick={handleAdvanceFromGap}
+                    disabled={navigationDisabled.advanceFromGap}
                     className="hex-clip px-8 py-3 bg-secondary text-on-secondary font-label-caps text-xs font-bold tracking-widest hover:brightness-110 active:scale-95 transition-all"
                   >
                     SKIP INTERLUDE
@@ -808,6 +820,7 @@ export default function LiveControl() {
                   <div className="mt-8 flex justify-center w-full">
                     <button
                       onClick={handleNext}
+                      disabled={navigationDisabled.next}
                       className="btn-gold-pulse hex-clip bg-secondary text-on-secondary px-10 py-4 font-label-caps text-xs font-bold tracking-widest hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
                     >
                       ADVANCE TO NEXT QUESTION
@@ -931,6 +944,7 @@ export default function LiveControl() {
           <div className="flex gap-3">
             <button
               onClick={handlePrev}
+              disabled={navigationDisabled.prev}
               className="hex-clip px-6 py-3.5 bg-tertiary-container/30 border border-on-tertiary-container/20 hover:border-on-tertiary-container/50 hover:bg-tertiary-container/50 transition-all text-tertiary font-label-caps text-xs tracking-widest flex items-center gap-1"
             >
               <span className="material-symbols-outlined text-sm">skip_previous</span>
@@ -938,6 +952,7 @@ export default function LiveControl() {
             </button>
             <button
               onClick={handleNext}
+              disabled={navigationDisabled.next}
               className="hex-clip px-6 py-3.5 bg-tertiary-container border border-on-tertiary-container hover:border-on-tertiary-container hover:bg-tertiary-container/80 transition-all text-tertiary font-label-caps text-xs tracking-widest font-black flex items-center gap-1"
             >
               NEXT
