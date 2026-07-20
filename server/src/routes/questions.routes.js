@@ -65,6 +65,10 @@ function toDatabaseValue(field, value) {
     return Number(value);
   }
 
+  if (field === 'correctOptionKey') {
+    return value == null ? null : String(value);
+  }
+
   return value;
 }
 
@@ -147,7 +151,7 @@ router.post('/', upload.single('media'), (req, res) => {
       mediaType,
       mediaUrl,
       JSON.stringify(options),
-      question.correctOptionKey === undefined ? null : question.correctOptionKey,
+      question.correctOptionKey === undefined || question.correctOptionKey === null ? null : String(question.correctOptionKey),
       question.pointsOverride === undefined ? null : question.pointsOverride,
       question.timeLimitOverrideSeconds === undefined
         ? null

@@ -180,6 +180,8 @@ router.delete('/:id', (req, res) => {
     return res.status(404).json({ error: 'Match not found.' });
   }
 
+  // Clear game_state FK references that can block deletion
+  run('UPDATE game_state SET currentRoundId = NULL, currentQuestionId = NULL WHERE id = 1');
   resetGameStateIfActive(req.params.id);
 
   const deleteMatch = db.transaction((matchId) => {

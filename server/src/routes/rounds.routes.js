@@ -180,6 +180,7 @@ router.delete('/:id', (req, res) => {
   }
 
   const deleteRoundAndQuestions = db.transaction((roundId) => {
+    run('UPDATE game_state SET currentRoundId = NULL, currentQuestionId = NULL WHERE id = 1');
     run('DELETE FROM questions WHERE roundId = ?', [roundId]);
     run('DELETE FROM rounds WHERE id = ?', [roundId]);
   });
