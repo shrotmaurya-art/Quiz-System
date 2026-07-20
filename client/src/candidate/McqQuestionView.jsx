@@ -36,7 +36,7 @@ export default function McqQuestionView() {
   const options = question?.options || [];
 
   return (
-    <div className="relative min-h-screen w-full overflow-y-auto flex flex-col font-body-md text-body-md text-on-surface bg-surface-container-lowest">
+      <div className="relative min-h-screen w-full overflow-y-auto flex flex-col font-body-md text-body-md text-on-surface bg-surface-container-lowest touch-manipulation" style={{ touchAction: 'manipulation' }}>
       {/* Custom styles for micro-animations and layouts from Stitch mockups */}
       <style>{`
         .hex-clip {
@@ -162,7 +162,7 @@ export default function McqQuestionView() {
               <button
                 key={opt.key}
                 onClick={() => handleSelectOption(opt.key)}
-                className="group relative w-full py-5 px-8 hex-clip bg-tertiary-container/80 backdrop-blur-md border border-white/20 transition-all duration-300 hover:border-secondary hover:bg-tertiary-container option-hover-bloom active:scale-[0.98]"
+                className="group relative w-full min-h-[76px] py-6 px-8 hex-clip bg-tertiary-container/80 backdrop-blur-md border border-white/20 transition-all duration-300 hover:border-secondary hover:bg-tertiary-container option-hover-bloom active:scale-[0.98]"
               >
                 <div className="flex items-center">
                   <span className="font-display-lg-mobile text-display-lg-mobile text-secondary mr-4 group-hover:drop-shadow-[0_0_10px_rgba(240,192,62,0.8)] select-none">
@@ -185,7 +185,7 @@ export default function McqQuestionView() {
               if (isSelected) {
                 return (
                   <div key={opt.key} className="relative w-full transform scale-[1.02] transition-transform duration-300">
-                    <div className="hex-clip bg-secondary border-2 border-secondary locked-glow py-4 px-8 flex items-center shadow-[0_10px_30px_rgba(240,192,62,0.3)]">
+                    <div className="hex-clip bg-secondary border-2 border-secondary locked-glow min-h-[76px] py-5 px-8 flex items-center shadow-[0_10px_30px_rgba(240,192,62,0.3)]">
                       <span className="font-headline-md text-headline-md text-on-secondary w-12 text-left select-none">
                         {opt.key}:
                       </span>
@@ -202,9 +202,9 @@ export default function McqQuestionView() {
                   </div>
                 );
               } else {
-                return (
+                  return (
                   <div key={opt.key} className="relative w-full opacity-40 filter grayscale cursor-not-allowed">
-                    <div className="hex-clip bg-primary-container/40 border border-outline/30 py-4 px-8 flex items-center backdrop-blur-sm">
+                    <div className="hex-clip bg-primary-container/40 border border-outline/30 min-h-[76px] py-5 px-8 flex items-center backdrop-blur-sm">
                       <span className="font-headline-md text-headline-md text-on-surface-variant w-12 text-left select-none">
                         {opt.key}:
                       </span>
