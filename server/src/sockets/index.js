@@ -120,7 +120,24 @@ function redactGameState(state, question, round, candidateId) {
 }
 
 /**
- * Broadcasts the unredacted state to the admin room and the redacted state to display & candidates.
+ * Removes display-only video URLs from candidate payloads.
+ * Images remain available on candidate tablets so they mirror the main display.
+ */
+function redactMediaForCandidates(gameState) {
+  if (gameState?.question?.mediaType !== 'video') return gameState;
+
+  const candidateQuestion = { ...gameState.question };
+  delete candidateQuestion.mediaUrl;
+
+  return {
+    ...gameState,
+    question: candidateQuestion
+  };
+}
+
+/**
+ * Broadcasts the unredacted state to admin and redacted state to display/candidates.
+ * Candidate video media is additionally removed because video is display-only.
  */
 function broadcastGameState(io) {
   const state = gameEngine.getGameState();
@@ -134,7 +151,8 @@ function broadcastGameState(io) {
   io.to('admin').emit('game:state', unredacted);
   io.to('display').emit('game:state:public', redactGameState(state, question, round));
   for (const cid in state.locks) {
-    io.to(`candidate:${cid}`).emit('game:state:public', redactGameState(state, question, round, cid));
+    const candidateState = redactGameState(state, question, round, cid);
+    io.to(`candidate:${cid}`).emit('game:state:public', redactMediaForCandidates(candidateState));
   }
 }
 
@@ -427,7 +445,8 @@ function initSockets(server) {
       const round = state && state.currentRoundId
         ? get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId])
         : null;
-      socket.emit('game:state:public', redactGameState(state, question, round, auth.candidateId));
+      const candidateState = redactGameState(state, question, round, auth.candidateId);
+      socket.emit('game:state:public', redactMediaForCandidates(candidateState));
 
       const candidates = all('SELECT * FROM candidates WHERE isActive = 1 ORDER BY name ASC');
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
@@ -772,7 +791,8 @@ function initSockets(server) {
       const round = state && state.currentRoundId
         ? get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId])
         : null;
-      socket.emit('game:state:public', redactGameState(state, question, round, candidateId));
+      const candidateState = redactGameState(state, question, round, candidateId);
+      socket.emit('game:state:public', redactMediaForCandidates(candidateState));
 
       if (typeof ack === 'function') ack({ success: true });
     });
