@@ -1,48 +1,48 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-# Always work from this script's own folder, even when launched elsewhere.
-SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
-cd "$SCRIPT_DIR" || exit 1
+cd "$(dirname "$0")/server" || { echo "Server directory not found"; exit 1; }
 
-pause_after_failure() {
-  printf '\n***************************************************************\n'
-  printf '* THE SERVER STOPPED - TRY RUNNING THIS AGAIN.               *\n'
-  printf '***************************************************************\n'
-  printf 'Press Enter to close this window... '
-  read -r _
-}
-
-if ! command -v npm >/dev/null 2>&1; then
-  printf 'Node.js and npm are required but were not found.\n'
-  printf 'Install the current Node.js LTS release, then run this file again.\n'
-  pause_after_failure
-  exit 1
+if [ ! -d "node_modules" ]; then
+    echo "[Setup] Installing dependencies..."
+    npm install
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "[ERROR] npm install failed."
+        echo "Make sure Node.js is installed and you have an internet connection."
+        echo ""
+        read -rp "Press Enter to close..."
+        exit 1
+    fi
 fi
 
-printf '\n================================================================\n'
-printf '                     QUIZ SERVER LAUNCHER\n'
-printf '================================================================\n\n'
+clear
+echo ""
+echo "============================================================"
+echo "              QUIZ SERVER — THE HOT SEAT"
+echo "============================================================"
+echo ""
+echo " After the server starts, look for this line:"
+echo ""
+echo "     Server listening on http://192.168.x.x:4000"
+echo ""
+echo " That IP (the 192.168.x.x part) is the address every"
+echo " other device uses to connect to this laptop."
+echo ""
+echo " ---"
+echo " On THIS laptop you can also use:"
+echo "     http://localhost:4000"
+echo " ---"
+echo ""
+echo " PRESS Ctrl+C TO STOP THE SERVER"
+echo "============================================================"
+echo ""
 
-if [ ! -d server/node_modules ]; then
-  printf 'First-time setup: installing server dependencies...\n'
-  npm --prefix server install || { pause_after_failure; exit 1; }
-fi
-
-if [ ! -d client/node_modules ]; then
-  printf 'First-time setup: installing client dependencies...\n'
-  npm --prefix client install || { pause_after_failure; exit 1; }
-fi
-
-if [ ! -f client/dist/index.html ]; then
-  printf 'Preparing the quiz screens for the first run...\n'
-  npm --prefix client run build || { pause_after_failure; exit 1; }
-fi
-
-printf '\nStarting the quiz server. The LAN address will appear in a large banner below.\n'
-printf 'Keep this terminal open while the quiz is running.\n\n'
-
-cd server || exit 1
 npm run dev
-SERVER_EXIT_CODE=$?
-pause_after_failure
-exit "$SERVER_EXIT_CODE"
+
+echo ""
+echo "============================================================"
+echo "  Server stopped."
+echo "  You may close this window."
+echo "============================================================"
+echo ""
+read -rp "Press Enter to close..."
