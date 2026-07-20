@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useBranding } from '../shared/BrandingContext';
 
 /**
  * WaitingRoom — candidate-tablet idle/waiting screen (Task 5.6).
@@ -18,6 +19,7 @@ function buildApiBase() {
 export default function WaitingRoom({ candidateId }) {
   const [profile, setProfile] = useState(null);
   const [errored, setErrored] = useState(false);
+  const { schoolName, brandLogoUrl } = useBranding();
 
   useEffect(() => {
     let cancelled = false;
@@ -46,6 +48,21 @@ export default function WaitingRoom({ candidateId }) {
       <div className="absolute inset-0 waiting-spotlight z-0 pointer-events-none" />
 
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center px-4 md:px-16 py-16 max-w-2xl mx-auto w-full text-center">
+        {/* School branding header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8 flex flex-col items-center gap-2"
+        >
+          {brandLogoUrl && (
+            <img src={brandLogoUrl} alt={`${schoolName} logo`} className="w-12 h-12 object-contain" />
+          )}
+          <p className="font-label-caps text-[11px] text-on-surface-variant tracking-[0.3em] uppercase">
+            {schoolName}
+          </p>
+        </motion.div>
+
         <motion.div 
           initial={{ opacity: 0, scale: 0.9, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

@@ -30,7 +30,10 @@ CREATE TABLE IF NOT EXISTS global_settings (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   defaultTimeLimitSeconds INTEGER NOT NULL DEFAULT 30,
   defaultGapEnabled INTEGER NOT NULL DEFAULT 1,
-  defaultGapSeconds INTEGER NOT NULL DEFAULT 10
+  defaultGapSeconds INTEGER NOT NULL DEFAULT 10,
+  schoolName TEXT NOT NULL DEFAULT 'Quiz Competition',
+  brandLogoUrl TEXT,
+  brandColor TEXT
 );
 
 CREATE TABLE IF NOT EXISTS rounds (

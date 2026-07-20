@@ -5,7 +5,7 @@ const cors = require('cors');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { all, db, run } = require('./db/db');
+const { all, db, run, getGlobalSettings } = require('./db/db');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -254,6 +254,15 @@ app.post('/api/import', requireAdmin, (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', lanIp: getLanAddress() });
+});
+
+app.get('/api/settings/branding', (req, res) => {
+  const settings = getGlobalSettings();
+  return res.json({
+    schoolName: settings.schoolName || 'Quiz Competition',
+    brandLogoUrl: settings.brandLogoUrl || null,
+    brandColor: settings.brandColor || null,
+  });
 });
 
 function getLanAddress() {

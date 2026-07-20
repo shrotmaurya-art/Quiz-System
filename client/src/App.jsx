@@ -9,6 +9,7 @@ import AdminLogin from './admin/AdminLogin';
 import { AdminAuthProvider, useAdminAuth } from './admin/AdminAuth';
 import DisplayShell from './display/DisplayShell';
 import CandidateTablet from './candidate/CandidateTablet';
+import { BrandingProvider } from './shared/BrandingContext';
 
 function AdminApp() {
   const { token } = useAdminAuth();
@@ -34,19 +35,21 @@ function AdminApp() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/display" element={<DisplayShell />} />
-        <Route path="/play/:candidateId" element={<CandidateTablet />} />
-        <Route
-          path="/*"
-          element={
-            <AdminAuthProvider>
-              <AdminApp />
-            </AdminAuthProvider>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <BrandingProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/display" element={<DisplayShell />} />
+          <Route path="/play/:candidateId" element={<CandidateTablet />} />
+          <Route
+            path="/*"
+            element={
+              <AdminAuthProvider>
+                <AdminApp />
+              </AdminAuthProvider>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </BrandingProvider>
   );
 }

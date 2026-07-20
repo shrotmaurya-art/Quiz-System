@@ -1,17 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../shared/api';
+import { useBranding } from '../shared/BrandingContext';
 import { motion } from 'framer-motion';
 
+const DEFAULT_BRAND_COLOR = '#f0c03e';
+
 export default function SettingsBackup() {
+  const { refetchBranding } = useBranding();
   const [settings, setSettings] = useState({
     defaultTimeLimitSeconds: 30,
     defaultGapEnabled: true,
     defaultGapSeconds: 10,
+    schoolName: 'Quiz Competition',
+    brandLogoUrl: null,
+    brandColor: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [importing, setImporting] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     const res = await apiFetch('/api/admin/settings');
@@ -21,6 +29,9 @@ export default function SettingsBackup() {
         defaultTimeLimitSeconds: data.defaultTimeLimitSeconds,
         defaultGapEnabled: Boolean(data.defaultGapEnabled),
         defaultGapSeconds: data.defaultGapSeconds,
+        schoolName: data.schoolName || 'Quiz Competition',
+        brandLogoUrl: data.brandLogoUrl || null,
+        brandColor: data.brandColor || '',
       });
     }
     setLoading(false);
@@ -38,20 +49,46 @@ export default function SettingsBackup() {
         defaultTimeLimitSeconds: Number(settings.defaultTimeLimitSeconds),
         defaultGapEnabled: settings.defaultGapEnabled ? 1 : 0,
         defaultGapSeconds: Number(settings.defaultGapSeconds),
+        schoolName: settings.schoolName,
+        brandColor: settings.brandColor || null,
       }),
     });
     if (res.ok) {
       const data = await res.json();
-      setSettings({
+      setSettings((prev) => ({
+        ...prev,
         defaultTimeLimitSeconds: data.defaultTimeLimitSeconds,
         defaultGapEnabled: Boolean(data.defaultGapEnabled),
         defaultGapSeconds: data.defaultGapSeconds,
-      });
+        schoolName: data.schoolName || 'Quiz Competition',
+        brandColor: data.brandColor || '',
+      }));
       setSaveMessage('Settings saved successfully.');
+      refetchBranding();
     } else {
       setSaveMessage('Failed to save settings.');
     }
     setSaving(false);
+  }
+
+  async function handleLogoUpload(file) {
+    if (!file) return;
+    setUploadingLogo(true);
+    const formData = new FormData();
+    formData.append('logo', file);
+    const res = await apiFetch('/api/admin/settings/logo', {
+      method: 'POST',
+      body: formData,
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setSettings((prev) => ({ ...prev, brandLogoUrl: data.brandLogoUrl }));
+      setSaveMessage('Logo uploaded successfully.');
+      refetchBranding();
+    } else {
+      setSaveMessage('Failed to upload logo.');
+    }
+    setUploadingLogo(false);
   }
 
   async function handleExport() {
@@ -113,6 +150,99 @@ export default function SettingsBackup() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+        {/* Branding Card */}
+        <motion.section
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="glass-panel bg-primary-container/40 rounded-xl border border-secondary/30 p-8 relative overflow-hidden"
+        >
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/20 rounded-full blur-3xl"></div>
+          <h3 className="font-headline-md text-headline-md text-secondary mb-6 flex items-center gap-3">
+            <span className="material-symbols-outlined">palette</span>
+            School Branding
+          </h3>
+
+          <div className="flex flex-col gap-stack-md">
+            {/* School Name */}
+            <div className="flex flex-col gap-2">
+              <label className="font-label-caps text-label-caps text-on-surface-variant">
+                School / Event Name
+              </label>
+              <input
+                type="text"
+                value={settings.schoolName}
+                onChange={(e) => setSettings({ ...settings, schoolName: e.target.value })}
+                placeholder="e.g. SGBS School"
+                className="w-full bg-surface-container-highest/50 border-b border-secondary/50 focus:border-secondary focus:ring-0 text-on-surface p-3 font-body-lg transition-all rounded"
+              />
+            </div>
+
+            {/* Brand Color */}
+            <div className="flex flex-col gap-2">
+              <label className="font-label-caps text-label-caps text-on-surface-variant">
+                Brand Accent Color
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={settings.brandColor || DEFAULT_BRAND_COLOR}
+                  onChange={(e) => setSettings({ ...settings, brandColor: e.target.value })}
+                  className="w-12 h-12 rounded cursor-pointer border-0 bg-transparent"
+                />
+                <input
+                  type="text"
+                  value={settings.brandColor}
+                  onChange={(e) => setSettings({ ...settings, brandColor: e.target.value })}
+                  placeholder={DEFAULT_BRAND_COLOR}
+                  className="flex-1 bg-surface-container-highest/50 border-b border-secondary/50 focus:border-secondary focus:ring-0 text-on-surface p-3 font-body-lg transition-all rounded"
+                />
+                {settings.brandColor && (
+                  <button
+                    onClick={() => setSettings({ ...settings, brandColor: '' })}
+                    className="text-on-surface-variant hover:text-error transition-colors text-sm"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Logo Upload */}
+            <div className="flex flex-col gap-2">
+              <label className="font-label-caps text-label-caps text-on-surface-variant">
+                School Logo
+              </label>
+              <div className="flex items-center gap-4">
+                {settings.brandLogoUrl ? (
+                  <img
+                    src={settings.brandLogoUrl}
+                    alt="School logo"
+                    className="w-16 h-16 rounded-lg object-contain bg-surface-container-high border border-secondary/20"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-lg bg-surface-container-high flex items-center justify-center border border-outline-variant/30">
+                    <span className="material-symbols-outlined text-2xl text-on-surface-variant">school</span>
+                  </div>
+                )}
+                <label className="flex-1 bg-transparent border border-secondary/50 text-secondary font-label-caps text-label-caps py-3 px-4 rounded hover:bg-secondary/10 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span className="material-symbols-outlined text-sm">
+                    {uploadingLogo ? 'progress_activity' : 'upload'}
+                  </span>
+                  {uploadingLogo ? 'Uploading...' : settings.brandLogoUrl ? 'Replace Logo' : 'Upload Logo'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingLogo}
+                    onChange={(e) => handleLogoUpload(e.target.files?.[0])}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
         {/* General Settings Card */}
         <motion.section
           initial={{ opacity: 0, y: 15 }}

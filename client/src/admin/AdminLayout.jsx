@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useBranding } from '../shared/BrandingContext';
 
 const NAV_ITEMS = [
   { to: '/admin/live',      label: 'Live Control',      icon: 'sensors' },
@@ -34,14 +35,22 @@ function SidebarLink({ to, label, icon }) {
 }
 
 export default function AdminLayout() {
+  const { schoolName, brandLogoUrl } = useBranding();
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* ── Sidebar ── */}
       <aside className="w-64 h-full bg-surface-container-low/95 backdrop-blur-2xl border-r border-secondary/20 shadow-[inset_0_0_20px_rgba(196,192,255,0.05)] fixed left-0 top-0 z-40 pt-24 flex flex-col justify-between">
         {/* Header */}
         <div className="px-6 py-8 border-b border-outline/10">
+          {brandLogoUrl && (
+            <img
+              src={brandLogoUrl}
+              alt={`${schoolName} logo`}
+              className="w-10 h-10 mb-3 rounded-lg object-contain"
+            />
+          )}
           <h1 className="text-secondary font-display-lg text-headline-md leading-tight drop-shadow-[0_0_10px_rgba(240,192,62,0.3)]">
-            CONTROL ROOM
+            {schoolName || 'CONTROL ROOM'}
           </h1>
           <p className="font-label-caps text-[11px] text-on-surface-variant mt-2 tracking-widest uppercase">
             Live Broadcast Mode
