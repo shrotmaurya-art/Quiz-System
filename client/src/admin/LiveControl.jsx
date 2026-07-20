@@ -747,12 +747,6 @@ export default function LiveControl() {
                   {resultsRevealedData && (
                     <div className="flex flex-col gap-3">
                       {resultsRevealedData.rankings
-                        .slice()
-                        .sort((a, b) => {
-                          if (a.status === 'correct' && b.status !== 'correct') return -1;
-                          if (a.status !== 'correct' && b.status === 'correct') return 1;
-                          return (a.elapsedMs || Infinity) - (b.elapsedMs || Infinity);
-                        })
                         .map((r, idx) => {
                           const isWinner = r.candidateId === resultsRevealedData.winnerCandidateId;
                           const pointsAwarded = isWinner 

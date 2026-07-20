@@ -41,7 +41,7 @@ app.get('/api/scoreboard', (req, res) => {
      FROM match_scores ms
      JOIN candidates c ON c.id = ms.candidateId
      WHERE ms.matchId = ?
-     ORDER BY ms.score DESC, c.name ASC`,
+     ORDER BY ms.score DESC, c.rowid ASC`,
     [matchId]
   );
   return res.json(rows.map((r) => ({

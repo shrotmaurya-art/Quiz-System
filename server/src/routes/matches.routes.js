@@ -29,7 +29,7 @@ router.get('/:id/scoreboard', (req, res) => {
      FROM match_scores ms
      JOIN candidates c ON c.id = ms.candidateId
      WHERE ms.matchId = ?
-     ORDER BY ms.score DESC, c.name ASC`,
+     ORDER BY ms.score DESC, c.rowid ASC`,
     [req.params.id]
   );
 

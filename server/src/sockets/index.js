@@ -56,9 +56,11 @@ function getUnredactedGameState(state, question, round) {
  * Returns the redacted, public-safe game state.
  * - Hides correctOptionKey unless revealed.
  * - Hides locks' optionKey and elapsedMs unless revealed.
- * - Includes status in locks (correct/incorrect/no_answer) only when revealed.
+ * - Includes status in locks (correct/incorrect/no_answer/not_judged) only when revealed.
+ * - When candidateId is provided, only that candidate's lock details are included
+ *   in the revealed state (prevents leaking other candidates' answers to tablets).
  */
-function redactGameState(state, question, round) {
+function redactGameState(state, question, round, candidateId) {
   if (!state) return null;
 
   const redactedQuestion = question ? { ...question } : null;
@@ -73,22 +75,21 @@ function redactGameState(state, question, round) {
   for (const cid in state.locks) {
     const lock = state.locks[cid];
     if (state.resultsRevealed) {
-      let status = 'no_answer';
-      if (lock.answered) {
-        let isCorrect = false;
-        if (round && round.answerMode === 'MCQ') {
-          isCorrect = lock.optionKey === (question ? question.correctOptionKey : null);
-        } else {
-          isCorrect = state.judgements[cid] === true;
-        }
-        status = isCorrect ? 'correct' : 'incorrect';
+      if (candidateId && cid !== candidateId) {
+        // Candidate tablets only see their own revealed lock data;
+        // other candidates' answers/times/status must not leak.
+        redactedLocks[cid] = { answered: lock.answered };
+      } else {
+        const status = gameEngine.getResultStatus(
+          lock, round?.answerMode, question?.correctOptionKey, state.judgements, cid
+        );
+        redactedLocks[cid] = {
+          optionKey: lock.optionKey,
+          elapsedMs: lock.elapsedMs,
+          answered: lock.answered,
+          status
+        };
       }
-      redactedLocks[cid] = {
-        optionKey: lock.optionKey,
-        elapsedMs: lock.elapsedMs,
-        answered: lock.answered,
-        status
-      };
     } else {
       redactedLocks[cid] = {
         answered: lock.answered
@@ -129,12 +130,11 @@ function broadcastGameState(io) {
   const round = get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId]);
 
   const unredacted = getUnredactedGameState(state, question, round);
-  const publicState = redactGameState(state, question, round);
 
   io.to('admin').emit('game:state', unredacted);
-  io.to('display').emit('game:state:public', publicState);
+  io.to('display').emit('game:state:public', redactGameState(state, question, round));
   for (const cid in state.locks) {
-    io.to(`candidate:${cid}`).emit('game:state:public', publicState);
+    io.to(`candidate:${cid}`).emit('game:state:public', redactGameState(state, question, round, cid));
   }
 }
 
@@ -157,7 +157,7 @@ function getScoreboard(matchId) {
        FROM match_scores ms
        JOIN candidates c ON c.id = ms.candidateId
        WHERE ms.matchId = ? AND c.isActive = 1
-       ORDER BY ms.score DESC, c.name ASC`,
+       ORDER BY ms.score DESC, c.rowid ASC`,
       [matchId]
     ).map(toPublicCandidate);
   } catch (err) {
@@ -183,6 +183,8 @@ function broadcastResultsRevealed(io, state) {
   const round = get('SELECT answerMode FROM rounds WHERE id = ?', [state.currentRoundId]);
   const question = get('SELECT correctOptionKey FROM questions WHERE id = ?', [state.currentQuestionId]);
 
+  const STATUS_ORDER = { correct: 0, incorrect: 1, not_judged: 2, no_answer: 3 };
+
   const rankings = [];
   for (const cid in state.locks) {
     const lock = state.locks[cid];
@@ -202,6 +204,15 @@ function broadcastResultsRevealed(io, state) {
       status
     });
   }
+
+  // Deterministic sort: correct first, then incorrect, not_judged, no_answer;
+  // within same status, fastest first; ties broken by insertion order (candidate creation order).
+  rankings.sort((a, b) => {
+    const sa = STATUS_ORDER[a.status] ?? 4;
+    const sb = STATUS_ORDER[b.status] ?? 4;
+    if (sa !== sb) return sa - sb;
+    return (a.elapsedMs ?? Infinity) - (b.elapsedMs ?? Infinity);
+  });
 
   const payload = {
     correctOptionKey: (round && round.answerMode === 'MCQ' && question) ? question.correctOptionKey : null,
@@ -417,13 +428,13 @@ function initSockets(server) {
       socket.join(`candidate:${auth.candidateId}`);
 
       const state = gameEngine.getGameState();
-      const question = state && state.currentQuestionId
+      const question = state && state.currentRoundId
         ? get('SELECT * FROM questions WHERE id = ?', [state.currentQuestionId])
         : null;
       const round = state && state.currentRoundId
         ? get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId])
         : null;
-      socket.emit('game:state:public', redactGameState(state, question, round));
+      socket.emit('game:state:public', redactGameState(state, question, round, auth.candidateId));
 
       const candidates = all('SELECT * FROM candidates WHERE isActive = 1 ORDER BY name ASC');
       socket.emit('candidates:public-updated', candidates.map(toPublicCandidate));
@@ -768,7 +779,7 @@ function initSockets(server) {
       const round = state && state.currentRoundId
         ? get('SELECT * FROM rounds WHERE id = ?', [state.currentRoundId])
         : null;
-      socket.emit('game:state:public', redactGameState(state, question, round));
+      socket.emit('game:state:public', redactGameState(state, question, round, candidateId));
 
       if (typeof ack === 'function') ack({ success: true });
     });
