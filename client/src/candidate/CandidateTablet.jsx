@@ -57,7 +57,13 @@ export default function CandidateTablet() {
     // We use it solely for auth gating — actual game-state handling lives in
     // CandidateGameContext which listens on the same socket.
     const onConnect = () => setStatus('valid');
-    const onConnectError = () => setStatus('invalid');
+    const onConnectError = (err) => {
+      if (err && /authentication|credentials|missing/i.test(err.message)) {
+        setStatus('invalid');
+      } else {
+        console.warn('[Socket] Candidate connection error (retrying):', err?.message);
+      }
+    };
 
     socket.on('connect', onConnect);
     socket.on('connect_error', onConnectError);
