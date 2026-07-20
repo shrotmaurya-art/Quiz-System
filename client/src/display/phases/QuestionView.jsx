@@ -46,6 +46,15 @@ export default function QuestionView() {
                   className="mt-8 mx-auto max-h-[45vh] rounded-lg object-contain"
                 />
               )}
+              {question.mediaUrl && question.mediaType === 'video' && (
+                <video
+                  src={question.mediaUrl}
+                  autoPlay
+                  muted
+                  playsInline
+                  className="mt-8 mx-auto max-h-[45vh] rounded-lg"
+                />
+              )}
             </div>
           ) : (
             <div className="glass-panel-active rounded-xl p-12 w-full mb-10">

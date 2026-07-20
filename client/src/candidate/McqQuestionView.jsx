@@ -178,6 +178,12 @@ export default function McqQuestionView() {
                 className="mt-6 mx-auto max-h-[30vh] rounded-lg object-contain border border-secondary/25 shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
               />
             )}
+            {/* Video is intentionally display-only to prevent independent playback. */}
+            {question?.mediaType === 'video' && (
+              <p className="mt-6 font-headline-md text-headline-md text-on-surface-variant">
+                Watch the main screen
+              </p>
+            )}
           </div>
         </motion.div>
 
