@@ -334,6 +334,8 @@ function nextQuestion() {
   const globalSettings = getGlobalSettings();
   const timing = resolveTiming(nextQ, resolvedRound, globalSettings);
 
+  reverseScoringForQuestion(nextQ.id, state.matchId);
+
   const match = get('SELECT candidateIds FROM matches WHERE id = ?', [state.matchId]);
   const candidateIds = match ? JSON.parse(match.candidateIds || '[]') : [];
   const locks = {};
@@ -403,6 +405,8 @@ function previousQuestion() {
   const resolvedRound = prevR || currentRound;
   const globalSettings = getGlobalSettings();
   const timing = resolveTiming(prevQ, resolvedRound, globalSettings);
+
+  reverseScoringForQuestion(prevQ.id, state.matchId);
 
   const match = get('SELECT candidateIds FROM matches WHERE id = ?', [state.matchId]);
   const candidateIds = match ? JSON.parse(match.candidateIds || '[]') : [];
@@ -847,6 +851,53 @@ function resetQuiz() {
   return { success: true, state };
 }
 
+/**
+ * Checks if a scored question was already scored for the current match,
+ * and if so, reverses the points by inserting a 'question_replay_reversal' row
+ * and updating the candidate's match_scores.
+ * @param {string} questionId 
+ * @param {string} matchId 
+ */
+function reverseScoringForQuestion(questionId, matchId) {
+  if (!matchId || !questionId) return;
+
+  const netWins = all(
+    `SELECT candidateId, SUM(pointsChange) AS netChange 
+     FROM score_log 
+     WHERE questionId = ? AND matchId = ? AND reason IN ('timed_ranking_win', 'question_replay_reversal')
+     GROUP BY candidateId
+     HAVING netChange > 0`,
+    [questionId, matchId]
+  );
+
+  for (const win of netWins) {
+    const { candidateId, netChange } = win;
+    const pointsToReverse = -netChange;
+
+    const logId = crypto.randomUUID();
+    run(
+      `INSERT INTO score_log (id, questionId, candidateId, pointsChange, reason, timestamp, matchId)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        logId,
+        questionId,
+        candidateId,
+        pointsToReverse,
+        'question_replay_reversal',
+        Date.now(),
+        matchId
+      ]
+    );
+
+    run(
+      `UPDATE match_scores 
+       SET score = score + ? 
+       WHERE matchId = ? AND candidateId = ?`,
+      [pointsToReverse, matchId, candidateId]
+    );
+  }
+}
+
 module.exports = {
   PhaseError,
   assertPhase,
@@ -868,5 +919,6 @@ module.exports = {
   adjustScoreManually,
   nextRound,
   endQuiz,
-  resetQuiz
+  resetQuiz,
+  reverseScoringForQuestion
 };
