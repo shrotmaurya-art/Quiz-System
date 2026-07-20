@@ -1,5 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { useCandidateGame } from './CandidateGameContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useBranding } from '../shared/BrandingContext';
+import { playSoundEffect } from '../shared/soundEffects';
 
 /**
  * ResultsView — candidate-tablet RESULTS / feedback screen (Task 5.5).
@@ -28,6 +31,8 @@ function formatElapsed(ms) {
 
 export default function ResultsView() {
   const { gameState, results, candidateId, phase } = useCandidateGame();
+  const { soundEffectsEnabled } = useBranding();
+  const playedResultRef = useRef(null);
 
   // `results` is the results:revealed payload:
   //   { correctOptionKey, rankings: [{ candidateId, elapsedMs, status }], winnerCandidateId }
@@ -75,6 +80,14 @@ export default function ResultsView() {
     },
   };
   const statusInfo = STATUS_MAP[myStatus] || STATUS_MAP.no_answer;
+
+  useEffect(() => {
+    const cueId = `${question?.id ?? 'unknown'}:${myStatus}`;
+    if (!results || playedResultRef.current === cueId) return;
+    playedResultRef.current = cueId;
+    if (myStatus === 'correct') playSoundEffect('correct', soundEffectsEnabled);
+    if (myStatus === 'incorrect') playSoundEffect('wrong', soundEffectsEnabled);
+  }, [results, question?.id, myStatus, soundEffectsEnabled]);
 
   return (
     <div className="relative min-h-screen w-full overflow-y-auto flex flex-col font-body-md text-body-md text-on-surface bg-surface-container-lowest">

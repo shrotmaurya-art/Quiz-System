@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useCandidateGame } from './CandidateGameContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useBranding } from '../shared/BrandingContext';
+import { playSoundEffect } from '../shared/soundEffects';
 
 const optionListVariants = {
   hidden: { opacity: 0 },
@@ -19,6 +21,7 @@ const optionItemVariants = {
 
 export default function McqQuestionView() {
   const { gameState, timer, isLockedIn, myLock, lockAnswer, phase } = useCandidateGame();
+  const { soundEffectsEnabled } = useBranding();
   const [localSelection, setLocalSelection] = useState(null);
 
   const question = gameState?.question;
@@ -45,6 +48,8 @@ export default function McqQuestionView() {
   const handleSelectOption = (key) => {
     if (isPendingOrLocked) return;
     setLocalSelection(key);
+    // This runs on the tablet's tap, before its Socket.IO message leaves.
+    playSoundEffect('lockIn', soundEffectsEnabled);
     // Send event with callback to handle error gracefully
     lockAnswer(key);
   };

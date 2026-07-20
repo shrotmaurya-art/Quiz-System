@@ -1,5 +1,7 @@
 import { useCandidateGame } from './CandidateGameContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useBranding } from '../shared/BrandingContext';
+import { playSoundEffect } from '../shared/soundEffects';
 
 /**
  * OpenQuestionView — OPEN / Rapid Fire answer screen.
@@ -20,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
  */
 export default function OpenQuestionView() {
   const { gameState, timer, isLockedIn, lockAnswer, phase } = useCandidateGame();
+  const { soundEffectsEnabled } = useBranding();
 
   const question = gameState?.question;
   const questionId = question?.id;
@@ -35,6 +38,7 @@ export default function OpenQuestionView() {
 
   const handleLockAnswer = () => {
     if (isLockedIn) return;
+    playSoundEffect('lockIn', soundEffectsEnabled);
     // OPEN mode: no optionKey — just lock the timestamp
     lockAnswer();
   };
