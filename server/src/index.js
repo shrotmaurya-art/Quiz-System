@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { all, db, run } = require('./db/db');
@@ -252,7 +253,7 @@ app.post('/api/import', requireAdmin, (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ status: 'ok', lanIp: getLanAddress() });
 });
 
 function getLanAddress() {
@@ -262,6 +263,24 @@ function getLanAddress() {
   }
 
   return 'localhost';
+}
+
+// Production: serve the built client from client/dist/ (after `npm run build` in client/).
+// When the directory doesn't exist (local dev with Vite on 5173), this is skipped entirely.
+const clientDistPath = path.join(__dirname, '..', '..', 'client', 'dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+
+  // SPA catch-all: any GET that wasn't matched by /api/* or /uploads above
+  // gets index.html so client-side routes (/display, /admin, /play/:id, etc.) resolve.
+  // Express 5 requires the {*path} syntax for catch-all routes.
+  app.get('{*path}', (req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+
+  console.log(`Serving client from ${clientDistPath}`);
+} else {
+  console.log('client/dist not found — skipping static serving (use Vite dev server on port 5173)');
 }
 
 const server = app.listen(PORT, '0.0.0.0', () => {

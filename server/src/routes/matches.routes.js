@@ -15,6 +15,34 @@ function formatMatch(match) {
   };
 }
 
+/**
+ * If game_state currently references the given matchId, reset it to IDLE so
+ * dangling FK references (currentQuestionId, currentRoundId) don't cause
+ * crashes when the match's data is cascade-deleted or its candidates change.
+ */
+function resetGameStateIfActive(matchId) {
+  const gs = get('SELECT matchId FROM game_state WHERE id = 1');
+  if (gs && gs.matchId === matchId) {
+    run(
+      `UPDATE game_state SET
+        phase = 'IDLE',
+        currentRoundId = NULL,
+        currentQuestionId = NULL,
+        timerStartedAt = NULL,
+        gapStartedAt = NULL,
+        timeLimitSeconds = 30,
+        gapEnabled = 1,
+        gapSeconds = 10,
+        locks = '{}',
+        judgements = '{}',
+        winnerCandidateId = NULL,
+        resultsRevealed = 0,
+        matchId = NULL
+      WHERE id = 1`
+    );
+  }
+}
+
 // GET /api/matches/:id/scoreboard — PUBLIC, no auth
 // Returns match_scores joined with candidate name/logo, same public-safe shape
 // as /api/candidates/public (no joinToken).
@@ -152,6 +180,8 @@ router.delete('/:id', (req, res) => {
     return res.status(404).json({ error: 'Match not found.' });
   }
 
+  resetGameStateIfActive(req.params.id);
+
   const deleteMatch = db.transaction((matchId) => {
     // Delete questions for all rounds in this match
     const roundIds = all('SELECT id FROM rounds WHERE matchId = ?', [matchId]);
@@ -178,6 +208,8 @@ router.post('/:id/reset', (req, res) => {
   if (match.status !== 'completed') {
     return res.status(400).json({ error: 'Only completed matches can be reset.' });
   }
+
+  resetGameStateIfActive(req.params.id);
 
   const resetMatch = db.transaction((matchId) => {
     run("UPDATE matches SET status = 'not_started', winnerCandidateId = NULL WHERE id = ?", [matchId]);
