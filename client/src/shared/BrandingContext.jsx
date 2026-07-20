@@ -4,6 +4,7 @@ const BrandingContext = createContext({
   schoolName: 'Quiz Competition',
   brandLogoUrl: null,
   brandColor: null,
+  soundEffectsEnabled: true,
   refetchBranding: () => {},
 });
 
@@ -63,6 +64,7 @@ export function BrandingProvider({ children }) {
     schoolName: 'Quiz Competition',
     brandLogoUrl: null,
     brandColor: null,
+    soundEffectsEnabled: true,
   });
 
   const fetchBranding = () => {
@@ -73,12 +75,18 @@ export function BrandingProvider({ children }) {
           schoolName: data.schoolName || 'Quiz Competition',
           brandLogoUrl: data.brandLogoUrl || null,
           brandColor: data.brandColor || null,
+          soundEffectsEnabled: data.soundEffectsEnabled !== false,
         });
       })
       .catch(() => {});
   };
 
-  useEffect(() => { fetchBranding(); }, []);
+  useEffect(() => {
+    fetchBranding();
+    // Public-safe polling applies the admin's mute choice to every open screen.
+    const interval = window.setInterval(fetchBranding, 5000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (branding.brandColor) {
@@ -90,7 +98,7 @@ export function BrandingProvider({ children }) {
 
   const value = useMemo(
     () => ({ ...branding, refetchBranding: fetchBranding }),
-    [branding.schoolName, branding.brandLogoUrl, branding.brandColor],
+    [branding.schoolName, branding.brandLogoUrl, branding.brandColor, branding.soundEffectsEnabled],
   );
 
   return (

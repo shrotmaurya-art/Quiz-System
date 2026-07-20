@@ -14,6 +14,7 @@ export default function SettingsBackup() {
     schoolName: 'Quiz Competition',
     brandLogoUrl: null,
     brandColor: '',
+    soundEffectsEnabled: true,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,6 +33,7 @@ export default function SettingsBackup() {
         schoolName: data.schoolName || 'Quiz Competition',
         brandLogoUrl: data.brandLogoUrl || null,
         brandColor: data.brandColor || '',
+        soundEffectsEnabled: data.soundEffectsEnabled !== 0,
       });
     }
     setLoading(false);
@@ -51,6 +53,7 @@ export default function SettingsBackup() {
         defaultGapSeconds: Number(settings.defaultGapSeconds),
         schoolName: settings.schoolName,
         brandColor: settings.brandColor || null,
+        soundEffectsEnabled: settings.soundEffectsEnabled ? 1 : 0,
       }),
     });
     if (res.ok) {
@@ -62,6 +65,7 @@ export default function SettingsBackup() {
         defaultGapSeconds: data.defaultGapSeconds,
         schoolName: data.schoolName || 'Quiz Competition',
         brandColor: data.brandColor || '',
+        soundEffectsEnabled: data.soundEffectsEnabled !== 0,
       }));
       setSaveMessage('Settings saved successfully.');
       refetchBranding();
@@ -306,6 +310,17 @@ export default function SettingsBackup() {
                 onChange={(e) => setSettings({ ...settings, defaultGapSeconds: e.target.value })}
                 className="w-full bg-surface-container-highest/50 border-b border-tertiary-fixed-dim/50 focus:border-tertiary focus:ring-0 text-on-surface p-3 font-body-lg transition-all rounded"
               />
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded border border-outline-variant/30">
+              <div>
+                <label className="font-label-caps text-label-caps text-on-surface block">Sound Effects</label>
+                <span className="text-sm text-on-surface-variant">Enable all quiz sounds on tablets and the Main Display.</span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked={settings.soundEffectsEnabled} onChange={(e) => setSettings({ ...settings, soundEffectsEnabled: e.target.checked })} className="sr-only peer" />
+                <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-secondary after:border-secondary after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container border border-secondary/30" />
+              </label>
             </div>
           </div>
 

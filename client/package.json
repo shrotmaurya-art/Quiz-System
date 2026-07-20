@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/generate-sfx.mjs",
     "dev": "vite",
     "build": "vite build",
+    "generate:sfx": "node scripts/generate-sfx.mjs",
     "preview": "vite preview"
   },
   "keywords": [],

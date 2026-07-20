@@ -262,6 +262,7 @@ app.get('/api/settings/branding', (req, res) => {
     schoolName: settings.schoolName || 'Quiz Competition',
     brandLogoUrl: settings.brandLogoUrl || null,
     brandColor: settings.brandColor || null,
+    soundEffectsEnabled: settings.soundEffectsEnabled !== 0,
   });
 });
 

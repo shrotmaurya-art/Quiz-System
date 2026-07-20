@@ -42,6 +42,7 @@ safeAddColumn('game_state', 'gapStartedAt INTEGER');
 safeAddColumn('global_settings', 'schoolName TEXT NOT NULL DEFAULT \'Quiz Competition\'');
 safeAddColumn('global_settings', 'brandLogoUrl TEXT');
 safeAddColumn('global_settings', 'brandColor TEXT');
+safeAddColumn('global_settings', 'soundEffectsEnabled INTEGER NOT NULL DEFAULT 1');
 
 // Check if score_log check constraint includes 'question_replay_reversal'
 const scoreLogSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='score_log'").get();
@@ -134,6 +135,7 @@ function updateGlobalSettings(patch) {
     'schoolName',
     'brandLogoUrl',
     'brandColor',
+    'soundEffectsEnabled',
   ];
   const fields = allowedFields.filter((field) => patch[field] !== undefined);
 

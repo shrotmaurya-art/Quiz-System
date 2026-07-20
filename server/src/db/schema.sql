@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS global_settings (
   defaultGapSeconds INTEGER NOT NULL DEFAULT 10,
   schoolName TEXT NOT NULL DEFAULT 'Quiz Competition',
   brandLogoUrl TEXT,
-  brandColor TEXT
+  brandColor TEXT,
+  soundEffectsEnabled INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS rounds (
