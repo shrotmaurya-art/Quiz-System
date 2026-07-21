@@ -1,12 +1,24 @@
 import { motion } from 'framer-motion';
 import { useBranding } from '../../shared/BrandingContext';
+import { unlockAudio, isAudioUnlocked } from '../../shared/soundEffects';
+import { useState, useCallback } from 'react';
 
 export default function IdleView() {
   const { schoolName, brandLogoUrl } = useBranding();
   const eventTitle = /quiz\s*$/i.test(schoolName) ? schoolName : `${schoolName} Annual Quiz`;
+  const [unlocked, setUnlocked] = useState(isAudioUnlocked());
+
+  const handleUnlock = useCallback(() => {
+    unlockAudio();
+    setUnlocked(true);
+  }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
+    <div
+      className="relative w-full h-full flex items-center justify-center"
+      onClick={!unlocked ? handleUnlock : undefined}
+      style={!unlocked ? { cursor: 'pointer' } : undefined}
+    >
       {/* Subtle vignette that lets the ambient shader show through (no darkening overlay) */}
       <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(8,15,20,0.55)_100%)]" />
 
@@ -39,6 +51,17 @@ export default function IdleView() {
         >
           Get Ready.
         </motion.p>
+
+        {!unlocked && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5, duration: 0.8 }}
+            className="mt-8 font-body-lg text-body-lg text-on-surface-variant/70 animate-pulse"
+          >
+            Click anywhere to enable sound
+          </motion.p>
+        )}
       </main>
     </div>
   );

@@ -7,7 +7,7 @@ import ScoreboardView from './phases/ScoreboardView';
 import { DisplayGameProvider, useDisplayGame } from './DisplayGameContext';
 import { useEffect, useRef } from 'react';
 import { useBranding } from '../shared/BrandingContext';
-import { playSoundEffect } from '../shared/soundEffects';
+import { playSoundEffect, loopSoundEffect } from '../shared/soundEffects';
 
 const PHASE_MAP = {
   IDLE: IdleView,
@@ -20,22 +20,60 @@ const PHASE_MAP = {
 };
 
 function DisplayContent() {
-  const { phase, gameState, results } = useDisplayGame();
+  const { phase, gameState, timer, results } = useDisplayGame();
   const { soundEffectsEnabled } = useBranding();
   const previousPhaseRef = useRef(phase);
+  const previousQuestionIdRef = useRef(null);
+  const gapSoundStopRef = useRef(null);
   const playedResultsRef = useRef(null);
+  const hasSeenIdleRef = useRef(phase === 'IDLE');
+  const lastTickRef = useRef(null);
 
   useEffect(() => {
     const previousPhase = previousPhaseRef.current;
     previousPhaseRef.current = phase;
-    if (previousPhase === 'IDLE' && phase === 'QUESTION_SHOWN') playSoundEffect('quizStart', soundEffectsEnabled);
+    if (hasSeenIdleRef.current && previousPhase === 'IDLE' && phase === 'QUESTION_SHOWN') {
+      playSoundEffect('quizStart', soundEffectsEnabled);
+    }
     if (previousPhase !== 'QUIZ_ENDED' && phase === 'QUIZ_ENDED') playSoundEffect('quizEnd', soundEffectsEnabled);
+    if (phase === 'IDLE') hasSeenIdleRef.current = true;
   }, [phase, soundEffectsEnabled]);
+
+  useEffect(() => {
+    const questionId = gameState?.question?.id;
+    if (questionId && previousQuestionIdRef.current !== questionId) {
+      playSoundEffect('questionAppear', soundEffectsEnabled);
+    }
+    previousQuestionIdRef.current = questionId;
+  }, [gameState?.question?.id, soundEffectsEnabled]);
+
+  useEffect(() => {
+    if (phase === 'GAP') {
+      gapSoundStopRef.current = loopSoundEffect('gapSuspense', soundEffectsEnabled);
+    } else if (gapSoundStopRef.current) {
+      gapSoundStopRef.current();
+      gapSoundStopRef.current = null;
+    }
+    return () => {
+      if (gapSoundStopRef.current) {
+        gapSoundStopRef.current();
+        gapSoundStopRef.current = null;
+      }
+    };
+  }, [phase, soundEffectsEnabled]);
+
+  // timer-tick: only last 5 seconds, Display only
+  useEffect(() => {
+    const remaining = timer?.remainingSeconds;
+    if (phase === 'QUESTION_SHOWN' && remaining != null && remaining <= 5 && remaining > 0 && lastTickRef.current !== remaining) {
+      playSoundEffect('timerTick', soundEffectsEnabled);
+    }
+    lastTickRef.current = remaining;
+  }, [timer?.remainingSeconds, phase, soundEffectsEnabled]);
 
   useEffect(() => {
     if (!results || playedResultsRef.current === results) return undefined;
     playedResultsRef.current = results;
-    // This view receives results only from the results:revealed event.
     playSoundEffect('reveal', soundEffectsEnabled);
     const hasCorrectAnswer = results.rankings?.some((entry) => entry.status === 'correct');
     const timer = window.setTimeout(() => {

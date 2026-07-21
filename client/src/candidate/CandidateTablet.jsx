@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { createSocket } from '../shared/socket';
 import InvalidLinkScreen from './InvalidLinkScreen';
 import { CandidateGameProvider, useCandidateGame } from './CandidateGameContext';
+import CandidateSoundEffects from './CandidateSoundEffects';
 import McqQuestionView from './McqQuestionView';
 import OpenQuestionView from './OpenQuestionView';
 import ResultsView from './ResultsView';
@@ -98,6 +99,7 @@ export default function CandidateTablet() {
   // status === 'valid' — wrap content in the game context provider
   return (
     <CandidateGameProvider socket={socketRef.current} candidateId={candidateId}>
+      <CandidateSoundEffects />
       <CandidateContent candidateId={candidateId} />
     </CandidateGameProvider>
   );
