@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
 import AdminLayout from './admin/AdminLayout';
 import LiveControl from './admin/LiveControl';
 import MatchesPage from './admin/MatchesPage';
@@ -11,7 +10,6 @@ import { AdminAuthProvider, useAdminAuth } from './admin/AdminAuth';
 import DisplayShell from './display/DisplayShell';
 import CandidateTablet from './candidate/CandidateTablet';
 import { BrandingProvider } from './shared/BrandingContext';
-import { unlockAudio, isAudioUnlocked } from './shared/soundEffects';
 
 function AdminApp() {
   const { token } = useAdminAuth();
@@ -36,17 +34,6 @@ function AdminApp() {
 }
 
 export default function App() {
-  useEffect(() => {
-    const handler = () => {
-      unlockAudio();
-      if (isAudioUnlocked()) {
-        document.removeEventListener('pointerdown', handler);
-      }
-    };
-    document.addEventListener('pointerdown', handler);
-    return () => document.removeEventListener('pointerdown', handler);
-  }, []);
-
   return (
     <BrandingProvider>
       <BrowserRouter>

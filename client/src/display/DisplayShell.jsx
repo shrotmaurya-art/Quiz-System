@@ -26,17 +26,13 @@ function DisplayContent() {
   const previousQuestionIdRef = useRef(null);
   const gapSoundStopRef = useRef(null);
   const playedResultsRef = useRef(null);
-  const hasSeenIdleRef = useRef(phase === 'IDLE');
   const lastTickRef = useRef(null);
 
   useEffect(() => {
     const previousPhase = previousPhaseRef.current;
     previousPhaseRef.current = phase;
-    if (hasSeenIdleRef.current && previousPhase === 'IDLE' && phase === 'QUESTION_SHOWN') {
-      playSoundEffect('quizStart', soundEffectsEnabled);
-    }
+    if (previousPhase === 'IDLE' && phase === 'QUESTION_SHOWN') playSoundEffect('quizStart', soundEffectsEnabled);
     if (previousPhase !== 'QUIZ_ENDED' && phase === 'QUIZ_ENDED') playSoundEffect('quizEnd', soundEffectsEnabled);
-    if (phase === 'IDLE') hasSeenIdleRef.current = true;
   }, [phase, soundEffectsEnabled]);
 
   useEffect(() => {

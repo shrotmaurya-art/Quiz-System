@@ -28,16 +28,14 @@ export default function CandidateSoundEffects() {
   const previousQuestionIdRef = useRef(null);
   const gapSoundStopRef = useRef(null);
   const playedResultsRef = useRef(null);
-  const hasSeenIdleRef = useRef(phase === 'IDLE');
 
-  // ── quiz-start: IDLE → QUESTION_SHOWN (first connection only) ──
+  // ── quiz-start: IDLE → QUESTION_SHOWN ──
   useEffect(() => {
     const previousPhase = previousPhaseRef.current;
     previousPhaseRef.current = phase;
-    if (hasSeenIdleRef.current && previousPhase === 'IDLE' && phase === 'QUESTION_SHOWN') {
+    if (previousPhase === 'IDLE' && phase === 'QUESTION_SHOWN') {
       playSoundEffect('quizStart', soundEffectsEnabled);
     }
-    if (phase === 'IDLE') hasSeenIdleRef.current = true;
   }, [phase, soundEffectsEnabled]);
 
   // ── question-appear: fires when question.id changes ──
