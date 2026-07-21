@@ -54,6 +54,11 @@ export function CandidateGameProvider({ socket, candidateId, children }) {
   const candidateIdRef = useRef(candidateId);
   candidateIdRef.current = candidateId;
 
+  // Guard against duplicate candidate:requestState emissions (e.g. connect
+  // fires right after we explicitly checked socket.connected). Only the first
+  // request in a single effect lifecycle should go out.
+  const stateRequestedRef = useRef(false);
+
   useEffect(() => {
     if (!socket) return;
 
@@ -109,14 +114,21 @@ export function CandidateGameProvider({ socket, candidateId, children }) {
     // and immediately request a fresh state snapshot from the server rather
     // than trusting any locally cached state.
     const handleConnect = () => {
+      stateRequestedRef.current = false;
       setState((prev) => ({
         ...prev,
         timer: null,
         timeUp: null,
         gap: null,
       }));
-      socket.emit('candidate:requestState', { candidateId: candidateIdRef.current });
+      requestState();
     };
+
+    function requestState() {
+      if (stateRequestedRef.current) return;
+      stateRequestedRef.current = true;
+      socket.emit('candidate:requestState', { candidateId: candidateIdRef.current });
+    }
 
     // Register listeners
     socket.on('connect', handleConnect);
@@ -126,6 +138,13 @@ export function CandidateGameProvider({ socket, candidateId, children }) {
     socket.on('gap:started', handleGapStarted);
     socket.on('gap:tick', handleGapTick);
     socket.on('results:revealed', handleResultsRevealed);
+
+    // Mount-time check: if already connected, the connect event fired before
+    // this effect registered its listeners, so we missed it. Request state
+    // now rather than waiting for a connect that will never come.
+    if (socket.connected) {
+      requestState();
+    }
 
     // Cleanup
     return () => {
