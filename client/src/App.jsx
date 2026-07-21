@@ -11,7 +11,7 @@ import { AdminAuthProvider, useAdminAuth } from './admin/AdminAuth';
 import DisplayShell from './display/DisplayShell';
 import CandidateTablet from './candidate/CandidateTablet';
 import { BrandingProvider } from './shared/BrandingContext';
-import { unlockAudio } from './shared/soundEffects';
+import { unlockAudio, isAudioUnlocked } from './shared/soundEffects';
 
 function AdminApp() {
   const { token } = useAdminAuth();
@@ -37,8 +37,13 @@ function AdminApp() {
 
 export default function App() {
   useEffect(() => {
-    const handler = () => { unlockAudio(); };
-    document.addEventListener('pointerdown', handler, { once: true });
+    const handler = () => {
+      unlockAudio();
+      if (isAudioUnlocked()) {
+        document.removeEventListener('pointerdown', handler);
+      }
+    };
+    document.addEventListener('pointerdown', handler);
     return () => document.removeEventListener('pointerdown', handler);
   }, []);
 
