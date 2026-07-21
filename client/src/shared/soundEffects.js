@@ -25,16 +25,25 @@ const VOLUMES = {
 let audioUnlocked = false;
 
 /**
- * Unlocks browser autoplay by playing a silent audio clip during a user gesture
- * (click/tap). Must be called from a click/tap handler. Once called, all subsequent
- * playSoundEffect / loopSoundEffect calls will work without gesture constraints.
- * Safe to call multiple times — only unlocks once.
+ * Unlocks browser autoplay via Web Audio API (AudioContext.resume()) during a
+ * user gesture. This is the most reliable cross-browser unlock — once the
+ * AudioContext is resumed, subsequent HTML Audio.play() calls also work without
+ * gesture context. Safe to call multiple times — only unlocks once.
  */
 export function unlockAudio() {
-  if (audioUnlocked || typeof Audio === 'undefined') return;
-  const silent = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
-  silent.volume = 0;
-  silent.play().then(() => { audioUnlocked = true; }).catch(() => {});
+  if (audioUnlocked) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) { audioUnlocked = true; return; }
+    const ctx = new Ctx();
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => { audioUnlocked = true; }).catch(() => {});
+    } else {
+      audioUnlocked = true;
+    }
+  } catch {
+    audioUnlocked = true;
+  }
 }
 
 /** Returns whether audio has been unlocked by a prior user gesture. */
