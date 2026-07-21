@@ -8,8 +8,7 @@ const DEFAULT_OPTIONS = [
   { key: 'D', text: '' },
 ];
 
-export default function QuestionForm({ question, roundId, rounds, onSave, onCancel }) {
-  const round = rounds.find((r) => r.id === roundId);
+export default function QuestionForm({ question, roundId, round, onSave, onCancel }) {
   const isMCQ = round?.answerMode === 'MCQ';
 
   const [form, setForm] = useState(() => {
