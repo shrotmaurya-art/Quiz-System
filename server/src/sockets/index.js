@@ -135,6 +135,12 @@ function redactMediaForCandidates(gameState) {
   };
 }
 
+function getMatchCandidateIds(matchId) {
+  if (!matchId) return [];
+  const match = get('SELECT candidateIds FROM matches WHERE id = ?', [matchId]);
+  return match ? JSON.parse(match.candidateIds || '[]') : [];
+}
+
 /**
  * Broadcasts the unredacted state to admin and redacted state to display/candidates.
  * Candidate video media is additionally removed because video is display-only.
@@ -150,7 +156,13 @@ function broadcastGameState(io) {
 
   io.to('admin').emit('game:state', unredacted);
   io.to('display').emit('game:state:public', redactGameState(state, question, round));
-  for (const cid in state.locks) {
+
+  // Emit to ALL candidates in the active match, not just those who have locked
+  // an answer. state.locks only contains candidates who answered the current
+  // question, so candidates who connected mid-question without locking would
+  // otherwise never receive phase transitions (e.g. endMatch, endQuiz, resetQuiz).
+  const matchCandidateIds = getMatchCandidateIds(state.matchId);
+  for (const cid of matchCandidateIds) {
     const candidateState = redactGameState(state, question, round, cid);
     io.to(`candidate:${cid}`).emit('game:state:public', redactMediaForCandidates(candidateState));
   }
