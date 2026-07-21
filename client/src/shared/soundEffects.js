@@ -22,32 +22,58 @@ const VOLUMES = {
   timerTick: 0.4,
 };
 
+let audioUnlocked = false;
+let audioCtx = null;
+let unlockInProgress = false;
+
 const CtxClass = typeof AudioContext !== 'undefined' ? AudioContext
   : typeof webkitAudioContext !== 'undefined' ? webkitAudioContext : null;
 
-let audioCtx = null;
-let audioUnlocked = false;
-const decodeCache = {};
-
-function getCtx() {
+function getAudioCtx() {
   if (!CtxClass) return null;
-  if (!audioCtx) audioCtx = new CtxClass();
+  if (!audioCtx) {
+    try { audioCtx = new CtxClass(); } catch { return null; }
+  }
   return audioCtx;
 }
 
 /**
- * Unlocks browser autoplay by resuming an AudioContext during a user gesture.
- * Must be called from a user-gesture event handler (click/tap/keydown).
- * Safe to call multiple times — only unlocks once.
+ * Unlocks browser autoplay via TWO mechanisms:
+ * 1. HTML Audio: plays a real (non-zero) silent clip during a user gesture
+ * 2. Web Audio API: resumes an AudioContext during a user gesture
+ *
+ * Both must succeed so that:
+ * - new Audio().play() works from gesture contexts (lockIn, correct, wrong)
+ * - AudioContext can play from non-gesture contexts (quizStart, questionAppear, etc.)
  */
 export function unlockAudio() {
-  if (audioUnlocked) return;
-  const ctx = getCtx();
-  if (!ctx) { audioUnlocked = true; return; }
-  if (ctx.state === 'suspended') {
-    ctx.resume().then(() => { audioUnlocked = true; }).catch(() => {});
-  } else {
+  if (audioUnlocked || unlockInProgress) return;
+  unlockInProgress = true;
+
+  // 1. Web Audio API unlock
+  const ctx = getAudioCtx();
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
+
+  // 2. HTML Audio unlock with a real silent clip (50ms, 22050 Hz mono)
+  //    Zero-length clips are NOT counted by browsers as valid audio playback.
+  try {
+    const silent = new Audio(
+      'data:audio/wav;base64,UklGRsAIAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YZwIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=='
+    );
+    silent.volume = 0;
+    silent.play().then(() => {
+      audioUnlocked = true;
+      unlockInProgress = false;
+    }).catch(() => {
+      // If silent clip fails, still mark as unlocked after a short delay
+      // (the gesture DID happen, just the clip didn't play)
+      setTimeout(() => { audioUnlocked = true; unlockInProgress = false; }, 100);
+    });
+  } catch {
     audioUnlocked = true;
+    unlockInProgress = false;
   }
 }
 
@@ -55,78 +81,78 @@ export function isAudioUnlocked() {
   return audioUnlocked;
 }
 
-async function fetchAndDecode(name) {
-  if (decodeCache[name]) return decodeCache[name];
-  const url = FILES[name];
-  if (!url) return null;
-  const ctx = getCtx();
-  if (!ctx) return null;
-  const res = await fetch(url);
-  const arrayBuf = await res.arrayBuffer();
-  const audioBuf = await ctx.decodeAudioData(arrayBuf);
-  decodeCache[name] = audioBuf;
-  return audioBuf;
-}
-
-function schedulePlayback(audioBuf, volume, loop, onEnd) {
-  const ctx = getCtx();
-  if (!ctx) return null;
-  const source = ctx.createBufferSource();
-  const gain = ctx.createGain();
-  source.buffer = audioBuf;
-  source.loop = !!loop;
-  gain.gain.value = volume;
-  source.connect(gain);
-  gain.connect(ctx.destination);
-  source.onended = onEnd || null;
-  source.start(0);
-  return { source, gain };
-}
-
-/** Plays a packaged sound effect using Web Audio API (no autoplay issues). */
+/** Plays a packaged sound effect. Tries HTML Audio first, falls back to Web Audio API. */
 export function playSoundEffect(name, enabled = true) {
   if (!enabled || !FILES[name]) return;
-  const ctx = getCtx();
+  const volume = VOLUMES[name] ?? 0.5;
+
+  // Try HTML Audio first — works in gesture contexts and after unlock
+  if (typeof Audio !== 'undefined') {
+    const audio = new Audio(FILES[name]);
+    audio.volume = volume;
+    audio.play().catch(() => {
+      // HTML Audio blocked — try Web Audio API fallback
+      playViaWebAudio(name, volume, false);
+    });
+    return;
+  }
+
+  // Fallback: Web Audio API
+  playViaWebAudio(name, volume, false);
+}
+
+function playViaWebAudio(name, volume, loop) {
+  const ctx = getAudioCtx();
   if (!ctx || ctx.state !== 'running') return;
 
-  fetchAndDecode(name).then((audioBuf) => {
-    if (!audioBuf) return;
-    schedulePlayback(audioBuf, VOLUMES[name] ?? 0.5, false);
-  }).catch(() => {});
+  fetch(FILES[name])
+    .then((r) => r.arrayBuffer())
+    .then((buf) => ctx.decodeAudioData(buf))
+    .then((audioBuf) => {
+      const source = ctx.createBufferSource();
+      const gain = ctx.createGain();
+      source.buffer = audioBuf;
+      source.loop = !!loop;
+      gain.gain.value = volume;
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      source.start(0);
+    })
+    .catch(() => {});
 }
 
 /**
- * Starts a looping sound effect via Web Audio API.
- * Returns a stop function that fades out over ~250ms.
+ * Starts a looping sound effect. Returns a stop function that fades out over ~250ms.
  */
 export function loopSoundEffect(name, enabled = true) {
   if (!enabled || !FILES[name]) return () => {};
-  const ctx = getCtx();
-  if (!ctx || ctx.state !== 'running') return () => {};
+  const volume = VOLUMES[name] ?? 0.5;
 
-  let stopped = false;
-  let playback = null;
+  // Try HTML Audio loop
+  if (typeof Audio !== 'undefined') {
+    const audio = new Audio(FILES[name]);
+    audio.volume = volume;
+    audio.loop = true;
+    audio.play().catch(() => {});
 
-  fetchAndDecode(name).then((audioBuf) => {
-    if (stopped || !audioBuf) return;
-    playback = schedulePlayback(audioBuf, VOLUMES[name] ?? 0.5, true);
-  }).catch(() => {});
+    let stopped = false;
+    return () => {
+      if (stopped) return;
+      stopped = true;
+      const fadeSteps = 5;
+      const fadeInterval = 50;
+      let step = 0;
+      const fade = setInterval(() => {
+        step += 1;
+        audio.volume = Math.max(0, volume * (1 - step / fadeSteps));
+        if (step >= fadeSteps) {
+          clearInterval(fade);
+          audio.pause();
+          audio.src = '';
+        }
+      }, fadeInterval);
+    };
+  }
 
-  return () => {
-    if (stopped) return;
-    stopped = true;
-    if (!playback) return;
-    const { source, gain } = playback;
-    const fadeSteps = 5;
-    const fadeInterval = 50;
-    let step = 0;
-    const fade = setInterval(() => {
-      step += 1;
-      gain.gain.value = Math.max(0, (VOLUMES[name] ?? 0.5) * (1 - step / fadeSteps));
-      if (step >= fadeSteps) {
-        clearInterval(fade);
-        try { source.stop(); } catch {}
-      }
-    }, fadeInterval);
-  };
+  return () => {};
 }
