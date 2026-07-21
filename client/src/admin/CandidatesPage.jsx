@@ -27,10 +27,37 @@ function CandidateCard({ candidate, onEdit, onDelete }) {
   }, [joinUrl]);
 
   function handleCopy() {
-    navigator.clipboard.writeText(joinUrl).then(() => {
+    var clip = navigator.clipboard;
+    if (clip && typeof clip.writeText === 'function') {
+      clip.writeText(joinUrl).then(function () {
+        setCopied(true);
+        setTimeout(function () { setCopied(false); }, 2000);
+      }).catch(function () {
+        fallbackCopy();
+      });
+    } else {
+      fallbackCopy();
+    }
+  }
+
+  function fallbackCopy() {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = joinUrl;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      ta.style.top = '-9999px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+      setTimeout(function () { setCopied(false); }, 2000);
+    } catch (_) {
+      setCopied('manual');
+      setTimeout(function () { setCopied(false); }, 4000);
+    }
   }
 
   return (
@@ -58,28 +85,28 @@ function CandidateCard({ candidate, onEdit, onDelete }) {
 
       {/* Header: logo + name + status */}
       <div className="flex items-center gap-6 mb-6">
-        <div className={`w-20 h-20 hex-clip p-0.5 shrink-0 flex items-center justify-center ${isActive ? 'bg-secondary shadow-[0_0_15px_rgba(240,192,62,0.4)]' : 'bg-outline-variant opacity-60'}`}>
+        <div className={'w-20 h-20 hex-clip p-0.5 shrink-0 flex items-center justify-center ' + (isActive ? 'bg-secondary shadow-[0_0_15px_rgba(240,192,62,0.4)]' : 'bg-outline-variant opacity-60')}>
           <div className="w-full h-full hex-clip bg-surface-dim flex items-center justify-center">
             {candidate.logoUrl ? (
               <img
                 alt={candidate.name}
-                className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`}
-                src={`${apiBaseUrl}${candidate.logoUrl}`}
+                className={'w-full h-full object-cover ' + (!isActive ? 'grayscale' : '')}
+                src={'' + apiBaseUrl + candidate.logoUrl}
               />
             ) : (
-              <div className={`w-full h-full flex items-center justify-center text-3xl font-headline-md ${isActive ? 'text-secondary' : 'text-outline'}`}>
+              <div className={'w-full h-full flex items-center justify-center text-3xl font-headline-md ' + (isActive ? 'text-secondary' : 'text-outline')}>
                 {candidate.name?.charAt(0)?.toUpperCase()}
               </div>
             )}
           </div>
         </div>
         <div>
-          <h3 className={`font-headline-md text-headline-md font-bold tracking-tight uppercase ${isActive ? 'text-on-surface' : 'text-on-surface-variant'}`}>
+          <h3 className={'font-headline-md text-headline-md font-bold tracking-tight uppercase ' + (isActive ? 'text-on-surface' : 'text-on-surface-variant')}>
             {candidate.name}
           </h3>
           <div className="mt-2 flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-secondary shadow-[0_0_8px_rgba(240,192,62,0.8)]' : 'bg-outline'}`} />
-            <span className={`font-label-caps text-[12px] tracking-widest ${isActive ? 'text-secondary' : 'text-outline'}`}>
+            <span className={'w-2 h-2 rounded-full ' + (isActive ? 'bg-secondary shadow-[0_0_8px_rgba(240,192,62,0.8)]' : 'bg-outline')} />
+            <span className={'font-label-caps text-[12px] tracking-widest ' + (isActive ? 'text-secondary' : 'text-outline')}>
               {isActive ? 'ACTIVE' : 'INACTIVE'}
             </span>
           </div>
@@ -87,12 +114,12 @@ function CandidateCard({ candidate, onEdit, onDelete }) {
       </div>
 
       {/* Join Pass */}
-      <div className={`bg-surface-container-low/80 border border-outline-variant/30 rounded-lg p-4 relative overflow-hidden ${!isActive ? 'opacity-70' : ''}`}>
-        <div className={`absolute top-0 left-0 w-1 h-full ${isActive ? 'bg-tertiary shadow-[0_0_10px_rgba(196,192,255,0.6)]' : 'bg-outline-variant'}`} />
+      <div className={'bg-surface-container-low/80 border border-outline-variant/30 rounded-lg p-4 relative overflow-hidden ' + (!isActive ? 'opacity-70' : '')}>
+        <div className={'absolute top-0 left-0 w-1 h-full ' + (isActive ? 'bg-tertiary shadow-[0_0_10px_rgba(196,192,255,0.6)]' : 'bg-outline-variant')} />
         <h4 className="font-label-caps text-[10px] text-on-surface-variant mb-3 tracking-widest">SECURE JOIN PASS</h4>
         <div className="flex items-center gap-4">
           {qrDataUrl ? (
-            <div className={`w-16 h-16 bg-white p-1 rounded-sm shrink-0 ${isActive ? 'border border-secondary/50 shadow-[0_0_10px_rgba(240,192,62,0.2)]' : 'border border-outline-variant/50'}`}>
+            <div className={'w-16 h-16 bg-white p-1 rounded-sm shrink-0 ' + (isActive ? 'border border-secondary/50 shadow-[0_0_10px_rgba(240,192,62,0.2)]' : 'border border-outline-variant/50')}>
               <img alt="QR Code" className="w-full h-full object-contain" src={qrDataUrl} />
             </div>
           ) : (
@@ -102,23 +129,26 @@ function CandidateCard({ candidate, onEdit, onDelete }) {
           )}
           <div className="flex-1 min-w-0">
             <div className="bg-surface-dim border border-outline-variant/50 rounded p-2 flex items-center justify-between group-hover:border-tertiary/50 transition-colors">
-              <span className="font-body-md text-[13px] text-on-surface truncate font-mono">
-                {joinUrl.replace(/^https?:\/\//, '').replace(/\?.*$/, '')}
-              </span>
+              <input
+                readOnly
+                value={joinUrl}
+                onClick={(e) => e.target.select()}
+                className="flex-1 bg-transparent text-[13px] text-on-surface font-mono outline-none border-none cursor-text select-all min-w-0"
+              />
               <button onClick={handleCopy} className="text-tertiary hover:text-white transition-colors pl-2 shrink-0">
                 <span className="material-symbols-outlined text-[16px]">
-                  {copied ? 'check' : 'content_copy'}
+                  {copied === 'manual' ? 'warning' : copied ? 'check' : 'content_copy'}
                 </span>
               </button>
             </div>
             <p className="mt-2 text-[11px] text-outline-variant truncate font-mono">
-              {copied ? 'Link copied!' : joinUrl}
+              {copied === 'manual' ? "Couldn't copy automatically — select and copy the link above manually" : copied ? 'Link copied!' : joinUrl}
             </p>
           </div>
         </div>
       </div>
     </motion.div>
-  );
+  );  
 }
 
 function CandidateForm({ candidate, onSave, onCancel }) {
@@ -283,6 +313,9 @@ export default function CandidatesPage() {
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">
             Manage competing teams, generate secure join passes, and control active status for the live broadcast session.
+          </p>
+          <p className="font-label-caps text-[11px] text-error mt-3 tracking-widest">
+            Do not use QR codes printed before today — always show/scan these live on event day.
           </p>
         </div>
         <button

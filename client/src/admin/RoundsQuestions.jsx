@@ -74,27 +74,38 @@ export default function RoundsQuestions() {
   }
 
   async function handleSaveQuestion(data) {
-    const payload = new FormData();
-    for (const [key, value] of Object.entries(data)) {
-      if (key === 'media' && value) {
-        payload.append('media', value);
-      } else if (key === 'options') {
-        payload.append('options', JSON.stringify(value));
-      } else if (key === 'gapEnabledOverride' && value !== undefined && value !== null) {
-        payload.append(key, String(value));
-      } else if (value !== undefined && value !== null) {
-        payload.append(key, value);
-      }
-    }
-
     try {
       let res;
       if (editingQuestion) {
+        const body = {
+          roundId: data.roundId,
+          text: data.text,
+          mediaType: data.mediaType,
+          options: data.options,
+          correctOptionKey: data.correctOptionKey,
+          pointsOverride: data.pointsOverride,
+          timeLimitOverrideSeconds: data.timeLimitOverrideSeconds,
+          gapEnabledOverride: data.gapEnabledOverride,
+          gapSecondsOverride: data.gapSecondsOverride,
+        };
         res = await apiFetch(`/api/questions/${editingQuestion.id}`, {
           method: 'PUT',
-          body: payload,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
         });
       } else {
+        const payload = new FormData();
+        for (const [key, value] of Object.entries(data)) {
+          if (key === 'media' && value) {
+            payload.append('media', value);
+          } else if (key === 'options') {
+            payload.append('options', JSON.stringify(value));
+          } else if (key === 'gapEnabledOverride' && value !== undefined && value !== null) {
+            payload.append(key, String(value));
+          } else if (value !== undefined && value !== null) {
+            payload.append(key, value);
+          }
+        }
         res = await apiFetch('/api/questions', {
           method: 'POST',
           body: payload,
@@ -116,6 +127,7 @@ export default function RoundsQuestions() {
   }
 
   const expandedRound = rounds.find((r) => r.id === expandedRoundId);
+  const questionFormRound = questionFormRoundId ? rounds.find((r) => r.id === questionFormRoundId) : null;
 
   const getMatchName = (matchId) => {
     if (!matchId) return null;
@@ -172,7 +184,7 @@ export default function RoundsQuestions() {
         <QuestionForm
           question={editingQuestion}
           roundId={questionFormRoundId}
-          rounds={rounds}
+          round={questionFormRound}
           onSave={handleSaveQuestion}
           onCancel={() => { setShowQuestionForm(false); setEditingQuestion(null); }}
         />
@@ -227,7 +239,7 @@ export default function RoundsQuestions() {
                   roundId={expandedRound.id}
                   answerMode={expandedRound.answerMode}
                   refreshKey={questionRefreshKey}
-                  onEdit={(q) => { setEditingQuestion(q); setShowQuestionForm(true); }}
+                  onEdit={(q) => { setEditingQuestion(q); setQuestionFormRoundId(q.roundId); setShowQuestionForm(true); }}
                   onDelete={(qId) => handleDeleteQuestion(qId, expandedRound.id)}
                   onAddQuestion={() => { setEditingQuestion(null); setQuestionFormRoundId(expandedRound.id); setShowQuestionForm(true); }}
                 />
