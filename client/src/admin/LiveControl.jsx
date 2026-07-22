@@ -95,6 +95,11 @@ export default function LiveControl() {
       if (state && !state.resultsRevealed) {
         setResultsRevealedData(null);
       }
+      // M7: Reset live countdown values on every fresh game state so stale
+      // timer/gap ticks from a previous phase don't linger. The next
+      // timer:tick or gap:tick event will repopulate the correct value.
+      setTimeRemaining(null);
+      setGapRemaining(null);
     }
 
     function onCandidatesUpdated(list) {

@@ -77,6 +77,28 @@ export default function RoundsQuestions() {
     try {
       let res;
       if (editingQuestion) {
+        console.log('[QForm:EDIT] editingQuestion.id:', editingQuestion.id, 'media:', data.media, 'mediaType:', data.mediaType);
+        // When editing, if a new media file was selected, upload it first
+        // via POST /:id/media so the server sets mediaUrl before we PUT the rest.
+        if (data.media) {
+          console.log('[QForm:EDIT] uploading media FIRST via POST /:id/media');
+          const fd = new FormData();
+          fd.append('media', data.media);
+          fd.append('mediaType', data.mediaType);
+          const uploadRes = await apiFetch(`/api/questions/${editingQuestion.id}/media`, {
+            method: 'POST',
+            body: fd,
+          });
+          console.log('[QForm:EDIT] upload response:', uploadRes.status, uploadRes.ok);
+          if (!uploadRes.ok) {
+            const err = await uploadRes.json().catch(() => ({ error: 'Media upload failed' }));
+            alert(err.error || `Upload error ${uploadRes.status}`);
+            return;
+          }
+        } else {
+          console.log('[QForm:EDIT] NO media file selected — skipping upload, sending PUT directly');
+        }
+
         const body = {
           roundId: data.roundId,
           text: data.text,
@@ -94,6 +116,7 @@ export default function RoundsQuestions() {
           body: JSON.stringify(body),
         });
       } else {
+        console.log('[QForm:CREATE] creating new question with media:', data.media, 'mediaType:', data.mediaType);
         const payload = new FormData();
         for (const [key, value] of Object.entries(data)) {
           if (key === 'media' && value) {
@@ -161,7 +184,9 @@ export default function RoundsQuestions() {
           )}
           <button
             onClick={() => { setEditingRound(null); setShowRoundForm(true); }}
-            className="clip-diamond bg-secondary/10 border border-secondary text-secondary px-8 py-3 font-label-caps text-label-caps flex items-center gap-2 hover:bg-secondary/20 transition-all"
+            disabled={matches.length === 0}
+            title={matches.length === 0 ? 'Create a match first before adding rounds' : undefined}
+            className="clip-diamond bg-secondary/10 border border-secondary text-secondary px-8 py-3 font-label-caps text-label-caps flex items-center gap-2 hover:bg-secondary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined text-lg">add</span>
             ADD ROUND
@@ -197,7 +222,11 @@ export default function RoundsQuestions() {
           {rounds.length === 0 && (
             <div className="glass-panel rounded-xl p-12 text-center">
               <span className="material-symbols-outlined text-[64px] text-outline-variant mb-4 block">quiz</span>
-              <p className="text-on-surface-variant font-body-lg">No rounds yet. Click "Add Round" to get started.</p>
+              {matches.length === 0 ? (
+                <p className="text-on-surface-variant font-body-lg">No matches exist yet. Create a match first in the <strong>Matches</strong> tab, then add rounds here.</p>
+              ) : (
+                <p className="text-on-surface-variant font-body-lg">No rounds yet. Click "Add Round" to get started.</p>
+              )}
             </div>
           )}
           <AnimatePresence mode="wait">
@@ -232,6 +261,12 @@ export default function RoundsQuestions() {
                       className="p-2 text-secondary hover:bg-secondary/10 rounded transition-colors"
                     >
                       <span className="material-symbols-outlined">edit</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRound(expandedRound.id)}
+                      className="p-2 text-outline hover:text-error hover:bg-error/10 rounded transition-colors"
+                    >
+                      <span className="material-symbols-outlined">delete</span>
                     </button>
                   </div>
                 </div>
@@ -291,11 +326,11 @@ export default function RoundsQuestions() {
 
           {/* Add round card */}
           <div
-            onClick={() => { setEditingRound(null); setShowRoundForm(true); }}
-            className="glass-panel border-dashed border-outline-variant/50 rounded-lg p-5 flex flex-col items-center justify-center gap-2 hover:border-secondary/50 hover:bg-secondary/5 transition-colors cursor-pointer min-h-[120px]"
+            onClick={() => { if (matches.length === 0) return; setEditingRound(null); setShowRoundForm(true); }}
+            className={`glass-panel border-dashed border-outline-variant/50 rounded-lg p-5 flex flex-col items-center justify-center gap-2 transition-colors min-h-[120px] ${matches.length === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:border-secondary/50 hover:bg-secondary/5 cursor-pointer'}`}
           >
             <span className="material-symbols-outlined text-outline text-3xl">add_circle</span>
-            <span className="font-label-caps text-outline text-xs tracking-widest">NEW ROUND</span>
+            <span className="font-label-caps text-outline text-xs tracking-widest">{matches.length === 0 ? 'NEEDS MATCH' : 'NEW ROUND'}</span>
           </div>
         </div>
       </div>

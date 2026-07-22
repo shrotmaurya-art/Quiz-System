@@ -46,7 +46,7 @@ export default function AdminLayout() {
             <img
               src={brandLogoUrl}
               alt={`${schoolName} logo`}
-              className="w-10 h-10 mb-3 rounded-lg object-contain"
+              className="w-14 h-14 mb-3 rounded-lg object-contain"
             />
           )}
           <h1 className="text-secondary font-display-lg text-headline-md leading-tight drop-shadow-[0_0_10px_rgba(240,192,62,0.3)]">

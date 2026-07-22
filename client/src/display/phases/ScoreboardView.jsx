@@ -27,7 +27,7 @@ export default function ScoreboardView() {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-8 max-w-4xl mx-auto">
       {phase === 'QUIZ_ENDED' && brandLogoUrl && (
-        <img src={brandLogoUrl} alt={`${schoolName} logo`} className="mb-4 h-16 w-16 object-contain" />
+        <img src={brandLogoUrl} alt={`${schoolName} logo`} className="mb-6 h-24 w-24 object-contain drop-shadow-[0_0_18px_rgba(240,192,62,0.4)]" />
       )}
       <motion.p 
         initial={{ opacity: 0, y: -10 }}

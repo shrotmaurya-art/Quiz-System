@@ -18,7 +18,7 @@ export default function IdleView() {
             transition={{ type: 'spring', damping: 20, stiffness: 100 }}
             src={brandLogoUrl}
             alt={`${schoolName} logo`}
-            className="w-24 h-24 md:w-32 md:h-32 object-contain mb-4 drop-shadow-[0_0_20px_rgba(240,192,62,0.4)]"
+            className="w-36 h-36 md:w-48 md:h-48 object-contain mb-6 drop-shadow-[0_0_24px_rgba(240,192,62,0.5)]"
           />
         )}
 

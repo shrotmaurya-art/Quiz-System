@@ -180,20 +180,41 @@ router.delete('/:id', (req, res) => {
     return res.status(404).json({ error: 'Match not found.' });
   }
 
-  // Clear game_state FK references that can block deletion
-  run('UPDATE game_state SET currentRoundId = NULL, currentQuestionId = NULL WHERE id = 1');
-  resetGameStateIfActive(req.params.id);
-
+  // H1: All game_state cleanup moved inside the transaction so rollback can't
+  // leave game_state pointing at a deleted match/round.
   const deleteMatch = db.transaction((matchId) => {
+    // Clear game_state FK references that can block deletion
+    run('UPDATE game_state SET currentRoundId = NULL, currentQuestionId = NULL WHERE id = 1');
+    const gs = get('SELECT matchId FROM game_state WHERE id = 1');
+    if (gs && gs.matchId === matchId) {
+      run(
+        `UPDATE game_state SET
+          phase = 'IDLE',
+          currentRoundId = NULL,
+          currentQuestionId = NULL,
+          timerStartedAt = NULL,
+          gapStartedAt = NULL,
+          timeLimitSeconds = 30,
+          gapEnabled = 1,
+          gapSeconds = 10,
+          locks = '{}',
+          judgements = '{}',
+          winnerCandidateId = NULL,
+          resultsRevealed = 0,
+          matchId = NULL
+        WHERE id = 1`
+      );
+    }
+    // Delete score_log first (FK to questions, no ON DELETE CASCADE)
+    run('DELETE FROM score_log WHERE matchId = ?', [matchId]);
     // Delete questions for all rounds in this match
     const roundIds = all('SELECT id FROM rounds WHERE matchId = ?', [matchId]);
     for (const r of roundIds) {
       run('DELETE FROM questions WHERE roundId = ?', [r.id]);
     }
-    // Delete rounds, match_scores, score_log entries, then the match itself
+    // Delete rounds, match_scores, then the match itself
     run('DELETE FROM rounds WHERE matchId = ?', [matchId]);
     run('DELETE FROM match_scores WHERE matchId = ?', [matchId]);
-    run('DELETE FROM score_log WHERE matchId = ?', [matchId]);
     run('DELETE FROM matches WHERE id = ?', [matchId]);
   });
   deleteMatch(req.params.id);
@@ -216,6 +237,8 @@ router.post('/:id/reset', (req, res) => {
   const resetMatch = db.transaction((matchId) => {
     run("UPDATE matches SET status = 'not_started', winnerCandidateId = NULL WHERE id = ?", [matchId]);
     run('UPDATE match_scores SET score = 0 WHERE matchId = ?', [matchId]);
+    // H2: Clear score_log so replayed match doesn't accumulate stale reversal rows
+    run('DELETE FROM score_log WHERE matchId = ?', [matchId]);
   });
   resetMatch(req.params.id);
 

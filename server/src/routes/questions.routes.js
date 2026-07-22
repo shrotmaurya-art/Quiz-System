@@ -176,6 +176,7 @@ router.put('/:id', (req, res) => {
   const patch = req.body || {};
   const mediaType = patch.mediaType === undefined ? existingQuestion.mediaType : patch.mediaType;
   const mediaUrl = mediaType === 'none' ? null : existingQuestion.mediaUrl;
+  console.log('[PUT /:id]', req.params.id, 'patch.mediaType:', patch.mediaType, 'existing.mediaType:', existingQuestion.mediaType, 'existing.mediaUrl:', existingQuestion.mediaUrl, 'computed mediaType:', mediaType, 'computed mediaUrl:', mediaUrl);
   const mediaError = validateMedia(mediaType, mediaUrl);
   if (mediaError) {
     return res.status(400).json({ error: mediaError });
@@ -218,6 +219,7 @@ router.delete('/:id', (req, res) => {
     return res.status(404).json({ error: 'Question not found.' });
   }
 
+  run('DELETE FROM score_log WHERE questionId = ?', [req.params.id]);
   run('DELETE FROM questions WHERE id = ?', [req.params.id]);
 
   if (question.mediaUrl) {
@@ -242,6 +244,7 @@ router.post('/:id/media', upload.single('media'), (req, res) => {
   }
 
   const mediaType = req.body && req.body.mediaType;
+  console.log('[POST /:id/media]', req.params.id, 'mediaType:', mediaType, 'file:', req.file?.originalname);
   if (mediaType !== 'image' && mediaType !== 'video') {
     return res
       .status(400)

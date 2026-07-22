@@ -56,7 +56,7 @@ export default function WaitingRoom({ candidateId }) {
           className="mb-8 flex flex-col items-center gap-2"
         >
           {brandLogoUrl && (
-            <img src={brandLogoUrl} alt={`${schoolName} logo`} className="w-12 h-12 object-contain" />
+            <img src={brandLogoUrl} alt={`${schoolName} logo`} className="w-20 h-20 object-contain drop-shadow-[0_0_16px_rgba(240,192,62,0.35)]" />
           )}
           <p className="font-label-caps text-[11px] text-on-surface-variant tracking-[0.3em] uppercase">
             {schoolName}

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 export default function AdminLogin() {
   const { login, sessionMessage } = useAdminAuth();
   const [pin, setPin] = useState('');
+  const [showPin, setShowPin] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const pinInput = useRef(null);
@@ -86,19 +87,29 @@ export default function AdminLogin() {
           <label htmlFor="admin-pin" className="mb-5 block font-label-caps text-label-caps tracking-[0.18em] text-tertiary uppercase">
             Enter Access Code
           </label>
-          <input
-            ref={pinInput}
-            id="admin-pin"
-            name="pin"
-            type="password"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            value={pin}
-            onChange={(event) => setPin(event.target.value)}
-            aria-describedby={visibleMessage ? 'login-error' : undefined}
-            aria-invalid={Boolean(visibleMessage)}
-            className={`mb-5 h-16 w-full rounded-lg border bg-surface-container-highest/70 px-5 text-center font-headline-md text-2xl tracking-[0.55em] text-secondary outline-none transition focus:border-secondary focus:shadow-[inset_0_0_15px_rgba(240,192,62,0.45)] ${visibleMessage ? 'border-error shadow-[inset_0_0_15px_rgba(255,180,171,0.35)]' : 'border-outline-variant'}`}
-          />
+          <div className="relative mb-5">
+            <input
+              ref={pinInput}
+              id="admin-pin"
+              name="pin"
+              type={showPin ? 'text' : 'password'}
+              inputMode="numeric"
+              autoComplete="off"
+              value={pin}
+              onChange={(event) => setPin(event.target.value)}
+              aria-describedby={visibleMessage ? 'login-error' : undefined}
+              aria-invalid={Boolean(visibleMessage)}
+              className={`h-16 w-full rounded-lg border bg-surface-container-highest/70 px-5 pr-14 text-center font-headline-md text-2xl tracking-[0.55em] text-secondary outline-none transition focus:border-secondary focus:shadow-[inset_0_0_15px_rgba(240,192,62,0.45)] ${visibleMessage ? 'border-error shadow-[inset_0_0_15px_rgba(255,180,171,0.35)]' : 'border-outline-variant'}`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPin((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-outline-variant hover:text-secondary transition-colors"
+              aria-label={showPin ? 'Hide PIN' : 'Show PIN'}
+            >
+              <span className="material-symbols-outlined text-xl">{showPin ? 'visibility_off' : 'visibility'}</span>
+            </button>
+          </div>
 
           {visibleMessage && !isRateLimited && (
             <p id="login-error" role="alert" className="mb-5 flex items-center justify-center gap-2 text-error">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCandidateGame } from './CandidateGameContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBranding } from '../shared/BrandingContext';
@@ -23,6 +23,8 @@ export default function McqQuestionView() {
   const { gameState, timer, isLockedIn, myLock, lockAnswer, phase } = useCandidateGame();
   const { soundEffectsEnabled } = useBranding();
   const [localSelection, setLocalSelection] = useState(null);
+  // M9: Guard against rapid double-tap emitting two lockAnswer events.
+  const lockInFlightRef = useRef(false);
 
   const question = gameState?.question;
   const questionId = question?.id;
@@ -30,6 +32,7 @@ export default function McqQuestionView() {
   // Reset local selection when a new question starts
   useEffect(() => {
     setLocalSelection(null);
+    lockInFlightRef.current = false;
   }, [questionId]);
 
   // Derive locked state and locked option
@@ -46,11 +49,11 @@ export default function McqQuestionView() {
   const strokeDashoffset = 283 * (1 - progress);
 
   const handleSelectOption = (key) => {
-    if (isPendingOrLocked) return;
+    if (isPendingOrLocked || lockInFlightRef.current) return;
+    // M9: Immediately disable further taps before any async state update
+    lockInFlightRef.current = true;
     setLocalSelection(key);
-    // This runs on the tablet's tap, before its Socket.IO message leaves.
     playSoundEffect('lockIn', soundEffectsEnabled);
-    // Send event with callback to handle error gracefully
     lockAnswer(key);
   };
 

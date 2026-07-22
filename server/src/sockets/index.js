@@ -266,8 +266,11 @@ function startQuestionTick(io, timeLimitSeconds) {
 
   io.to('admin').emit('timer:tick', { remainingSeconds: remaining });
   io.to('display').emit('timer:tick', { remainingSeconds: remaining });
-  const state = gameEngine.getGameState();
-  for (const cid in state.locks) {
+  // H5+M8: Emit to ALL candidates in the active match, not just those who
+  // have locked an answer. state.locks only includes candidates who already
+  // submitted — late-connecting tablets would miss the tick entirely.
+  const matchCandidateIds = getMatchCandidateIds(gameEngine.getGameState()?.matchId);
+  for (const cid of matchCandidateIds) {
     io.to(`candidate:${cid}`).emit('timer:tick', { remainingSeconds: remaining });
   }
 
@@ -276,10 +279,11 @@ function startQuestionTick(io, timeLimitSeconds) {
     if (remaining <= 0) {
       clearQuestionTick();
     } else {
+      console.log('[timer:tick] emitting remaining:', remaining);
       io.to('admin').emit('timer:tick', { remainingSeconds: remaining });
       io.to('display').emit('timer:tick', { remainingSeconds: remaining });
-      const currentLocks = gameEngine.getGameState().locks;
-      for (const cid in currentLocks) {
+      const ids = getMatchCandidateIds(gameEngine.getGameState()?.matchId);
+      for (const cid of ids) {
         io.to(`candidate:${cid}`).emit('timer:tick', { remainingSeconds: remaining });
       }
     }
@@ -303,8 +307,9 @@ function startGapTimerCountdown(io, gapSeconds) {
 
   io.to('admin').emit('gap:tick', { remainingSeconds: remaining });
   io.to('display').emit('gap:tick', { remainingSeconds: remaining });
-  const state = gameEngine.getGameState();
-  for (const cid in state.locks) {
+  // H5+M8: Emit gap ticks to ALL candidates in the active match
+  const matchCandidateIds = getMatchCandidateIds(gameEngine.getGameState()?.matchId);
+  for (const cid of matchCandidateIds) {
     io.to(`candidate:${cid}`).emit('gap:tick', { remainingSeconds: remaining });
   }
 
@@ -315,21 +320,31 @@ function startGapTimerCountdown(io, gapSeconds) {
     } else {
       io.to('admin').emit('gap:tick', { remainingSeconds: remaining });
       io.to('display').emit('gap:tick', { remainingSeconds: remaining });
-      const currentLocks = gameEngine.getGameState().locks;
-      for (const cid in currentLocks) {
+      const ids = getMatchCandidateIds(gameEngine.getGameState()?.matchId);
+      for (const cid of ids) {
         io.to(`candidate:${cid}`).emit('gap:tick', { remainingSeconds: remaining });
       }
     }
   }, 1000);
 
-  // Automatically transition to results when gap timer ends
+  // C1: Automatically transition to results when gap timer ends.
+  // Wrap in try/catch — if admin already called advanceFromGap, revealResults()
+  // throws a PhaseError which must not crash the server.
   gapTimeout = setTimeout(() => {
     clearGapTimerCountdown();
-    const res = gameEngine.revealResults();
-    if (res.success) {
-      broadcastGameState(io);
-      broadcastResultsRevealed(io, res.state);
-      broadcastScoreboard(io);
+    try {
+      const res = gameEngine.revealResults();
+      if (res.success) {
+        broadcastGameState(io);
+        broadcastResultsRevealed(io, res.state);
+        broadcastScoreboard(io);
+      }
+    } catch (err) {
+      if (err instanceof gameEngine.PhaseError) {
+        console.warn('[C1] Gap timeout fired but phase already advanced — ignoring.');
+      } else {
+        throw err;
+      }
     }
   }, gapSeconds * 1000);
 }
@@ -866,8 +881,9 @@ function resumeGapTimerCountdown(io, remainingMs) {
   // Emit initial tick
   io.to('admin').emit('gap:tick', { remainingSeconds: remaining });
   io.to('display').emit('gap:tick', { remainingSeconds: remaining });
-  const state = gameEngine.getGameState();
-  for (const cid in state.locks) {
+  // H5+M8: Emit gap ticks to ALL candidates in the active match
+  const matchCandidateIds = getMatchCandidateIds(gameEngine.getGameState()?.matchId);
+  for (const cid of matchCandidateIds) {
     io.to(`candidate:${cid}`).emit('gap:tick', { remainingSeconds: remaining });
   }
 
@@ -878,21 +894,29 @@ function resumeGapTimerCountdown(io, remainingMs) {
     } else {
       io.to('admin').emit('gap:tick', { remainingSeconds: remaining });
       io.to('display').emit('gap:tick', { remainingSeconds: remaining });
-      const currentLocks = gameEngine.getGameState().locks;
-      for (const cid in currentLocks) {
+      const ids = getMatchCandidateIds(gameEngine.getGameState()?.matchId);
+      for (const cid of ids) {
         io.to(`candidate:${cid}`).emit('gap:tick', { remainingSeconds: remaining });
       }
     }
   }, 1000);
 
-  // Automatically transition to results when gap timer ends
+  // C1: Automatically transition to results when gap timer ends (boot-resume variant).
   gapTimeout = setTimeout(() => {
     clearGapTimerCountdown();
-    const res = gameEngine.revealResults();
-    if (res.success) {
-      broadcastGameState(io);
-      broadcastResultsRevealed(io, res.state);
-      broadcastScoreboard(io);
+    try {
+      const res = gameEngine.revealResults();
+      if (res.success) {
+        broadcastGameState(io);
+        broadcastResultsRevealed(io, res.state);
+        broadcastScoreboard(io);
+      }
+    } catch (err) {
+      if (err instanceof gameEngine.PhaseError) {
+        console.warn('[C1] Gap timeout (boot-resume) fired but phase already advanced — ignoring.');
+      } else {
+        throw err;
+      }
     }
   }, remainingMs);
 }

@@ -247,6 +247,11 @@ function endMatch(matchId) {
     return { error: `Match with ID "${matchId}" not found.` };
   }
 
+  // H3: Reject if the given matchId doesn't match the currently active match
+  if (state.matchId !== matchId) {
+    return { error: `Match "${matchId}" is not the currently active match (active: ${state.matchId || 'none'}).` };
+  }
+
   clearQuestionTimeout();
 
   const scores = all('SELECT candidateId, score FROM match_scores WHERE matchId = ? ORDER BY score DESC, candidateId ASC', [matchId]);

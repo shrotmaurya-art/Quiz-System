@@ -198,7 +198,13 @@ function CandidateForm({ candidate, onSave, onCancel }) {
     if (logoFile && data.id) {
       const fd = new FormData();
       fd.append('logo', logoFile);
-      await apiFetch(`/api/candidates/${data.id}/logo`, { method: 'POST', body: fd });
+      // M10: Check the logo upload response instead of swallowing errors silently
+      const logoRes = await apiFetch(`/api/candidates/${data.id}/logo`, { method: 'POST', body: fd });
+      if (!logoRes.ok) {
+        const errBody = await logoRes.json().catch(() => ({ error: 'Unknown upload error' }));
+        alert(`Logo upload failed: ${errBody.error || logoRes.statusText}`);
+        return;
+      }
     }
 
     onSave();

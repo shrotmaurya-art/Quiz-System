@@ -21,6 +21,14 @@ if (!settings) {
   ).run();
 }
 
+// C2: Seed default game_state row so getGameState() never returns null.
+const existingGameState = db.prepare('SELECT id FROM game_state WHERE id = 1').get();
+if (!existingGameState) {
+  db.prepare(
+    "INSERT INTO game_state (id, phase, locks, judgements, resultsRevealed) VALUES (1, 'IDLE', '{}', '{}', 0)"
+  ).run();
+}
+
 // ---------------------------------------------------------------------------
 // Schema migrations — add matchId columns to existing tables.
 // SQLite errors on duplicate ADD COLUMN; we swallow that specific error.
@@ -110,6 +118,24 @@ if (orphanedRounds.length > 0) {
   // Assign orphaned rounds
   db.prepare('UPDATE rounds SET matchId = ? WHERE matchId IS NULL').run(matchId);
 }
+
+// ---------------------------------------------------------------------------
+// Integrity check + auto-repair: if a prior crash or ungraceful shutdown
+// corrupted an autoindex, REINDEX rebuilds it so WHERE id = ? lookups work.
+// ---------------------------------------------------------------------------
+const integrityErrors = db.pragma('integrity_check');
+const hasCorruption = Array.isArray(integrityErrors)
+  ? integrityErrors.some((r) => r.integrity_check !== 'ok')
+  : integrityErrors.integrity_check !== 'ok';
+
+if (hasCorruption) {
+  console.warn('[db] Index corruption detected on startup — running REINDEX to repair.');
+  db.exec('REINDEX');
+  console.warn('[db] REINDEX complete.');
+}
+
+// WAL checkpoint to prevent unbounded WAL growth after long uptimes.
+db.pragma('wal_checkpoint(TRUNCATE)');
 
 function run(sql, params = []) {
   return db.prepare(sql).run(params);

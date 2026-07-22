@@ -179,8 +179,12 @@ router.delete('/:id', (req, res) => {
     return res.status(404).json({ error: 'Round not found.' });
   }
 
+  // H1: game_state FK cleanup moved inside the transaction so rollback can't
+  // leave game_state pointing at a deleted round.
   const deleteRoundAndQuestions = db.transaction((roundId) => {
     run('UPDATE game_state SET currentRoundId = NULL, currentQuestionId = NULL WHERE id = 1');
+    // Delete score_log first (FK to questions, no ON DELETE CASCADE)
+    run('DELETE FROM score_log WHERE questionId IN (SELECT id FROM questions WHERE roundId = ?)', [roundId]);
     run('DELETE FROM questions WHERE roundId = ?', [roundId]);
     run('DELETE FROM rounds WHERE id = ?', [roundId]);
   });

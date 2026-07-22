@@ -61,7 +61,9 @@ function DisplayContent() {
   // timer-tick: only last 5 seconds, Display only
   useEffect(() => {
     const remaining = timer?.remainingSeconds;
+    console.log('[timerTick effect]', { phase, remaining, enabled: soundEffectsEnabled, lastTick: lastTickRef.current });
     if (phase === 'QUESTION_SHOWN' && remaining != null && remaining <= 5 && remaining > 0 && lastTickRef.current !== remaining) {
+      console.log('[timerTick PLAYING]', remaining);
       playSoundEffect('timerTick', soundEffectsEnabled);
     }
     lastTickRef.current = remaining;
